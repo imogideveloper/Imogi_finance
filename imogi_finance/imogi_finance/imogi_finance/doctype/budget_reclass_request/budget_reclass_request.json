@@ -1,0 +1,364 @@
+{
+  "doctype": "DocType",
+  "name": "Budget Reclass Request",
+  "module": "Imogi Finance",
+  "custom": 0,
+  "istable": 0,
+  "is_submittable": 1,
+  "track_changes": 1,
+  "track_seen": 1,
+  "editable_grid": 0,
+  "autoname": "BCR-.YYYY.-.#####",
+  "field_order": [
+    "status",
+    "workflow_state",
+    "tab_main",
+    "basic_section",
+    "company",
+    "posting_date",
+    "column_break_basic",
+    "fiscal_year",
+    "amount",
+    "reclass_section",
+    "from_cost_center",
+    "from_account",
+    "column_break_reclass",
+    "to_cost_center",
+    "to_account",
+    "details_section",
+    "reason",
+    "column_break_details",
+    "attachments",
+    "tab_approval",
+    "approval_info_section",
+    "approval_setting",
+    "current_approval_level",
+    "column_break_approval",
+    "level_1_user",
+    "level_2_user",
+    "level_3_user",
+    "approval_tracking_section",
+    "level_1_approved_by",
+    "level_1_approved_at",
+    "column_break_tracking_1",
+    "level_2_approved_by",
+    "level_2_approved_at",
+    "column_break_tracking_2",
+    "level_3_approved_by",
+    "level_3_approved_at",
+    "section_break_hidden",
+    "created_by_user",
+    "submit_on"
+  ],
+  "fields": [
+    {
+      "fieldname": "status",
+      "label": "Status",
+      "fieldtype": "Select",
+      "read_only": 1,
+      "options": "Draft\nPending Approval\nApproved\nRejected",
+      "default": "Draft",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "bold": 1,
+      "allow_on_submit": 1
+    },
+    {
+      "fieldname": "workflow_state",
+      "label": "Workflow State",
+      "fieldtype": "Link",
+      "options": "Workflow State",
+      "hidden": 1,
+      "read_only": 1,
+      "no_copy": 1,
+      "allow_on_submit": 1
+    },
+    {
+      "fieldname": "tab_main",
+      "fieldtype": "Tab Break",
+      "label": "Detail Reclass"
+    },
+    {
+      "fieldname": "basic_section",
+      "fieldtype": "Section Break",
+      "label": "Informasi Dasar"
+    },
+    {
+      "fieldname": "company",
+      "label": "Company",
+      "fieldtype": "Link",
+      "options": "Company",
+      "reqd": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "posting_date",
+      "label": "Tanggal Posting",
+      "fieldtype": "Date",
+      "reqd": 1,
+      "in_list_view": 1,
+      "default": "Today"
+    },
+    {
+      "fieldname": "column_break_basic",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "fiscal_year",
+      "label": "Tahun Fiskal",
+      "fieldtype": "Link",
+      "options": "Fiscal Year",
+      "reqd": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "amount",
+      "label": "Jumlah Reclass",
+      "fieldtype": "Currency",
+      "reqd": 1,
+      "in_list_view": 1,
+      "bold": 1,
+      "description": "Jumlah budget yang akan dipindahkan"
+    },
+    {
+      "fieldname": "reclass_section",
+      "fieldtype": "Section Break",
+      "label": "Detail Pemindahan Budget"
+    },
+    {
+      "fieldname": "from_cost_center",
+      "label": "Dari Cost Center",
+      "fieldtype": "Link",
+      "options": "Cost Center",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "from_account",
+      "label": "Dari Account",
+      "fieldtype": "Link",
+      "options": "Account",
+      "reqd": 1
+    },
+    {
+      "fieldname": "column_break_reclass",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "to_cost_center",
+      "label": "Ke Cost Center",
+      "fieldtype": "Link",
+      "options": "Cost Center",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "to_account",
+      "label": "Ke Account",
+      "fieldtype": "Link",
+      "options": "Account",
+      "reqd": 1
+    },
+    {
+      "fieldname": "details_section",
+      "fieldtype": "Section Break",
+      "label": "Keterangan & Lampiran"
+    },
+    {
+      "fieldname": "reason",
+      "label": "Alasan Reclass",
+      "fieldtype": "Small Text",
+      "reqd": 1,
+      "description": "Jelaskan alasan pemindahan budget"
+    },
+    {
+      "fieldname": "column_break_details",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "attachments",
+      "label": "Dokumen Pendukung",
+      "fieldtype": "Attach",
+      "description": "Upload dokumen pendukung jika ada"
+    },
+    {
+      "fieldname": "tab_approval",
+      "fieldtype": "Tab Break",
+      "label": "Approval Tracking"
+    },
+    {
+      "fieldname": "approval_info_section",
+      "fieldtype": "Section Break",
+      "label": "Route Approval"
+    },
+    {
+      "fieldname": "approval_setting",
+      "label": "Approval Setting",
+      "fieldtype": "Link",
+      "options": "Budget Approval Setting",
+      "read_only": 1
+    },
+    {
+      "fieldname": "current_approval_level",
+      "label": "Current Level",
+      "fieldtype": "Int",
+      "read_only": 1,
+      "default": "0",
+      "allow_on_submit": 1
+    },
+    {
+      "fieldname": "column_break_approval",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "level_1_user",
+      "label": "Level 1 Approver",
+      "fieldtype": "Link",
+      "options": "User",
+      "read_only": 1
+    },
+    {
+      "fieldname": "level_2_user",
+      "label": "Level 2 Approver",
+      "fieldtype": "Link",
+      "options": "User",
+      "read_only": 1
+    },
+    {
+      "fieldname": "level_3_user",
+      "label": "Level 3 Approver",
+      "fieldtype": "Link",
+      "options": "User",
+      "read_only": 1
+    },
+    {
+      "fieldname": "approval_tracking_section",
+      "fieldtype": "Section Break",
+      "label": "Approval History",
+      "collapsible": 1,
+      "collapsible_depends_on": "eval:doc.level_1_approved_by"
+    },
+    {
+      "fieldname": "level_1_approved_by",
+      "label": "Level 1 Approved By",
+      "fieldtype": "Link",
+      "options": "User",
+      "read_only": 1,
+      "allow_on_submit": 1
+    },
+    {
+      "fieldname": "level_1_approved_at",
+      "label": "Level 1 Approved At",
+      "fieldtype": "Datetime",
+      "read_only": 1,
+      "allow_on_submit": 1
+    },
+    {
+      "fieldname": "column_break_tracking_1",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "level_2_approved_by",
+      "label": "Level 2 Approved By",
+      "fieldtype": "Link",
+      "options": "User",
+      "read_only": 1,
+      "allow_on_submit": 1
+    },
+    {
+      "fieldname": "level_2_approved_at",
+      "label": "Level 2 Approved At",
+      "fieldtype": "Datetime",
+      "read_only": 1,
+      "allow_on_submit": 1
+    },
+    {
+      "fieldname": "column_break_tracking_2",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "level_3_approved_by",
+      "label": "Level 3 Approved By",
+      "fieldtype": "Link",
+      "options": "User",
+      "read_only": 1,
+      "allow_on_submit": 1
+    },
+    {
+      "fieldname": "level_3_approved_at",
+      "label": "Level 3 Approved At",
+      "fieldtype": "Datetime",
+      "read_only": 1,
+      "allow_on_submit": 1
+    },
+    {
+      "fieldname": "section_break_hidden",
+      "fieldtype": "Section Break",
+      "hidden": 1
+    },
+    {
+      "fieldname": "created_by_user",
+      "fieldtype": "Link",
+      "label": "Created By",
+      "options": "User",
+      "read_only": 1,
+      "no_copy": 1
+    },
+    {
+      "fieldname": "submit_on",
+      "fieldtype": "Datetime",
+      "label": "Submit On",
+      "read_only": 1,
+      "no_copy": 1
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1,
+      "submit": 1,
+      "cancel": 1,
+      "amend": 1,
+      "email": 1,
+      "print": 1,
+      "share": 1,
+      "report": 1,
+      "export": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1,
+      "submit": 1,
+      "cancel": 1,
+      "amend": 1,
+      "email": 1,
+      "print": 1,
+      "share": 1,
+      "report": 1,
+      "export": 1
+    },
+    {
+      "role": "Accounts User",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "email": 1,
+      "print": 1,
+      "share": 1,
+      "report": 1,
+      "export": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "index_web_pages_for_search": 1,
+  "show_name_in_global_search": 1
+}

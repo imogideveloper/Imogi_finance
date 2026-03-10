@@ -1,0 +1,101 @@
+{
+  "actions": [],
+  "allow_copy": 0,
+  "allow_events_in_timeline": 0,
+  "allow_guest_to_view": 0,
+  "allow_rename": 0,
+  "autoname": "",
+  "beta": 0,
+  "creation": "2024-01-01 00:00:00.000000",
+  "default_view": "List",
+  "doctype": "DocType",
+  "editable_grid": 1,
+  "engine": "InnoDB",
+  "field_order": [
+    "bank_name",
+    "api_provider",
+    "is_active",
+    "column_break_config",
+    "api_endpoint",
+    "api_key",
+    "api_secret",
+    "additional_settings"
+  ],
+  "fields": [
+    {
+      "fieldname": "bank_name",
+      "fieldtype": "Data",
+      "label": "Bank Name",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "api_provider",
+      "fieldtype": "Select",
+      "label": "API Provider",
+      "options": "Bank Mandiri\nBCA\nBNI\nBRI\nPermata\nCIMB Niaga\nCustom",
+      "in_list_view": 1
+    },
+    {
+      "default": "0",
+      "fieldname": "is_active",
+      "fieldtype": "Check",
+      "label": "Is Active",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "column_break_config",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "api_endpoint",
+      "fieldtype": "Data",
+      "label": "API Endpoint URL",
+      "description": "Base URL for the bank's B2B API"
+    },
+    {
+      "fieldname": "api_key",
+      "fieldtype": "Data",
+      "label": "API Key / Client ID"
+    },
+    {
+      "fieldname": "api_secret",
+      "fieldtype": "Password",
+      "label": "API Secret / Client Secret"
+    },
+    {
+      "fieldname": "additional_settings",
+      "fieldtype": "JSON",
+      "label": "Additional Settings",
+      "description": "JSON format for additional configuration parameters"
+    }
+  ],
+  "has_web_view": 0,
+  "hide_heading": 0,
+  "hide_toolbar": 0,
+  "idx": 0,
+  "image_field": "",
+  "in_create": 0,
+  "is_published_field": "",
+  "is_submittable": 0,
+  "issingle": 0,
+  "istable": 1,
+  "links": [],
+  "max_attachments": 0,
+  "modified": "2024-01-01 00:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Imogi Finance",
+  "name": "Transfer Application Bank API Config",
+  "owner": "Administrator",
+  "permissions": [],
+  "quick_entry": 0,
+  "read_only": 0,
+  "read_only_onload": 0,
+  "show_name_in_global_search": 0,
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "track_changes": 1,
+  "track_seen": 0,
+  "track_views": 0,
+  "translate_fieldname": 0
+}

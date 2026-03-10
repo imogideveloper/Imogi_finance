@@ -1,0 +1,173 @@
+{
+  "allow_rename": 0,
+  "autoname": "hash",
+  "creation": "",
+  "docstatus": 0,
+  "doctype": "DocType",
+  "editable_grid": 1,
+  "engine": "InnoDB",
+  "field_order": [
+    "expense_account",
+    "cost_center",
+    "description",
+    "amount",
+    "discount_amount",
+    "net_amount",
+    "column_break_item",
+    "is_pph_applicable",
+    "pph_base_amount",
+    "is_deferred_expense",
+    "is_variance_item",
+    "deferred_section",
+    "prepaid_account",
+    "deferred_start_date",
+    "deferred_periods",
+    "deferred_end_date"
+  ],
+  "fields": [
+    {
+      "fieldname": "expense_account",
+      "fieldtype": "Link",
+      "in_list_view": 1,
+      "label": "Expense Account",
+      "options": "Account",
+      "reqd": 1,
+      "columns": 2,
+      "description": "Select the appropriate expense account"
+    },
+    {
+      "fieldname": "cost_center",
+      "fieldtype": "Link",
+      "in_list_view": 1,
+      "label": "Cost Center",
+      "options": "Cost Center",
+      "columns": 2,
+      "description": "Cost center for this line item (used for budget allocation)"
+    },
+    {
+      "fieldname": "description",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "label": "Description",
+      "columns": 2,
+      "description": "Brief description of the expense item"
+    },
+    {
+      "fieldname": "amount",
+      "fieldtype": "Currency",
+      "in_list_view": 1,
+      "label": "Amount",
+      "reqd": 1,
+      "columns": 2,
+      "description": "Expense amount before discount"
+    },
+    {
+      "fieldname": "discount_amount",
+      "fieldtype": "Currency",
+      "in_list_view": 0,
+      "label": "Discount",
+      "columns": 1,
+      "description": "Discount or reduction amount (will be subtracted from amount)"
+    },
+    {
+      "fieldname": "net_amount",
+      "fieldtype": "Currency",
+      "in_list_view": 1,
+      "label": "Net Amount",
+      "read_only": 1,
+      "columns": 2,
+      "description": "Amount after discount (Amount - Discount)"
+    },
+    {
+      "fieldname": "column_break_item",
+      "fieldtype": "Column Break"
+    },
+    {
+      "default": "0",
+      "fieldname": "is_pph_applicable",
+      "fieldtype": "Check",
+      "in_list_view": 1,
+      "label": "Apply WHT",
+      "columns": 1,
+      "description": "Enable if this item is subject to withholding tax"
+    },
+    {
+      "depends_on": "is_pph_applicable",
+      "fieldname": "pph_base_amount",
+      "fieldtype": "Currency",
+      "label": "WHT Base",
+      "description": "Withholding tax base amount if different from item amount"
+    },
+    {
+      "default": "0",
+      "fieldname": "is_deferred_expense",
+      "fieldtype": "Check",
+      "in_list_view": 1,
+      "label": "Deferred Expense",
+      "columns": 1,
+      "description": "Enable for prepaid expenses that require amortization"
+    },
+    {
+      "default": "0",
+      "fieldname": "is_variance_item",
+      "fieldtype": "Check",
+      "in_list_view": 0,
+      "label": "Variance Item",
+      "read_only": 1,
+      "hidden": 0,
+      "allow_on_submit": 0,
+      "description": "System-generated variance adjustment item (auto-created from OCR variance)"
+    },
+    {
+      "collapsible": 1,
+      "collapsible_depends_on": "eval:!doc.is_deferred_expense",
+      "depends_on": "is_deferred_expense",
+      "fieldname": "deferred_section",
+      "fieldtype": "Section Break",
+      "label": "Deferral Settings",
+      "description": "Configuration for expense amortization"
+    },
+    {
+      "depends_on": "is_deferred_expense",
+      "fieldname": "prepaid_account",
+      "fieldtype": "Link",
+      "label": "Prepaid Account",
+      "mandatory_depends_on": "is_deferred_expense",
+      "options": "Account",
+      "description": "Balance sheet account for deferred expense"
+    },
+    {
+      "depends_on": "is_deferred_expense",
+      "fieldname": "deferred_start_date",
+      "fieldtype": "Date",
+      "label": "Start Date",
+      "mandatory_depends_on": "is_deferred_expense",
+      "description": "First month of amortization"
+    },
+    {
+      "depends_on": "is_deferred_expense",
+      "fieldname": "deferred_periods",
+      "fieldtype": "Int",
+      "label": "Periods",
+      "mandatory_depends_on": "is_deferred_expense",
+      "description": "Number of months to amortize over"
+    },
+    {
+      "depends_on": "is_deferred_expense",
+      "fieldname": "deferred_end_date",
+      "fieldtype": "Date",
+      "label": "End Date",
+      "read_only": 1,
+      "description": "Calculated as Start Date + Periods (auto-filled)"
+    }
+  ],
+  "index_web_pages_for_search": 1,
+  "istable": 1,
+  "links": [],
+  "module": "Imogi Finance",
+  "name": "Advanced Expense Request Item",
+  "permissions": [],
+  "quick_entry": 0,
+  "track_changes": 1,
+  "description": "Expense line items with per-item cost center assignment for multi cost center budget allocation."
+}

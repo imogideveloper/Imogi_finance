@@ -1,0 +1,145 @@
+{
+  "doctype": "DocType",
+  "name": "Internal Charge Line",
+  "module": "Imogi Finance",
+  "custom": 0,
+  "istable": 1,
+  "track_changes": 1,
+  "editable_grid": 1,
+  "description": "Child table for Internal Charge Request with expense item details and per-cost-center allocation.",
+  "field_order": [
+    "target_cost_center",
+    "expense_account",
+    "description",
+    "amount",
+    "line_status",
+    "current_approval_level",
+    "route_snapshot",
+    "level_1_role",
+    "level_1_approver",
+    "level_2_role",
+    "level_2_approver",
+    "level_3_role",
+    "level_3_approver",
+    "approved_by",
+    "approved_on"
+  ],
+  "fields": [
+    {
+      "fieldname": "target_cost_center",
+      "label": "Target Cost Center",
+      "fieldtype": "Link",
+      "options": "Cost Center",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "expense_account",
+      "label": "Expense Account",
+      "fieldtype": "Link",
+      "options": "Account",
+      "reqd": 1,
+      "in_list_view": 1,
+      "columns": 2
+    },
+    {
+      "fieldname": "description",
+      "label": "Description",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "columns": 2
+    },
+    {
+      "fieldname": "amount",
+      "label": "Amount",
+      "fieldtype": "Currency",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "line_status",
+      "label": "Line Status",
+      "fieldtype": "Select",
+      "options": "Draft\nPending L1\nPending L2\nPending L3\nApproved\nRejected",
+      "default": "Draft",
+      "in_list_view": 1,
+      "read_only": 1,
+      "bold": 1
+    },
+    {
+      "fieldname": "current_approval_level",
+      "label": "Current Approval Level",
+      "fieldtype": "Int",
+      "read_only": 1,
+      "hidden": 1
+    },
+    {
+      "fieldname": "route_snapshot",
+      "label": "Route Snapshot",
+      "fieldtype": "Long Text",
+      "read_only": 1,
+      "hidden": 1
+    },
+    {
+      "fieldname": "level_1_role",
+      "label": "Level 1 Role",
+      "fieldtype": "Link",
+      "options": "Role",
+      "read_only": 1,
+      "hidden": 1
+    },
+    {
+      "fieldname": "level_1_approver",
+      "label": "Level 1 Approver",
+      "fieldtype": "Link",
+      "options": "User",
+      "read_only": 1,
+      "hidden": 1
+    },
+    {
+      "fieldname": "level_2_role",
+      "label": "Level 2 Role",
+      "fieldtype": "Link",
+      "options": "Role",
+      "read_only": 1,
+      "hidden": 1
+    },
+    {
+      "fieldname": "level_2_approver",
+      "label": "Level 2 Approver",
+      "fieldtype": "Link",
+      "options": "User",
+      "read_only": 1,
+      "hidden": 1
+    },
+    {
+      "fieldname": "level_3_role",
+      "label": "Level 3 Role",
+      "fieldtype": "Link",
+      "options": "Role",
+      "read_only": 1,
+      "hidden": 1
+    },
+    {
+      "fieldname": "level_3_approver",
+      "label": "Level 3 Approver",
+      "fieldtype": "Link",
+      "options": "User",
+      "read_only": 1,
+      "hidden": 1
+    },
+    {
+      "fieldname": "approved_by",
+      "label": "Approved By",
+      "fieldtype": "Link",
+      "options": "User",
+      "read_only": 1
+    },
+    {
+      "fieldname": "approved_on",
+      "label": "Approved On",
+      "fieldtype": "Datetime",
+      "read_only": 1
+    }
+  ]
+}

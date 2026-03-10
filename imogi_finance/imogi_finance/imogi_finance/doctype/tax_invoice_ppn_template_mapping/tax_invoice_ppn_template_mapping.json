@@ -1,0 +1,60 @@
+{
+  "actions": [],
+  "allow_rename": 0,
+  "creation": "2026-02-18 00:00:00.000000",
+  "doctype": "DocType",
+  "editable_grid": 1,
+  "engine": "InnoDB",
+  "field_order": [
+    "ppn_type",
+    "company",
+    "purchase_template",
+    "sales_template"
+  ],
+  "fields": [
+    {
+      "fieldname": "ppn_type",
+      "fieldtype": "Select",
+      "in_list_view": 1,
+      "label": "PPN Type",
+      "reqd": 1,
+      "bold": 1,
+      "options": "\nStandard 11% (PPN 2022-2024)\nStandard 12% (PPN 2025+)\nZero Rated (Ekspor)\nPPN Tidak Dipungut (Fasilitas)\nPPN Dibebaskan (Fasilitas)\nBukan Objek PPN\nDigital 1.1% (PMSE)\nCustom/Other (Tarif Khusus)",
+      "description": "Pilih PPN Type. Harus sama dengan opsi di Tax Invoice OCR Upload → Tipe PPN."
+    },
+    {
+      "fieldname": "company",
+      "fieldtype": "Link",
+      "in_list_view": 1,
+      "label": "Company",
+      "options": "Company",
+      "description": "Kosongkan untuk berlaku di semua company (global default). Mapping per-company diprioritaskan di atas global."
+    },
+    {
+      "fieldname": "purchase_template",
+      "fieldtype": "Link",
+      "in_list_view": 1,
+      "label": "Purchase Tax Template",
+      "options": "Purchase Taxes and Charges Template",
+      "description": "Purchase Taxes and Charges Template yang akan disarankan/di-copy ke Expense Request saat OCR Upload di-sync."
+    },
+    {
+      "fieldname": "sales_template",
+      "fieldtype": "Link",
+      "in_list_view": 1,
+      "label": "Sales Tax Template",
+      "options": "Sales Taxes and Charges Template",
+      "description": "Sales Taxes and Charges Template untuk transaksi penjualan (Sales Invoice). Opsional."
+    }
+  ],
+  "hide_toolbar": 0,
+  "index_web_pages_for_search": 0,
+  "istable": 1,
+  "links": [],
+  "modified": "2026-02-18 00:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Imogi Finance",
+  "name": "Tax Invoice PPN Template Mapping",
+  "owner": "Administrator",
+  "permissions": []
+}

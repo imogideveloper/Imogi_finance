@@ -1,0 +1,78 @@
+{
+  "allow_rename": 0,
+  "autoname": "hash",
+  "creation": "",
+  "docstatus": 0,
+  "doctype": "DocType",
+  "editable_grid": 1,
+  "engine": "InnoDB",
+  "field_order": [
+    "level_1_section",
+    "level_1_user",
+    "level_2_section",
+    "level_2_user",
+    "level_3_section",
+    "level_3_user"
+  ],
+  "fields": [
+    {
+      "fieldname": "level_1_section",
+      "fieldtype": "Section Break",
+      "label": "👤 Level 1 - First Approver"
+    },
+    {
+      "fieldname": "level_1_user",
+      "fieldtype": "Link",
+      "label": "Level 1 Approver",
+      "options": "User",
+      "reqd": 1,
+      "in_list_view": 1,
+      "columns": 4,
+      "description": "User yang dapat approve di level pertama (wajib)"
+    },
+    {
+      "fieldname": "level_2_section",
+      "fieldtype": "Section Break",
+      "label": "👥 Level 2 - Second Approver",
+      "collapsible": 1,
+      "collapsible_depends_on": "eval:!doc.level_2_user"
+    },
+    {
+      "fieldname": "level_2_user",
+      "fieldtype": "Link",
+      "label": "Level 2 Approver",
+      "options": "User",
+      "in_list_view": 1,
+      "columns": 4,
+      "description": "User yang dapat approve di level kedua (opsional)"
+    },
+    {
+      "fieldname": "level_3_section",
+      "fieldtype": "Section Break",
+      "label": "👔 Level 3 - Final Approver",
+      "collapsible": 1,
+      "collapsible_depends_on": "eval:!doc.level_3_user"
+    },
+    {
+      "fieldname": "level_3_user",
+      "fieldtype": "Link",
+      "label": "Level 3 Approver",
+      "options": "User",
+      "in_list_view": 1,
+      "columns": 4,
+      "description": "User yang dapat approve di level ketiga/final (opsional)"
+    }
+  ],
+  "index_web_pages_for_search": 1,
+  "istable": 1,
+  "module": "Imogi Finance",
+  "name": "Budget Approval Line",
+  "naming_rule": "Random",
+  "owner": "Administrator",
+  "permissions": [],
+  "quick_entry": 0,
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 0
+}
