@@ -1,0 +1,20 @@
+[
+  {
+    "doctype": "Transfer Application Settings",
+    "name": "Transfer Application Settings",
+    "enable_bank_txn_matching": 1,
+    "enable_auto_create_payment_entry_on_strong_match": 0,
+    "matching_amount_tolerance": 0,
+    "enable_b2b_api_integration": 0,
+    "reference_doctypes": [
+      {
+        "reference_doctype": "Expense Request",
+        "enabled": 1
+      },
+      {
+        "reference_doctype": "Purchase Invoice",
+        "enabled": 1
+      }
+    ]
+  }
+]

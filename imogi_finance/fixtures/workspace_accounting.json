@@ -1,0 +1,141 @@
+[
+  {
+    "doctype": "Workspace",
+    "name": "Accounting & Reporting",
+    "title": "Accounting & Reporting",
+    "label": "Accounting & Reporting",
+    "parent_workspace": "FINANCE IMOGI",
+    "type": "Workspace",
+    "icon": "book",
+    "module": "Imogi Finance",
+    "public": 1,
+    "sequence": 6,
+    "is_hidden": 0,
+    "hide_custom": 0,
+    "content_type": "Blocks",
+    "content": "[{\"id\": \"hdr_gl\", \"type\": \"header\", \"data\": {\"text\": \"General Ledger\", \"col\": 12}}, {\"id\": \"s_acc\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Account\", \"col\": 3}}, {\"id\": \"s_coa\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Chart of Accounts\", \"col\": 3}}, {\"id\": \"s_je\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Journal Entry\", \"col\": 3}}, {\"id\": \"s_gle\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"GL Entry\", \"col\": 3}}, {\"id\": \"s_jet\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Journal Entry Template\", \"col\": 3}}, {\"id\": \"spacer_period\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_period\", \"type\": \"header\", \"data\": {\"text\": \"Period Management\", \"col\": 12}}, {\"id\": \"s_pcv\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Period Closing Voucher\", \"col\": 3}}, {\"id\": \"s_fy\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Fiscal Year\", \"col\": 3}}, {\"id\": \"s_comp\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Company\", \"col\": 3}}, {\"id\": \"s_fb\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Finance Book\", \"col\": 3}}, {\"id\": \"spacer_org\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_org\", \"type\": \"header\", \"data\": {\"text\": \"Organization Structure\", \"col\": 12}}, {\"id\": \"s_cc\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Cost Center\", \"col\": 3}}, {\"id\": \"s_dept\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Department\", \"col\": 3}}, {\"id\": \"s_accdim\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Accounting Dimension\", \"col\": 3}}, {\"id\": \"spacer_master\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_master\", \"type\": \"header\", \"data\": {\"text\": \"Master Data\", \"col\": 12}}, {\"id\": \"s_cust\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Customer\", \"col\": 3}}, {\"id\": \"s_supp\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Supplier\", \"col\": 3}}, {\"id\": \"s_cont\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Contact\", \"col\": 3}}, {\"id\": \"s_addr\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Address\", \"col\": 3}}, {\"id\": \"s_item\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Item\", \"col\": 3}}, {\"id\": \"s_emp\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Employee\", \"col\": 3}}, {\"id\": \"spacer_deferred\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_deferred\", \"type\": \"header\", \"data\": {\"text\": \"Deferred Expense\", \"col\": 12}}, {\"id\": \"s_eds\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Expense Deferred Settings\", \"col\": 3}}, {\"id\": \"s_des\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Deferred Expense Schedule\", \"col\": 3}}, {\"id\": \"s_det\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Deferred Expense Tracker\", \"col\": 3}}, {\"id\": \"spacer_config\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_config\", \"type\": \"header\", \"data\": {\"text\": \"Configuration\", \"col\": 12}}, {\"id\": \"s_lts\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Letter Template Settings\", \"col\": 3}}, {\"id\": \"s_fcs\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Finance Control Settings\", \"col\": 3}}]",
+    "shortcuts": [
+      {
+        "label": "Account",
+        "link_to": "Account",
+        "type": "DocType"
+      },
+      {
+        "label": "Chart of Accounts",
+        "link_to": "Chart of Accounts",
+        "type": "Page"
+      },
+      {
+        "label": "Journal Entry",
+        "link_to": "Journal Entry",
+        "type": "DocType"
+      },
+      {
+        "label": "GL Entry",
+        "link_to": "GL Entry",
+        "type": "DocType"
+      },
+      {
+        "label": "Journal Entry Template",
+        "link_to": "Journal Entry Template",
+        "type": "DocType"
+      },
+      {
+        "label": "Period Closing Voucher",
+        "link_to": "Period Closing Voucher",
+        "type": "DocType"
+      },
+      {
+        "label": "Fiscal Year",
+        "link_to": "Fiscal Year",
+        "type": "DocType"
+      },
+      {
+        "label": "Company",
+        "link_to": "Company",
+        "type": "DocType"
+      },
+      {
+        "label": "Finance Book",
+        "link_to": "Finance Book",
+        "type": "DocType"
+      },
+      {
+        "label": "Cost Center",
+        "link_to": "Cost Center",
+        "type": "DocType"
+      },
+      {
+        "label": "Department",
+        "link_to": "Department",
+        "type": "DocType"
+      },
+      {
+        "label": "Accounting Dimension",
+        "link_to": "Accounting Dimension",
+        "type": "DocType"
+      },
+      {
+        "label": "Customer",
+        "link_to": "Customer",
+        "type": "DocType"
+      },
+      {
+        "label": "Supplier",
+        "link_to": "Supplier",
+        "type": "DocType"
+      },
+      {
+        "label": "Contact",
+        "link_to": "Contact",
+        "type": "DocType"
+      },
+      {
+        "label": "Address",
+        "link_to": "Address",
+        "type": "DocType"
+      },
+      {
+        "label": "Item",
+        "link_to": "Item",
+        "type": "DocType"
+      },
+      {
+        "label": "Employee",
+        "link_to": "Employee",
+        "type": "DocType"
+      },
+      {
+        "label": "Expense Deferred Settings",
+        "link_to": "Expense Deferred Settings",
+        "type": "DocType"
+      },
+      {
+        "label": "Deferred Expense Schedule",
+        "link_to": "Deferred Expense Schedule",
+        "type": "DocType"
+      },
+      {
+        "label": "Deferred Expense Tracker",
+        "link_to": "Deferred Expense Tracker",
+        "type": "Report"
+      },
+      {
+        "label": "Letter Template Settings",
+        "link_to": "Letter Template Settings",
+        "type": "DocType"
+      },
+      {
+        "label": "Finance Control Settings",
+        "link_to": "Finance Control Settings",
+        "type": "DocType"
+      }
+    ],
+    "cards": [],
+    "custom_blocks": [],
+    "links": [],
+    "charts": [],
+    "quick_lists": [],
+    "number_cards": []
+  }
+]

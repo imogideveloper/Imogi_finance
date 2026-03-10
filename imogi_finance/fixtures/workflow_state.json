@@ -1,0 +1,129 @@
+[
+  {
+    "doctype": "Workflow State",
+    "name": "Draft",
+    "workflow_state_name": "Draft",
+    "style": "Primary"
+  },
+  {
+    "doctype": "Workflow State",
+    "name": "Pending Review",
+    "workflow_state_name": "Pending Review",
+    "style": "Warning"
+  },
+  {
+    "doctype": "Workflow State",
+    "name": "Approved",
+    "workflow_state_name": "Approved",
+    "style": "Success"
+  },
+  {
+    "doctype": "Workflow State",
+    "name": "Rejected",
+    "workflow_state_name": "Rejected",
+    "style": "Danger"
+  },
+  {
+    "doctype": "Workflow State",
+    "name": "PI Created",
+    "workflow_state_name": "PI Created",
+    "style": "Warning"
+  },
+  {
+    "doctype": "Workflow State",
+    "name": "Reopened",
+    "workflow_state_name": "Reopened",
+    "style": "Primary"
+  },
+  {
+    "doctype": "Workflow State",
+    "name": "Pending Approval",
+    "workflow_state_name": "Pending Approval",
+    "style": "Warning"
+  },
+  {
+    "doctype": "Workflow State",
+    "name": "Posted",
+    "workflow_state_name": "Posted",
+    "style": "Success"
+  },
+  {
+    "doctype": "Workflow State",
+    "name": "Cancelled",
+    "workflow_state_name": "Cancelled",
+    "style": "Danger"
+  },
+  {
+    "doctype": "Workflow State",
+    "name": "Finance Review",
+    "workflow_state_name": "Finance Review",
+    "style": "Warning"
+  },
+  {
+    "doctype": "Workflow State",
+    "name": "Approved for Transfer",
+    "workflow_state_name": "Approved for Transfer",
+    "style": "Success"
+  },
+  {
+    "doctype": "Workflow State",
+    "name": "Awaiting Bank Confirmation",
+    "workflow_state_name": "Awaiting Bank Confirmation",
+    "style": "Warning"
+  },
+  {
+    "doctype": "Workflow State",
+    "name": "Paid",
+    "workflow_state_name": "Paid",
+    "style": "Success"
+  },
+  {
+    "doctype": "Workflow State",
+    "name": "Pending L1 Approval",
+    "workflow_state_name": "Pending L1 Approval",
+    "style": "Warning"
+  },
+  {
+    "doctype": "Workflow State",
+    "name": "Pending L2 Approval",
+    "workflow_state_name": "Pending L2 Approval",
+    "style": "Warning"
+  },
+  {
+    "doctype": "Workflow State",
+    "name": "Pending L3 Approval",
+    "workflow_state_name": "Pending L3 Approval",
+    "style": "Warning"
+  },
+  {
+    "doctype": "Workflow State",
+    "name": "Partially Approved",
+    "workflow_state_name": "Partially Approved",
+    "style": "Warning"
+  },
+  {
+    "doctype": "Workflow State",
+    "name": "Generated",
+    "workflow_state_name": "Generated",
+    "style": "Info"
+  },
+  {
+    "doctype": "Workflow State",
+    "name": "Printed",
+    "workflow_state_name": "Printed",
+    "style": "Success"
+  },
+  {
+    "doctype": "Workflow State",
+    "name": "Issued",
+    "workflow_state_name": "Issued",
+    "style": "Info"
+  },
+  {
+    "doctype": "Workflow State",
+    "name": "Partially Paid",
+    "workflow_state_name": "Partially Paid",
+    "style": "Warning"
+  }
+]
+

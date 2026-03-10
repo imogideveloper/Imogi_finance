@@ -1,0 +1,4 @@
+# System dependencies for PyMuPDF
+# These are installed via apt on Frappe Cloud
+libmupdf-dev
+mupdf-tools

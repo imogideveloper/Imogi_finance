@@ -1,0 +1,62 @@
+[
+  {
+    "doctype": "Property Setter",
+    "name": "Purchase Invoice-advances-allow_on_submit",
+    "doc_type": "Purchase Invoice",
+    "field_name": "advances",
+    "property": "allow_on_submit",
+    "property_type": "Check",
+    "value": "1",
+    "doctype_or_field": "DocField"
+  },
+  {
+    "doctype": "Property Setter",
+    "name": "Sales Invoice-advances-allow_on_submit",
+    "doc_type": "Sales Invoice",
+    "field_name": "advances",
+    "property": "allow_on_submit",
+    "property_type": "Check",
+    "value": "1",
+    "doctype_or_field": "DocField"
+  },
+  {
+    "doctype": "Property Setter",
+    "name": "Expense Claim-advances-allow_on_submit",
+    "doc_type": "Expense Claim",
+    "field_name": "advances",
+    "property": "allow_on_submit",
+    "property_type": "Check",
+    "value": "1",
+    "doctype_or_field": "DocField"
+  },
+  {
+    "doctype": "Property Setter",
+    "name": "Transfer Application-workflow_state-allow_on_submit",
+    "doc_type": "Transfer Application",
+    "field_name": "workflow_state",
+    "property": "allow_on_submit",
+    "property_type": "Check",
+    "value": "1",
+    "doctype_or_field": "DocField"
+  },
+  {
+    "doctype": "Property Setter",
+    "name": "Payment Entry-paid_amount-in_list_view",
+    "doc_type": "Payment Entry",
+    "field_name": "paid_amount",
+    "property": "in_list_view",
+    "property_type": "Check",
+    "value": "1",
+    "doctype_or_field": "DocField"
+  },
+  {
+    "doctype": "Property Setter",
+    "name": "Payment Entry-received_amount-in_list_view",
+    "doc_type": "Payment Entry",
+    "field_name": "received_amount",
+    "property": "in_list_view",
+    "property_type": "Check",
+    "value": "1",
+    "doctype_or_field": "DocField"
+  }
+]

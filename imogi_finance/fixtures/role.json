@@ -1,0 +1,45 @@
+[
+  {
+    "doctype": "Role",
+    "name": "Receipt Maker",
+    "role_name": "Receipt Maker",
+    "desk_access": 1
+  },
+  {
+    "doctype": "Role",
+    "name": "Receipt Approver",
+    "role_name": "Receipt Approver",
+    "desk_access": 1
+  },
+  {
+    "doctype": "Role",
+    "name": "Receipt Auditor",
+    "role_name": "Receipt Auditor",
+    "desk_access": 1
+  },
+  {
+    "doctype": "Role",
+    "name": "Budget Controller",
+    "role_name": "Budget Controller",
+    "desk_access": 1
+  },
+  {
+    "doctype": "Role",
+    "name": "Tax Reviewer",
+    "role_name": "Tax Reviewer",
+    "desk_access": 1
+  },
+  {
+    "doctype": "Role",
+    "name": "Expense Request Submitter",
+    "role_name": "Expense Request Submitter",
+    "desk_access": 1
+  },
+  {
+    "doctype": "Role",
+    "name": "Finance Controller",
+    "role_name": "Finance Controller",
+    "desk_access": 1,
+    "is_custom": 0
+  }
+]

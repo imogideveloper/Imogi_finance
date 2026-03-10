@@ -1,0 +1,68 @@
+[
+  {
+    "doctype": "Workspace",
+    "name": "Asset Management",
+    "title": "Asset Management",
+    "label": "Asset Management",
+    "parent_workspace": "FINANCE IMOGI",
+    "type": "Workspace",
+    "icon": "building",
+    "module": "Imogi Finance",
+    "public": 1,
+    "sequence": 2,
+    "is_hidden": 0,
+    "hide_custom": 0,
+    "content_type": "Blocks",
+    "content": "[{\"id\": \"hdr_master\", \"type\": \"header\", \"data\": {\"text\": \"Asset Master\", \"col\": 12}}, {\"id\": \"s_asset\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Asset\", \"col\": 3}}, {\"id\": \"s_assetcat\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Asset Category\", \"col\": 3}}, {\"id\": \"spacer_depr\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_depr\", \"type\": \"header\", \"data\": {\"text\": \"Depreciation\", \"col\": 12}}, {\"id\": \"s_deprsched\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Asset Depreciation Schedule\", \"col\": 3}}, {\"id\": \"s_assetval\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Asset Value Adjustment\", \"col\": 3}}, {\"id\": \"spacer_maint\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_maint\", \"type\": \"header\", \"data\": {\"text\": \"Asset Maintenance\", \"col\": 12}}, {\"id\": \"s_repair\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Asset Repair\", \"col\": 3}}, {\"id\": \"s_transfer\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Asset Movement\", \"col\": 3}}, {\"id\": \"spacer_config\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_config\", \"type\": \"header\", \"data\": {\"text\": \"Configuration\", \"col\": 12}}, {\"id\": \"s_costctr\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Cost Center\", \"col\": 3}}, {\"id\": \"s_dept\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Department\", \"col\": 3}}]",
+    "shortcuts": [
+      {
+        "label": "Asset",
+        "link_to": "Asset",
+        "type": "DocType"
+      },
+      {
+        "label": "Asset Category",
+        "link_to": "Asset Category",
+        "type": "DocType"
+      },
+
+
+      {
+        "label": "Asset Depreciation Schedule",
+        "link_to": "Asset Depreciation Schedule",
+        "type": "DocType"
+      },
+      {
+        "label": "Asset Value Adjustment",
+        "link_to": "Asset Value Adjustment",
+        "type": "DocType"
+      },
+      {
+        "label": "Asset Repair",
+        "link_to": "Asset Repair",
+        "type": "DocType"
+      },
+      {
+        "label": "Asset Movement",
+        "link_to": "Asset Movement",
+        "type": "DocType"
+      },
+      {
+        "label": "Cost Center",
+        "link_to": "Cost Center",
+        "type": "DocType"
+      },
+      {
+        "label": "Department",
+        "link_to": "Department",
+        "type": "DocType"
+      }
+    ],
+    "cards": [],
+    "custom_blocks": [],
+    "links": [],
+    "charts": [],
+    "quick_lists": [],
+    "number_cards": []
+  }
+]

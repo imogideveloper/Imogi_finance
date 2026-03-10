@@ -1,0 +1,131 @@
+[
+  {
+    "doctype": "Workspace",
+    "name": "Tax & Compliance",
+    "title": "Tax & Compliance",
+    "label": "Tax & Compliance",
+    "parent_workspace": "FINANCE IMOGI",
+    "type": "Workspace",
+    "icon": "file-invoice-dollar",
+    "module": "Imogi Finance",
+    "public": 1,
+    "sequence": 4,
+    "is_hidden": 0,
+    "hide_custom": 0,
+    "content_type": "Blocks",
+    "content": "[{\"id\": \"hdr_config\", \"type\": \"header\", \"data\": {\"text\": \"Tax Configuration\", \"col\": 12}}, {\"id\": \"s_itt\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Item Tax Template\", \"col\": 3}}, {\"id\": \"s_tt\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Sales Taxes and Charges Template\", \"col\": 3}}, {\"id\": \"s_ptt\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Purchase Taxes and Charges Template\", \"col\": 3}}, {\"id\": \"s_tc\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tax Category\", \"col\": 3}}, {\"id\": \"s_twc\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tax Withholding Category\", \"col\": 3}}, {\"id\": \"spacer_profile\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_profile\", \"type\": \"header\", \"data\": {\"text\": \"Tax Management\", \"col\": 12}}, {\"id\": \"s_tp\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tax Profile\", \"col\": 3}}, {\"id\": \"s_tpc\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tax Period Closing\", \"col\": 3}}, {\"id\": \"s_tpb\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tax Payment Batch\", \"col\": 3}}, {\"id\": \"spacer_ocr\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_ocr\", \"type\": \"header\", \"data\": {\"text\": \"Tax Invoice OCR\", \"col\": 12}}, {\"id\": \"s_tiocrs\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tax Invoice OCR Settings\", \"col\": 3}}, {\"id\": \"s_tit\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tax Invoice Type\", \"col\": 3}}, {\"id\": \"s_tiocru\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tax Invoice OCR Upload\", \"col\": 3}}, {\"id\": \"s_tiocr\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tax Invoice OCR Monitoring\", \"col\": 3}}, {\"id\": \"s_tiu\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tax Invoice Upload\", \"col\": 3}}, {\"id\": \"s_vob\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"VAT OUT Batch\", \"col\": 3}}, {\"id\": \"spacer_export\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_export\", \"type\": \"header\", \"data\": {\"text\": \"Export & Compliance\", \"col\": 12}}, {\"id\": \"s_ctexs\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"CoreTax Export Settings\", \"col\": 3}}, {\"id\": \"spacer_reg\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_reg\", \"type\": \"header\", \"data\": {\"text\": \"Tax Registers\", \"col\": 12}}, {\"id\": \"s_vir\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"VAT Input Register Verified\", \"col\": 3}}, {\"id\": \"s_vor\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"VAT Output Register Verified\", \"col\": 3}}, {\"id\": \"s_wr\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Withholding Register\", \"col\": 3}}, {\"id\": \"s_pb1r\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"PB1 Register\", \"col\": 3}}, {\"id\": \"s_bcs\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"BPJS Contribution Summary\", \"col\": 3}}, {\"id\": \"s_vobr\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"VAT OUT Batch Register\", \"col\": 3}}]",
+    "shortcuts": [
+      {
+        "label": "Item Tax Template",
+        "link_to": "Item Tax Template",
+        "type": "DocType"
+      },
+      {
+        "label": "Sales Taxes and Charges Template",
+        "link_to": "Sales Taxes and Charges Template",
+        "type": "DocType"
+      },
+      {
+        "label": "Purchase Taxes and Charges Template",
+        "link_to": "Purchase Taxes and Charges Template",
+        "type": "DocType"
+      },
+      {
+        "label": "Tax Category",
+        "link_to": "Tax Category",
+        "type": "DocType"
+      },
+      {
+        "label": "Tax Withholding Category",
+        "link_to": "Tax Withholding Category",
+        "type": "DocType"
+      },
+      {
+        "label": "Tax Profile",
+        "link_to": "Tax Profile",
+        "type": "DocType"
+      },
+      {
+        "label": "Tax Period Closing",
+        "link_to": "Tax Period Closing",
+        "type": "DocType"
+      },
+      {
+        "label": "Tax Payment Batch",
+        "link_to": "Tax Payment Batch",
+        "type": "DocType"
+      },
+      {
+        "label": "Tax Invoice OCR Settings",
+        "link_to": "Tax Invoice OCR Settings",
+        "type": "DocType"
+      },
+      {
+        "label": "Tax Invoice Type",
+        "link_to": "Tax Invoice Type",
+        "type": "DocType"
+      },
+      {
+        "label": "Tax Invoice OCR Upload",
+        "link_to": "Tax Invoice OCR Upload",
+        "type": "DocType"
+      },
+      {
+        "label": "Tax Invoice OCR Monitoring",
+        "link_to": "Tax Invoice OCR Monitoring",
+        "type": "DocType"
+      },
+      {
+        "label": "Tax Invoice Upload",
+        "link_to": "Tax Invoice Upload",
+        "type": "DocType"
+      },
+      {
+        "label": "VAT OUT Batch",
+        "link_to": "VAT OUT Batch",
+        "type": "DocType"
+      },
+      {
+        "label": "CoreTax Export Settings",
+        "link_to": "CoreTax Export Settings",
+        "type": "DocType"
+      },
+      {
+        "label": "VAT Input Register Verified",
+        "link_to": "VAT Input Register Verified",
+        "type": "Report"
+      },
+      {
+        "label": "VAT Output Register Verified",
+        "link_to": "VAT Output Register Verified",
+        "type": "Report"
+      },
+      {
+        "label": "Withholding Register",
+        "link_to": "Withholding Register",
+        "type": "Report"
+      },
+      {
+        "label": "PB1 Register",
+        "link_to": "PB1 Register",
+        "type": "Report"
+      },
+      {
+        "label": "BPJS Contribution Summary",
+        "link_to": "BPJS Contribution Summary",
+        "type": "Report"
+      },
+      {
+        "label": "VAT OUT Batch Register",
+        "link_to": "VAT OUT Batch Register",
+        "type": "Report"
+      }
+    ],
+    "cards": [],
+    "custom_blocks": [],
+    "links": [],
+    "charts": [],
+    "quick_lists": [],
+    "number_cards": []
+  }
+]

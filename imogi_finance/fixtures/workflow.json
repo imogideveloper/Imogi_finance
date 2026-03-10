@@ -1,0 +1,255 @@
+[
+	{
+		"actions": [
+			{"action": "Submit", "allowed": "All"},
+			{"action": "Approve", "allowed": "All"},
+			{"action": "Reject", "allowed": "All"}
+		],
+		"docstatus": 0,
+		"doctype": "Workflow",
+		"document_type": "Internal Charge Request",
+		"is_active": 1,
+		"module": "Imogi Finance",
+		"name": "Internal Charge Request Workflow",
+		"workflow_name": "Internal Charge Request Workflow",
+		"notes": "Internal Charge Request workflow for multi-cost center budget allocation. Approval enforcement happens per-line in InternalChargeRequest.before_workflow_action based on the dynamically resolved route per target cost center. Each line can have different approval levels based on its target cost center's Expense Approval Setting.",
+		"override_status": 1,
+		"states": [
+			{"state": "Draft", "doc_status": "0", "allow_edit": "All"},
+			{"state": "Pending L1 Approval", "doc_status": "1", "allow_edit": "Expense Approver"},
+			{"state": "Pending L2 Approval", "doc_status": "1", "allow_edit": "Expense Approver"},
+			{"state": "Pending L3 Approval", "doc_status": "1", "allow_edit": "Expense Approver"},
+			{"state": "Pending Approval", "doc_status": "1", "allow_edit": "Expense Approver"},
+			{"state": "Partially Approved", "doc_status": "1", "allow_edit": "Expense Approver"},
+			{"state": "Approved", "doc_status": "1", "allow_edit": "Expense Approver"},
+			{"state": "Rejected", "doc_status": "1", "allow_edit": "Expense Approver"}
+		],
+		"transitions": [
+			{"action": "Submit", "allow_self_approval": 0, "allowed": "All", "state": "Draft", "next_state": "Pending Approval"},
+			{"action": "Approve", "allowed": "All", "state": "Pending Approval", "next_state": "Approved"},
+			{"action": "Approve", "allowed": "All", "state": "Pending L1 Approval", "next_state": "Approved"},
+			{"action": "Approve", "allowed": "All", "state": "Pending L2 Approval", "next_state": "Approved"},
+			{"action": "Approve", "allowed": "All", "state": "Pending L3 Approval", "next_state": "Approved"},
+			{"action": "Approve", "allowed": "All", "state": "Partially Approved", "next_state": "Approved"},
+			{"action": "Reject", "allowed": "All", "state": "Pending Approval", "next_state": "Rejected"},
+			{"action": "Reject", "allowed": "All", "state": "Pending L1 Approval", "next_state": "Rejected"},
+			{"action": "Reject", "allowed": "All", "state": "Pending L2 Approval", "next_state": "Rejected"},
+			{"action": "Reject", "allowed": "All", "state": "Pending L3 Approval", "next_state": "Rejected"},
+			{"action": "Reject", "allowed": "All", "state": "Partially Approved", "next_state": "Rejected"}
+		],
+		"workflow_state_field": "workflow_state"
+	},
+	{
+		"actions": [
+			{"action": "Submit", "allowed": "All"},
+			{"action": "Approve", "allowed": "All"},
+			{"action": "Reject", "allowed": "All"},
+			{"action": "Reopen", "allowed": "System Manager"}
+		],
+		"docstatus": 0,
+		"doctype": "Workflow",
+		"document_type": "Expense Request",
+		"is_active": 1,
+		"module": "Imogi Finance",
+		"name": "Expense Request Workflow",
+		"workflow_name": "Expense Request Workflow",
+		"notes": "Roles are intentionally broad; approval enforcement happens in ExpenseRequest.before_workflow_action based on the dynamically resolved route. Purchase Invoice creation is now done via the 'Create Purchase Invoice' button on the form (not a workflow action). Status 'Paid' is set automatically by Payment Entry on_submit hook. Auto-approve without approver is NOT allowed - Python enforces approval route configuration.",
+		"override_status": 1,
+		"states": [
+			{"state": "Draft", "doc_status": "0", "allow_edit": "All"},
+			{"state": "Pending Review", "doc_status": "1", "allow_edit": "Expense Approver"},
+			{"state": "Approved", "doc_status": "1", "allow_edit": "Expense Approver"},
+			{"state": "Rejected", "doc_status": "1", "allow_edit": "System Manager"},
+			{"state": "PI Created", "doc_status": "1", "allow_edit": "Expense Approver"},
+			{"state": "Paid", "doc_status": "1", "allow_edit": "Expense Approver"}
+		],
+		"transitions": [
+			{"action": "Submit", "allow_self_approval": 0, "allowed": "All", "state": "Draft", "next_state": "Pending Review"},
+			{"action": "Approve", "allowed": "All", "state": "Pending Review", "next_state": "Approved"},
+			{"action": "Reject", "allowed": "All", "state": "Pending Review", "next_state": "Rejected"},
+			{"action": "Reopen", "allowed": "System Manager", "state": "Rejected", "next_state": "Pending Review"}
+		],
+		"workflow_state_field": "workflow_state"
+	},
+	{
+		"actions": [
+			{"action": "Submit", "allowed": "All"},
+			{"action": "Approve", "allowed": "All"},
+			{"action": "Reject", "allowed": "All"}
+		],
+		"docstatus": 0,
+		"doctype": "Workflow",
+		"document_type": "Additional Budget Request",
+		"is_active": 1,
+		"module": "Imogi Finance",
+		"name": "Additional Budget Request Workflow",
+		"workflow_name": "Additional Budget Request Workflow",
+		"notes": "Multi-level approval workflow for additional budget requests. Approval levels are determined by Budget Approval Setting per cost center. No amount validation - only hierarchical approval levels.",
+		"override_status": 1,
+		"states": [
+			{"state": "Draft", "doc_status": "0", "allow_edit": "All"},
+			{"state": "Pending Approval", "doc_status": "1", "allow_edit": "All"},
+			{"state": "Approved", "doc_status": "1", "allow_edit": "All"},
+			{"state": "Rejected", "doc_status": "1", "allow_edit": "All"}
+		],
+		"transitions": [
+			{"action": "Submit", "allow_self_approval": 0, "allowed": "All", "state": "Draft", "next_state": "Pending Approval"},
+			{"action": "Approve", "allowed": "All", "state": "Pending Approval", "next_state": "Approved"},
+			{"action": "Reject", "allowed": "All", "state": "Pending Approval", "next_state": "Rejected"}
+		],
+		"workflow_state_field": "workflow_state"
+	},
+	{
+		"actions": [
+			{"action": "Submit", "allowed": "All"},
+			{"action": "Approve", "allowed": "All"},
+			{"action": "Reject", "allowed": "All"}
+		],
+		"docstatus": 0,
+		"doctype": "Workflow",
+		"document_type": "Budget Reclass Request",
+		"is_active": 1,
+		"module": "Imogi Finance",
+		"name": "Budget Reclass Request Workflow",
+		"workflow_name": "Budget Reclass Request Workflow",
+		"notes": "Multi-level approval workflow for budget reclass requests. Approval levels are determined by Budget Approval Setting per cost center. No amount validation - only hierarchical approval levels.",
+		"override_status": 1,
+		"states": [
+			{"state": "Draft", "doc_status": "0", "allow_edit": "All"},
+			{"state": "Pending Approval", "doc_status": "1", "allow_edit": "All"},
+			{"state": "Approved", "doc_status": "1", "allow_edit": "All"},
+			{"state": "Rejected", "doc_status": "1", "allow_edit": "All"}
+		],
+		"transitions": [
+			{"action": "Submit", "allow_self_approval": 1, "allowed": "All", "state": "Draft", "next_state": "Pending Approval"},
+			{"action": "Approve", "allowed": "All", "state": "Pending Approval", "next_state": "Approved"},
+			{"action": "Reject", "allowed": "All", "state": "Pending Approval", "next_state": "Rejected"}
+		],
+		"workflow_state_field": "workflow_state"
+	},
+	{
+		"actions": [
+			{"action": "Submit for Approval", "allowed": "All"},
+			{"action": "Approve", "allowed": "Accounts Manager"},
+			{"action": "Reject", "allowed": "Accounts Manager"},
+			{"action": "Post", "allowed": "Accounts Manager"}
+		],
+		"docstatus": 0,
+		"doctype": "Workflow",
+		"document_type": "Administrative Payment Voucher",
+		"is_active": 1,
+		"module": "Imogi Finance",
+		"name": "Administrative Payment Voucher Workflow",
+		"workflow_name": "Administrative Payment Voucher Workflow",
+		"notes": "Administrative Payment Voucher workflow: Draft → Pending Approval → Approved → Posted. Only creator can submit for approval. Only Accounts Manager can approve or post. Posting creates Payment Entry automatically. Cancellation must be done via standard Cancel button (not workflow action). Validation and attachment policies are enforced in Python before_workflow_action hooks.",
+		"override_status": 1,
+		"states": [
+			{"state": "Draft", "doc_status": "0", "allow_edit": "All"},
+			{"state": "Pending Approval", "doc_status": "0", "allow_edit": "Accounts Manager"},
+			{"state": "Approved", "doc_status": "0", "allow_edit": "Accounts Manager"},
+			{"state": "Posted", "doc_status": "1", "allow_edit": "Accounts Manager"},
+			{"state": "Rejected", "doc_status": "0", "allow_edit": "All"},
+			{"state": "Cancelled", "doc_status": "2", "allow_edit": "Accounts Manager"}
+		],
+		"transitions": [
+			{"action": "Submit for Approval", "allow_self_approval": 1, "allowed": "All", "state": "Draft", "next_state": "Pending Approval"},
+			{"action": "Approve", "allowed": "Accounts Manager", "state": "Pending Approval", "next_state": "Approved"},
+			{"action": "Reject", "allowed": "Accounts Manager", "state": "Pending Approval", "next_state": "Rejected"},
+			{"action": "Post", "allowed": "Accounts Manager", "state": "Approved", "next_state": "Posted"}
+		],
+		"workflow_state_field": "workflow_state"
+	},
+	{
+		"actions": [
+			{"action": "Generate", "allowed": "All"},
+			{"action": "Regenerate", "allowed": "All"},
+			{"action": "Approve", "allowed": "All"},
+			{"action": "Reject", "allowed": "All"},
+			{"action": "Print & Lock", "allowed": "All"}
+		],
+		"docstatus": 0,
+		"doctype": "Workflow",
+		"document_type": "Cash Bank Daily Report",
+		"is_active": 1,
+		"module": "Imogi Finance",
+		"name": "Cash Bank Daily Report Workflow",
+		"workflow_name": "Cash Bank Daily Report Workflow",
+		"notes": "Cash Bank Daily Report workflow with dynamic approver validation. Approver is determined by Finance Control Settings (daily_report_approver field or per-account rules in daily_report_signer_rules). Validation enforced in Python before_workflow_action hook. Generated state allows regenerating snapshot. Print & Lock submits the document (docstatus=1), making it immutable. Supports multiple reprints with tracking.",
+		"override_status": 1,
+		"states": [
+			{"state": "Draft", "doc_status": "0", "allow_edit": "All"},
+			{"state": "Generated", "doc_status": "0", "allow_edit": "All"},
+			{"state": "Approved", "doc_status": "0", "allow_edit": "All"},
+			{"state": "Printed", "doc_status": "1", "allow_edit": "System Manager"},
+			{"state": "Cancelled", "doc_status": "2", "allow_edit": "System Manager"}
+		],
+		"transitions": [
+			{"action": "Generate", "allow_self_approval": 1, "allowed": "All", "state": "Draft", "next_state": "Generated"},
+			{"action": "Regenerate", "allow_self_approval": 1, "allowed": "All", "state": "Generated", "next_state": "Generated"},
+			{"action": "Approve", "allow_self_approval": 0, "allowed": "All", "state": "Generated", "next_state": "Approved"},
+			{"action": "Reject", "allow_self_approval": 1, "allowed": "All", "state": "Generated", "next_state": "Draft"},
+			{"action": "Print & Lock", "allow_self_approval": 1, "allowed": "All", "state": "Approved", "next_state": "Printed"}
+		],
+		"workflow_state_field": "workflow_state"
+	},
+	{
+		"actions": [
+			{"action": "Issue", "allowed": "All"}
+		],
+		"docstatus": 0,
+		"doctype": "Workflow",
+		"document_type": "Customer Receipt",
+		"is_active": 1,
+		"module": "Imogi Finance",
+		"name": "Customer Receipt Workflow",
+		"workflow_name": "Customer Receipt Workflow",
+		"notes": "Customer Receipt workflow: Draft → Issued → Partially Paid → Paid. Issue action submits the receipt (docstatus=1), making items immutable. Payment status is automatically updated by Payment Entry hooks. Cancellation must be done via standard Cancel button (validates no linked Payment Entry). Created/Issued/Paid timestamps are tracked automatically.",
+		"override_status": 1,
+		"states": [
+			{"state": "Draft", "doc_status": "0", "allow_edit": "All"},
+			{"state": "Issued", "doc_status": "1", "allow_edit": "Accounts Manager"},
+			{"state": "Partially Paid", "doc_status": "1", "allow_edit": "Accounts Manager"},
+			{"state": "Paid", "doc_status": "1", "allow_edit": "Accounts Manager"},
+			{"state": "Cancelled", "doc_status": "2", "allow_edit": "Accounts Manager"}
+		],
+		"transitions": [
+			{"action": "Issue", "allow_self_approval": 1, "allowed": "All", "state": "Draft", "next_state": "Issued"}
+		],
+		"workflow_state_field": "workflow_state"
+	},
+	{
+		"actions": [
+			{"action": "Submit for Finance Review", "allowed": "All"},
+			{"action": "Approve for Transfer", "allowed": "Finance Controller"},
+			{"action": "Reject", "allowed": "Finance Controller"},
+			{"action": "Confirm Bank Transfer", "allowed": "Finance Controller"},
+			{"action": "Mark as Paid", "allowed": "Finance Controller"}
+		],
+		"docstatus": 0,
+		"doctype": "Workflow",
+		"document_type": "Transfer Application",
+		"is_active": 1,
+		"module": "Imogi Finance",
+		"name": "Transfer Application Workflow",
+		"workflow_name": "Transfer Application Workflow",
+		"notes": "Transfer Application workflow: Draft → Finance Review → Approved for Transfer → Awaiting Bank Confirmation → Paid. Submit for Finance Review submits the document (docstatus=1). Approval requires Finance Controller role assigned to the branch. Export Excel functionality available after approval. Payment Entry creation available via 'Create Payment Entry' button. Cancellation must be done via standard Cancel button (validates no linked Payment Entry).",
+		"override_status": 1,
+		"states": [
+			{"state": "Draft", "doc_status": "0", "allow_edit": "All"},
+			{"state": "Finance Review", "doc_status": "1", "allow_edit": "Finance Controller"},
+			{"state": "Approved for Transfer", "doc_status": "1", "allow_edit": "Finance Controller"},
+			{"state": "Awaiting Bank Confirmation", "doc_status": "1", "allow_edit": "Finance Controller"},
+			{"state": "Paid", "doc_status": "1", "allow_edit": "Finance Controller"},
+			{"state": "Rejected", "doc_status": "1", "allow_edit": "Finance Controller"},
+			{"state": "Cancelled", "doc_status": "2", "allow_edit": "Finance Controller"}
+		],
+		"transitions": [
+			{"action": "Submit for Finance Review", "allow_self_approval": 0, "allowed": "All", "state": "Draft", "next_state": "Finance Review"},
+			{"action": "Approve for Transfer", "allow_self_approval": 0, "allowed": "Finance Controller", "state": "Finance Review", "next_state": "Approved for Transfer"},
+			{"action": "Reject", "allow_self_approval": 0, "allowed": "Finance Controller", "state": "Finance Review", "next_state": "Rejected"},
+			{"action": "Confirm Bank Transfer", "allow_self_approval": 1, "allowed": "Finance Controller", "state": "Approved for Transfer", "next_state": "Awaiting Bank Confirmation"},
+			{"action": "Mark as Paid", "allow_self_approval": 1, "allowed": "Finance Controller", "state": "Awaiting Bank Confirmation", "next_state": "Paid"}
+		],
+		"workflow_state_field": "workflow_state"
+	}
+]

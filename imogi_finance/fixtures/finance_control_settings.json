@@ -1,0 +1,77 @@
+[
+  {
+    "doctype": "Finance Control Settings",
+    "name": "Finance Control Settings",
+    "enable_customer_receipt": 1,
+    "receipt_mode": "Optional",
+    "allow_mixed_payment": 0,
+    "enable_digital_stamp": 1,
+    "digital_stamp_policy": "Immediate",
+    "digital_stamp_threshold_amount": 0,
+    "materai_minimum_amount": 6000,
+    "allow_physical_stamp_fallback": 1,
+    "enable_multi_branch": 0,
+    "inherit_branch_from_cost_center": 1,
+    "enforce_branch": 0,
+    "enforce_cost_center": 1,
+    "posting_requires_accounts_manager": 0,
+    "allow_target_bank_cash": 1,
+    "require_attachment_for_reasons": 0,
+    "gl_account_mappings": [
+      {
+        "purpose": "digital_stamp_expense",
+        "account_type": "Expense Account",
+        "account_parent": "",
+        "is_required": 1,
+        "description": "Default GL account for posting digital stamp/materai costs",
+        "account": "Biaya Materai Digital",
+        "company": ""
+      },
+      {
+        "purpose": "digital_stamp_payment",
+        "account_type": "Cash",
+        "account_parent": "",
+        "is_required": 1,
+        "description": "Default GL account for digital stamp payment source (cash)",
+        "account": "Kas",
+        "company": ""
+      },
+      {
+        "purpose": "default_paid_from",
+        "account_type": "Cash",
+        "account_parent": "",
+        "is_required": 1,
+        "description": "Default GL account for transfer application source (paid from)",
+        "account": "Kas",
+        "company": ""
+      },
+      {
+        "purpose": "default_prepaid",
+        "account_type": "Expense Account",
+        "account_parent": "",
+        "is_required": 1,
+        "description": "Default GL account for deferred expense prepaid/advance",
+        "account": "Beban Dibayar Dimuka",
+        "company": ""
+      },
+      {
+        "purpose": "dpp_variance",
+        "account_type": "Expense Account",
+        "account_parent": "",
+        "is_required": 1,
+        "description": "GL account for posting discrepancies between OCR-extracted and manually-entered taxable amount (DPP)",
+        "account": "Selisih DPP",
+        "company": ""
+      },
+      {
+        "purpose": "ppn_variance",
+        "account_type": "Tax",
+        "account_parent": "",
+        "is_required": 1,
+        "description": "GL account for posting discrepancies between OCR-extracted and manually-entered tax amount (PPN)",
+        "account": "Selisih PPN",
+        "company": ""
+      }
+    ]
+  }
+]

@@ -1,0 +1,12 @@
+# Copyright (c) 2026, PT. Inovasi Terbaik Bangsa and contributors
+# For license information, please see license.txt
+
+from __future__ import annotations
+
+from frappe.model.document import Document
+
+
+class BankStatementBankList(Document):
+    """Stores bank-specific CSV parsing configuration."""
+
+    pass

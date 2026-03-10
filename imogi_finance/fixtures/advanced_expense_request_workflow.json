@@ -1,0 +1,125 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "Workflow",
+  "document_type": "Advanced Expense Request",
+  "is_active": 1,
+  "module": "Imogi Finance",
+  "name": "Advanced Expense Request Workflow",
+  "workflow_name": "Advanced Expense Request Workflow",
+  "notes": "Identical to Expense Request Workflow. Roles are intentionally broad; approval enforcement happens in AdvancedExpenseRequest.before_workflow_action based on the dynamically resolved route (keyed by approval_cost_center). Purchase Invoice creation is done via the 'Create Purchase Invoice' button on the form. Status 'Paid' is set automatically by Payment Entry on_submit hook.",
+  "override_status": 1,
+  "send_email_alert": 0,
+  "workflow_state_field": "workflow_state",
+  "states": [
+   {
+    "allow_edit": "All",
+    "doc_status": "0",
+    "is_optional_state": 0,
+    "next_action_email_template": null,
+    "state": "Draft",
+    "update_field": null,
+    "update_value": null
+   },
+   {
+    "allow_edit": "Expense Approver",
+    "doc_status": "1",
+    "is_optional_state": 0,
+    "next_action_email_template": null,
+    "state": "Pending Review",
+    "update_field": null,
+    "update_value": null
+   },
+   {
+    "allow_edit": "Expense Approver",
+    "doc_status": "1",
+    "is_optional_state": 0,
+    "next_action_email_template": null,
+    "state": "Approved",
+    "update_field": null,
+    "update_value": null
+   },
+   {
+    "allow_edit": "System Manager",
+    "doc_status": "1",
+    "is_optional_state": 0,
+    "next_action_email_template": null,
+    "state": "Rejected",
+    "update_field": null,
+    "update_value": null
+   },
+   {
+    "allow_edit": "Expense Approver",
+    "doc_status": "1",
+    "is_optional_state": 0,
+    "next_action_email_template": null,
+    "state": "PI Created",
+    "update_field": null,
+    "update_value": null
+   },
+   {
+    "allow_edit": "Expense Approver",
+    "doc_status": "1",
+    "is_optional_state": 0,
+    "next_action_email_template": null,
+    "state": "Paid",
+    "update_field": null,
+    "update_value": null
+   }
+  ],
+  "transitions": [
+   {
+    "action": "Submit",
+    "allow_self_approval": 0,
+    "allowed": "All",
+    "condition": "",
+    "next_state": "Pending Review",
+    "state": "Draft"
+   },
+   {
+    "action": "Reopen",
+    "allow_self_approval": 1,
+    "allowed": "System Manager",
+    "condition": "",
+    "next_state": "Pending Review",
+    "state": "Rejected"
+   }
+  ]
+ },
+ {
+  "doctype": "Workflow State",
+  "name": "Draft",
+  "workflow_state_name": "Draft",
+  "style": ""
+ },
+ {
+  "doctype": "Workflow State",
+  "name": "Pending Review",
+  "workflow_state_name": "Pending Review",
+  "style": "Warning"
+ },
+ {
+  "doctype": "Workflow State",
+  "name": "Approved",
+  "workflow_state_name": "Approved",
+  "style": "Success"
+ },
+ {
+  "doctype": "Workflow State",
+  "name": "Rejected",
+  "workflow_state_name": "Rejected",
+  "style": "Danger"
+ },
+ {
+  "doctype": "Workflow State",
+  "name": "PI Created",
+  "workflow_state_name": "PI Created",
+  "style": "Primary"
+ },
+ {
+  "doctype": "Workflow State",
+  "name": "Paid",
+  "workflow_state_name": "Paid",
+  "style": "Success"
+ }
+]
