@@ -1,0 +1,1024 @@
+[
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [
+   {
+    "default": null,
+    "fieldname": "company",
+    "fieldtype": "Link",
+    "label": "Company",
+    "mandatory": 0,
+    "options": "Company",
+    "parent": "PB1 Register",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "branch",
+    "fieldtype": "Link",
+    "label": "Branch",
+    "mandatory": 0,
+    "options": "Branch",
+    "parent": "PB1 Register",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "from_date",
+    "fieldtype": "Date",
+    "label": "From Date",
+    "mandatory": 0,
+    "options": null,
+    "parent": "PB1 Register",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "to_date",
+    "fieldtype": "Date",
+    "label": "To Date",
+    "mandatory": 0,
+    "options": null,
+    "parent": "PB1 Register",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "pb1_account",
+    "fieldtype": "Link",
+    "label": "PB1 Account",
+    "mandatory": 0,
+    "options": "Account",
+    "parent": "PB1 Register",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   }
+  ],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2026-03-10 17:37:45.645261",
+  "module": "Imogi Finance",
+  "name": "PB1 Register",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "GL Entry",
+  "reference_report": null,
+  "report_name": "PB1 Register",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "PB1 Register",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
+   },
+   {
+    "parent": "PB1 Register",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   },
+   {
+    "parent": "PB1 Register",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Tax Reviewer"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [
+   {
+    "default": null,
+    "fieldname": "company",
+    "fieldtype": "Link",
+    "label": "Company",
+    "mandatory": 1,
+    "options": "Company",
+    "parent": "Withholding Register",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "from_date",
+    "fieldtype": "Date",
+    "label": "From Date",
+    "mandatory": 0,
+    "options": null,
+    "parent": "Withholding Register",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "to_date",
+    "fieldtype": "Date",
+    "label": "To Date",
+    "mandatory": 0,
+    "options": null,
+    "parent": "Withholding Register",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "accounts",
+    "fieldtype": "Link",
+    "label": "Filter by Account",
+    "mandatory": 0,
+    "options": "Account",
+    "parent": "Withholding Register",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "party",
+    "fieldtype": "Link",
+    "label": "Party",
+    "mandatory": 0,
+    "options": "Supplier",
+    "parent": "Withholding Register",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "voucher_type",
+    "fieldtype": "Select",
+    "label": "Voucher Type",
+    "mandatory": 0,
+    "options": "\nPurchase Invoice\nPayment Entry\nJournal Entry\nExpense Claim",
+    "parent": "Withholding Register",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   }
+  ],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": "{}",
+  "letter_head": null,
+  "modified": "2026-02-13 00:00:00",
+  "module": "Imogi Finance",
+  "name": "Withholding Register",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "GL Entry",
+  "reference_report": null,
+  "report_name": "Withholding Register",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Withholding Register",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
+   },
+   {
+    "parent": "Withholding Register",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   },
+   {
+    "parent": "Withholding Register",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Tax Reviewer"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [
+   {
+    "default": null,
+    "fieldname": "from_date",
+    "fieldtype": "Date",
+    "label": "From Date",
+    "mandatory": 0,
+    "options": null,
+    "parent": "Deferred Expense Tracker",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "to_date",
+    "fieldtype": "Date",
+    "label": "To Date",
+    "mandatory": 0,
+    "options": null,
+    "parent": "Deferred Expense Tracker",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "prepaid_account",
+    "fieldtype": "Link",
+    "label": "Prepaid Account",
+    "mandatory": 0,
+    "options": "Account",
+    "parent": "Deferred Expense Tracker",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "expense_account",
+    "fieldtype": "Link",
+    "label": "Expense Account",
+    "mandatory": 0,
+    "options": "Account",
+    "parent": "Deferred Expense Tracker",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": "0",
+    "fieldname": "show_breakdown",
+    "fieldtype": "Check",
+    "label": "Show Monthly Breakdown",
+    "mandatory": 0,
+    "options": null,
+    "parent": "Deferred Expense Tracker",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   }
+  ],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2026-03-10 17:37:45.713443",
+  "module": "Imogi Finance",
+  "name": "Deferred Expense Tracker",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Expense Request",
+  "reference_report": null,
+  "report_name": "Deferred Expense Tracker",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Deferred Expense Tracker",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
+   },
+   {
+    "parent": "Deferred Expense Tracker",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   },
+   {
+    "parent": "Deferred Expense Tracker",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [
+   {
+    "default": null,
+    "fieldname": "company",
+    "fieldtype": "Link",
+    "label": "Company",
+    "mandatory": 0,
+    "options": "Company",
+    "parent": "BPJS Contribution Summary",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "from_date",
+    "fieldtype": "Date",
+    "label": "From Date",
+    "mandatory": 0,
+    "options": null,
+    "parent": "BPJS Contribution Summary",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "to_date",
+    "fieldtype": "Date",
+    "label": "To Date",
+    "mandatory": 0,
+    "options": null,
+    "parent": "BPJS Contribution Summary",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   }
+  ],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2026-03-10 17:37:45.752499",
+  "module": "Imogi Finance",
+  "name": "BPJS Contribution Summary",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Salary Slip",
+  "reference_report": null,
+  "report_name": "BPJS Contribution Summary",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "BPJS Contribution Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
+   },
+   {
+    "parent": "BPJS Contribution Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   },
+   {
+    "parent": "BPJS Contribution Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Tax Reviewer"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [
+   {
+    "default": null,
+    "fieldname": "company",
+    "fieldtype": "Link",
+    "label": "Company",
+    "mandatory": 1,
+    "options": "Company",
+    "parent": "VAT Input Register Verified",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "from_date",
+    "fieldtype": "Date",
+    "label": "From Date",
+    "mandatory": 0,
+    "options": null,
+    "parent": "VAT Input Register Verified",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "to_date",
+    "fieldtype": "Date",
+    "label": "To Date",
+    "mandatory": 0,
+    "options": null,
+    "parent": "VAT Input Register Verified",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "supplier",
+    "fieldtype": "Link",
+    "label": "Supplier",
+    "mandatory": 0,
+    "options": "Supplier",
+    "parent": "VAT Input Register Verified",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "verification_status",
+    "fieldtype": "Select",
+    "label": "Verification Status",
+    "mandatory": 0,
+    "options": "\nVerified\nNeeds Review\nRejected",
+    "parent": "VAT Input Register Verified",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   }
+  ],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": "{}",
+  "letter_head": "",
+  "modified": "2026-02-13 00:00:00",
+  "module": "Imogi Finance",
+  "name": "VAT Input Register Verified",
+  "prepared_report": 0,
+  "query": "",
+  "ref_doctype": "Purchase Invoice",
+  "reference_report": null,
+  "report_name": "VAT Input Register Verified",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "VAT Input Register Verified",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
+   },
+   {
+    "parent": "VAT Input Register Verified",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   },
+   {
+    "parent": "VAT Input Register Verified",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   },
+   {
+    "parent": "VAT Input Register Verified",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Tax Reviewer"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": "",
+  "modified": "2024-01-01 00:00:00",
+  "module": "Imogi Finance",
+  "name": "Digital Stamp Expense Report",
+  "prepared_report": 0,
+  "query": "",
+  "ref_doctype": "Customer Receipt",
+  "reference_report": null,
+  "report_name": "Digital Stamp Expense Report",
+  "report_script": null,
+  "report_type": "Query Report",
+  "roles": [
+   {
+    "parent": "Digital Stamp Expense Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
+   },
+   {
+    "parent": "Digital Stamp Expense Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Receipt Maker"
+   },
+   {
+    "parent": "Digital Stamp Expense Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Receipt Approver"
+   },
+   {
+    "parent": "Digital Stamp Expense Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Receipt Auditor"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [
+   {
+    "default": null,
+    "fieldname": "company",
+    "fieldtype": "Link",
+    "label": "Company",
+    "mandatory": 1,
+    "options": "Company",
+    "parent": "VAT Output Register Verified",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "from_date",
+    "fieldtype": "Date",
+    "label": "From Date",
+    "mandatory": 0,
+    "options": null,
+    "parent": "VAT Output Register Verified",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "to_date",
+    "fieldtype": "Date",
+    "label": "To Date",
+    "mandatory": 0,
+    "options": null,
+    "parent": "VAT Output Register Verified",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "customer",
+    "fieldtype": "Link",
+    "label": "Customer",
+    "mandatory": 0,
+    "options": "Customer",
+    "parent": "VAT Output Register Verified",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "verification_status",
+    "fieldtype": "Select",
+    "label": "Verification Status",
+    "mandatory": 0,
+    "options": "\nVerified\nNeeds Review\nRejected",
+    "parent": "VAT Output Register Verified",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   }
+  ],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": "{}",
+  "letter_head": "",
+  "modified": "2026-02-13 00:00:00",
+  "module": "Imogi Finance",
+  "name": "VAT Output Register Verified",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Sales Invoice",
+  "reference_report": null,
+  "report_name": "VAT Output Register Verified",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "VAT Output Register Verified",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   },
+   {
+    "parent": "VAT Output Register Verified",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   },
+   {
+    "parent": "VAT Output Register Verified",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": "",
+  "modified": "2024-01-01 00:00:00",
+  "module": "Imogi Finance",
+  "name": "Customer Receipt Control Report",
+  "prepared_report": 0,
+  "query": "",
+  "ref_doctype": "Customer Receipt",
+  "reference_report": null,
+  "report_name": "Customer Receipt Control Report",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Customer Receipt Control Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
+   },
+   {
+    "parent": "Customer Receipt Control Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Receipt Maker"
+   },
+   {
+    "parent": "Customer Receipt Control Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Receipt Approver"
+   },
+   {
+    "parent": "Customer Receipt Control Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Receipt Auditor"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [
+   {
+    "default": null,
+    "fieldname": "company",
+    "fieldtype": "Link",
+    "label": "Company",
+    "mandatory": 0,
+    "options": "Company",
+    "parent": "Budget Control Dashboard",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "fiscal_year",
+    "fieldtype": "Link",
+    "label": "Fiscal Year",
+    "mandatory": 0,
+    "options": "Fiscal Year",
+    "parent": "Budget Control Dashboard",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "cost_center",
+    "fieldtype": "Link",
+    "label": "Cost Center",
+    "mandatory": 0,
+    "options": "Cost Center",
+    "parent": "Budget Control Dashboard",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "department",
+    "fieldtype": "Link",
+    "label": "Department",
+    "mandatory": 0,
+    "options": "Department",
+    "parent": "Budget Control Dashboard",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   }
+  ],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2026-02-23 10:00:00",
+  "module": "Imogi Finance",
+  "name": "Budget Control Dashboard",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Budget",
+  "reference_report": null,
+  "report_name": "Budget Control Dashboard",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Budget Control Dashboard",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   },
+   {
+    "parent": "Budget Control Dashboard",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Budget Controller"
+   },
+   {
+    "parent": "Budget Control Dashboard",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Expense Approver"
+   },
+   {
+    "parent": "Budget Control Dashboard",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [
+   {
+    "default": null,
+    "fieldname": "from_date",
+    "fieldtype": "Date",
+    "label": "From Date",
+    "mandatory": 0,
+    "options": null,
+    "parent": "Outstanding Approvals Dashboard",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "to_date",
+    "fieldtype": "Date",
+    "label": "To Date",
+    "mandatory": 0,
+    "options": null,
+    "parent": "Outstanding Approvals Dashboard",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "doctype",
+    "fieldtype": "MultiSelectList",
+    "label": "Document Type",
+    "mandatory": 0,
+    "options": null,
+    "parent": "Outstanding Approvals Dashboard",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "approval_level",
+    "fieldtype": "Select",
+    "label": "Approval Level",
+    "mandatory": 0,
+    "options": "\n1\n2\n3",
+    "parent": "Outstanding Approvals Dashboard",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "cost_center",
+    "fieldtype": "Link",
+    "label": "Cost Center",
+    "mandatory": 0,
+    "options": "Cost Center",
+    "parent": "Outstanding Approvals Dashboard",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "default": null,
+    "fieldname": "branch",
+    "fieldtype": "Link",
+    "label": "Branch",
+    "mandatory": 0,
+    "options": "Branch",
+    "parent": "Outstanding Approvals Dashboard",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   }
+  ],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2026-01-17 10:00:00",
+  "module": "Imogi Finance",
+  "name": "Outstanding Approvals Dashboard",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Expense Request",
+  "reference_report": null,
+  "report_name": "Outstanding Approvals Dashboard",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Outstanding Approvals Dashboard",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
+   },
+   {
+    "parent": "Outstanding Approvals Dashboard",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   },
+   {
+    "parent": "Outstanding Approvals Dashboard",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   },
+   {
+    "parent": "Outstanding Approvals Dashboard",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Finance Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": "{}",
+  "letter_head": null,
+  "modified": "2026-01-24 10:00:00",
+  "module": "Imogi Finance",
+  "name": "Advance Payment Dashboard",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Payment Ledger Entry",
+  "reference_report": null,
+  "report_name": "Advance Payment Dashboard",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Advance Payment Dashboard",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   },
+   {
+    "parent": "Advance Payment Dashboard",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": "{}",
+  "letter_head": null,
+  "modified": "2026-02-01 10:00:00",
+  "module": "Imogi Finance",
+  "name": "VAT OUT Batch Register",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "VAT OUT Batch",
+  "reference_report": null,
+  "report_name": "VAT OUT Batch Register",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "VAT OUT Batch Register",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   },
+   {
+    "parent": "VAT OUT Batch Register",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   }
+  ],
+  "timeout": 0
+ }
+]

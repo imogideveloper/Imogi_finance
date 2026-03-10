@@ -151,9 +151,9 @@ fixtures = [
             ]
         },
     },
-    {"doctype": "Letter Template", "filters": {"module": "Imogi Finance"}},
+    {"doctype": "Letter Template"},
     {"doctype": "Letter Template Settings", "filters": {"name": ["=", "Letter Template Settings"]}},
-    {"doctype": "Tax Invoice Type", "filters": {"module": "Imogi Finance"}},
+    {"doctype": "Tax Invoice Type"},
     {"doctype": "Workspace", "filters": {"module": "Imogi Finance"}},
     {"doctype": "Report", "filters": {"module": "Imogi Finance"}},
     {"doctype": "Client Script", "filters": {"dt": ["in", ["Purchase Invoice", "Payment Entry", "Finance Control Settings"]]}},
@@ -167,18 +167,6 @@ fixtures = [
     {"doctype": "Finance Control Settings"},
     {"doctype": "Transfer Application Settings"},
     # Workspace fixture files
-    "fixtures/workspace.json",
-    "fixtures/workspace_finance.json",
-    "fixtures/workspace_asset.json",
-    "fixtures/workspace_budget.json",
-    "fixtures/workspace_tax.json",
-    "fixtures/workspace_treasury.json",
-    "fixtures/workspace_accounting.json",
-    "fixtures/item.json",
-    "fixtures/finance_control_settings.json",
-    "fixtures/transfer_application_settings.json",
-    "fixtures/property_setter.json",
-    "fixtures/advanced_expense_request_workflow.json",
 ]
 
 # Uninstallation

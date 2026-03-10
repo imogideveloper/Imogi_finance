@@ -1,9 +1,11 @@
 [
-  {
-    "doctype": "Letter Template Settings",
-    "name": "Letter Template Settings",
-    "enable_payment_letter": 1,
-    "default_template": "Payment Letter Default",
-    "inherit_bank_from_branch": 1
-  }
+ {
+  "default_template": "Payment Letter Default",
+  "docstatus": 0,
+  "doctype": "Letter Template Settings",
+  "enable_payment_letter": 1,
+  "inherit_bank_from_branch": 1,
+  "modified": "2026-03-10 17:37:47.502199",
+  "name": "Letter Template Settings"
+ }
 ]
