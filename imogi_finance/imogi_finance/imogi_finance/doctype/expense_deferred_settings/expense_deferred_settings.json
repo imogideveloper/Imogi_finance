@@ -1,0 +1,51 @@
+{
+  "actions": [],
+  "allow_rename": 0,
+  "creation": "",
+  "docstatus": 0,
+  "doctype": "DocType",
+  "editable_grid": 0,
+  "engine": "InnoDB",
+  "field_order": [
+    "enable_deferred_expense",
+    "deferrable_accounts"
+  ],
+  "fields": [
+    {
+      "default": "1",
+      "fieldname": "enable_deferred_expense",
+      "fieldtype": "Check",
+      "label": "Enable Deferred Expense"
+    },
+    {
+      "fieldname": "deferrable_accounts",
+      "fieldtype": "Table",
+      "label": "Deferrable Accounts",
+      "options": "Deferrable Account"
+    }
+  ],
+  "index_web_pages_for_search": 1,
+  "is_submittable": 0,
+  "issingle": 1,
+  "istable": 0,
+  "links": [],
+  "module": "Imogi Finance",
+  "name": "Expense Deferred Settings",
+  "naming_rule": "By fieldname",
+  "permissions": [
+    {
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "role": "System Manager",
+      "share": 1,
+      "write": 1
+    }
+  ],
+  "quick_entry": 0,
+  "track_changes": 1,
+  "description": "Global configuration for deferred expense functionality. Define default accounts and amortization rules for prepaid expenses."
+}

@@ -1,0 +1,44 @@
+{
+  "doctype": "DocType",
+  "name": "Deferrable Account",
+  "module": "Imogi Finance",
+  "custom": 0,
+  "istable": 1,
+  "track_changes": 1,
+  "field_order": [
+    "prepaid_account",
+    "expense_account",
+    "default_periods",
+    "is_active"
+  ],
+  "fields": [
+    {
+      "fieldname": "prepaid_account",
+      "label": "Prepaid Account",
+      "fieldtype": "Link",
+      "options": "Account",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "expense_account",
+      "label": "Expense Account",
+      "fieldtype": "Link",
+      "options": "Account",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "default_periods",
+      "label": "Default Periods",
+      "fieldtype": "Int"
+    },
+    {
+      "fieldname": "is_active",
+      "label": "Is Active",
+      "fieldtype": "Check",
+      "default": "1",
+      "in_list_view": 1
+    }
+  ]
+}

@@ -1,0 +1,303 @@
+{
+  "actions": [],
+  "allow_rename": 0,
+  "autoname": "format:{target_doctype}-{target_name}",
+  "creation": "2024-01-01 00:00:00.000000",
+  "default_view": "Form",
+  "doctype": "DocType",
+  "editable_grid": 0,
+  "engine": "InnoDB",
+  "field_order": [
+    "target_doctype",
+    "target_name",
+    "upload_name",
+    "section_document",
+    "ocr_status",
+    "verification_status",
+    "verification_notes",
+    "ocr_confidence",
+    "fp_no",
+    "fp_date",
+    "npwp",
+    "dpp",
+    "ppn",
+    "ppnbm",
+    "ppn_type",
+    "duplicate_flag",
+    "npwp_match",
+    "tax_invoice_pdf",
+    "ocr_raw_json_present",
+    "ocr_raw_json",
+    "section_job",
+    "job_name",
+    "job_queue",
+    "job_status",
+    "job_exc_info",
+    "job_kwargs",
+    "enqueued_at",
+    "started_at",
+    "ended_at",
+    "section_provider",
+    "provider",
+    "max_retry"
+  ],
+  "fields": [
+    {
+      "fieldname": "target_doctype",
+      "fieldtype": "Select",
+      "in_list_view": 1,
+      "label": "Target DocType",
+      "options": "Purchase Invoice\nExpense Request\nSales Invoice\nTax Invoice OCR Upload",
+      "reqd": 1
+    },
+    {
+      "fieldname": "target_name",
+      "fieldtype": "Dynamic Link",
+      "in_list_view": 1,
+      "label": "Target Name",
+      "options": "target_doctype",
+      "reqd": 1
+    },
+    {
+      "fieldname": "upload_name",
+      "fieldtype": "Link",
+      "label": "Tax Invoice OCR Upload",
+      "options": "Tax Invoice OCR Upload",
+      "read_only": 1
+    },
+    {
+      "fieldname": "section_document",
+      "fieldtype": "Section Break",
+      "label": "Document Status"
+    },
+    {
+      "fieldname": "ocr_status",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "label": "OCR Status",
+      "read_only": 1
+    },
+    {
+      "fieldname": "verification_status",
+      "fieldtype": "Data",
+      "label": "Tax Invoice Verification Status",
+      "read_only": 1
+    },
+    {
+      "fieldname": "verification_notes",
+      "fieldtype": "Small Text",
+      "label": "Tax Invoice Verification Notes",
+      "read_only": 1
+    },
+    {
+      "fieldname": "ocr_confidence",
+      "fieldtype": "Float",
+      "label": "OCR Confidence",
+      "read_only": 1
+    },
+    {
+      "fieldname": "fp_no",
+      "fieldtype": "Data",
+      "label": "Tax Invoice Number",
+      "read_only": 1
+    },
+    {
+      "fieldname": "npwp",
+      "fieldtype": "Data",
+      "label": "NPWP",
+      "read_only": 1
+    },
+    {
+      "fieldname": "fp_date",
+      "fieldtype": "Date",
+      "label": "Tax Invoice Date",
+      "read_only": 1
+    },
+    {
+      "fieldname": "dpp",
+      "fieldtype": "Currency",
+      "label": "DPP",
+      "read_only": 1
+    },
+    {
+      "fieldname": "ppn",
+      "fieldtype": "Currency",
+      "label": "PPN",
+      "read_only": 1
+    },
+    {
+      "fieldname": "ppnbm",
+      "fieldtype": "Currency",
+      "label": "PPNBM",
+      "read_only": 1
+    },
+    {
+      "fieldname": "ppn_type",
+      "fieldtype": "Data",
+      "label": "PPN Type",
+      "read_only": 1
+    },
+    {
+      "default": "0",
+      "fieldname": "duplicate_flag",
+      "fieldtype": "Check",
+      "label": "Duplicate Tax Invoice",
+      "read_only": 1
+    },
+    {
+      "default": "0",
+      "fieldname": "npwp_match",
+      "fieldtype": "Check",
+      "label": "NPWP Match",
+      "read_only": 1
+    },
+    {
+      "fieldname": "tax_invoice_pdf",
+      "fieldtype": "Data",
+      "label": "Tax Invoice PDF",
+      "read_only": 1
+    },
+    {
+      "default": "0",
+      "fieldname": "ocr_raw_json_present",
+      "fieldtype": "Check",
+      "label": "OCR Raw JSON Saved",
+      "read_only": 1
+    },
+    {
+      "fieldname": "ocr_raw_json",
+      "fieldtype": "Code",
+      "label": "OCR Raw JSON",
+      "options": "JSON",
+      "read_only": 1
+    },
+    {
+      "fieldname": "section_job",
+      "fieldtype": "Section Break",
+      "label": "Background Job"
+    },
+    {
+      "fieldname": "job_name",
+      "fieldtype": "Data",
+      "label": "Job Name",
+      "read_only": 1
+    },
+    {
+      "fieldname": "job_queue",
+      "fieldtype": "Data",
+      "label": "Queue",
+      "read_only": 1
+    },
+    {
+      "fieldname": "job_status",
+      "fieldtype": "Data",
+      "label": "Job Status",
+      "read_only": 1
+    },
+    {
+      "fieldname": "job_exc_info",
+      "fieldtype": "Small Text",
+      "label": "Job Error",
+      "read_only": 1
+    },
+    {
+      "fieldname": "job_kwargs",
+      "fieldtype": "Code",
+      "label": "Job Arguments",
+      "options": "JSON",
+      "read_only": 1
+    },
+    {
+      "fieldname": "enqueued_at",
+      "fieldtype": "Datetime",
+      "label": "Enqueued At",
+      "read_only": 1
+    },
+    {
+      "fieldname": "started_at",
+      "fieldtype": "Datetime",
+      "label": "Started At",
+      "read_only": 1
+    },
+    {
+      "fieldname": "ended_at",
+      "fieldtype": "Datetime",
+      "label": "Ended At",
+      "read_only": 1
+    },
+    {
+      "fieldname": "section_provider",
+      "fieldtype": "Section Break",
+      "label": "Provider Settings"
+    },
+    {
+      "fieldname": "provider",
+      "fieldtype": "Data",
+      "label": "OCR Provider",
+      "read_only": 1
+    },
+    {
+      "fieldname": "max_retry",
+      "fieldtype": "Int",
+      "label": "OCR Max Retry",
+      "read_only": 1
+    }
+  ],
+  "hide_toolbar": 0,
+  "idx": 0,
+  "index_web_pages_for_search": 1,
+  "issingle": 0,
+  "links": [],
+  "modified": "2024-01-01 00:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Imogi Finance",
+  "name": "Tax Invoice OCR Monitoring",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "Accounts User",
+      "share": 1,
+      "write": 1
+    },
+    {
+      "cancel": 1,
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "Accounts Manager",
+      "share": 1,
+      "submit": 1,
+      "write": 1
+    },
+    {
+      "cancel": 1,
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "System Manager",
+      "share": 1,
+      "submit": 1,
+      "write": 1
+    }
+  ],
+  "quick_entry": 0,
+  "show_name_in_global_search": 1,
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "track_changes": 1
+}

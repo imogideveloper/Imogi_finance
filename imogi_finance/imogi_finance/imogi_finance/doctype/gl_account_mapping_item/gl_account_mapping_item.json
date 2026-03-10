@@ -1,0 +1,85 @@
+{
+  "actions": [],
+  "allow_rename": 0,
+  "creation": "2026-02-17 00:00:00.000000",
+  "doctype": "DocType",
+  "editable_grid": 1,
+  "engine": "InnoDB",
+  "field_order": [
+    "purpose",
+    "account_type",
+    "account_parent",
+    "account",
+    "company",
+    "is_required",
+    "description"
+  ],
+  "fields": [
+    {
+      "fieldname": "purpose",
+      "fieldtype": "Select",
+      "in_list_view": 1,
+      "label": "Purpose",
+      "reqd": 1,
+      "options": "digital_stamp_expense\ndigital_stamp_payment\ndefault_paid_from\ndefault_prepaid\ndpp_variance\nppn_variance",
+      "description": "Purpose/reason for this GL account mapping:\n\n• digital_stamp_expense: GL account to post digital stamp/materai costs\n• digital_stamp_payment: GL account where stamp payment comes from (cash/bank)\n• default_paid_from: Default account for bank transfer source (paid from account)\n• default_prepaid: Default prepaid/advance account for deferred expense amortization\n• dpp_variance: GL account to post discrepancies between OCR-extracted and manually-entered taxable amount (DPP)\n• ppn_variance: GL account to post discrepancies between OCR-extracted and manually-entered tax amount (PPN)"
+    },
+    {
+      "fieldname": "account_type",
+      "fieldtype": "Select",
+      "in_list_view": 0,
+      "label": "Account Type",
+      "options": "\nAccumulated Depreciation\nAsset Received But Not Billed\nBank\nCash\nChargeable\nCapital Work in Progress\nCost of Goods Sold\nDepreciation\nEquity\nExpense Account\nExpenses Included In Asset Valuation\nExpenses Included In Valuation\nFixed Asset\nIncome Account\nPayable\nReceivable\nRound Off\nStock\nStock Adjustment\nStock Received But Not Billed\nTax\nTemporary",
+      "description": "Filter GL account by account type. Leave empty to allow all account types. Used as an additional filter when selecting the GL Account."
+    },
+    {
+      "fieldname": "account_parent",
+      "fieldtype": "Link",
+      "in_list_view": 0,
+      "label": "Account Parent",
+      "options": "Account",
+      "description": "Restrict account selection to children of this parent account. Leave empty to allow all accounts regardless of parent."
+    },
+    {
+      "fieldname": "account",
+      "fieldtype": "Link",
+      "in_list_view": 1,
+      "label": "GL Account",
+      "options": "Account",
+      "reqd": 1,
+      "description": "The Chart of Accounts (GL) account to use for this purpose. Must be a valid account code from your company's chart of accounts. This account will be used automatically by various system processes based on the purpose."
+    },
+    {
+      "fieldname": "company",
+      "fieldtype": "Link",
+      "label": "Company",
+      "options": "Company",
+      "description": "Leave empty for global default (applies to all companies). For multi-company setups, specify a company to use this mapping only for that company. Company-specific mappings take precedence over global defaults."
+    },
+    {
+      "default": "0",
+      "fieldname": "is_required",
+      "fieldtype": "Check",
+      "label": "Required",
+      "description": "If checked, system will throw a validation error if this account cannot be found or is not configured. Uncheck if this mapping is optional."
+    },
+    {
+      "fieldname": "description",
+      "fieldtype": "Small Text",
+      "label": "Description",
+      "description": "Internal notes about this mapping. Use this to document why this account was chosen or any special business rules for this mapping."
+    }
+  ],
+  "hide_toolbar": 0,
+  "index_web_pages_for_search": 0,
+  "istable": 1,
+  "links": [],
+  "modified": "2026-02-17 00:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Imogi Finance",
+  "name": "GL Account Mapping Item",
+  "owner": "Administrator",
+  "permissions": [],
+  "sort_field": "modified",
+  "sort_order": "DESC"
+}

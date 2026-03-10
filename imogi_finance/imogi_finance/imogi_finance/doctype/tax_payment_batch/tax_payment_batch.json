@@ -1,0 +1,259 @@
+{
+  "actions": [],
+  "allow_rename": 0,
+  "autoname": "format:TXPAY-{period_year}-{period_month}-{######}",
+  "creation": "2024-01-01 00:00:00.000000",
+  "doctype": "DocType",
+  "editable_grid": 0,
+  "engine": "InnoDB",
+  "field_order": [
+    "company",
+    "branch",
+    "tax_type",
+    "status",
+    "period_month",
+    "period_year",
+    "date_from",
+    "date_to",
+    "section_payment",
+    "source_closing",
+    "tax_profile",
+    "posting_date",
+    "payment_date",
+    "due_date",
+    "payable_account",
+    "payment_account",
+    "payment_mode",
+    "party_type",
+    "party",
+    "pph_type",
+    "amount",
+    "journal_entry",
+    "payment_entry",
+    "references_section",
+    "references",
+    "created_by_user",
+    "submit_on"
+  ],
+  "fields": [
+    {
+      "fieldname": "company",
+      "fieldtype": "Link",
+      "in_list_view": 1,
+      "label": "Company",
+      "options": "Company",
+      "reqd": 1
+    },
+    {
+      "description": "For PB1 multi-branch configuration. If specified, will use branch-specific PB1 account if configured.",
+      "fieldname": "branch",
+      "fieldtype": "Link",
+      "label": "Branch",
+      "options": "Branch"
+    },
+    {
+      "default": "PPN",
+      "fieldname": "tax_type",
+      "fieldtype": "Select",
+      "in_list_view": 1,
+      "label": "Tax Type",
+      "options": "PPN\nPPh\nPB1\nBPJS",
+      "reqd": 1
+    },
+    {
+      "default": "Draft",
+      "fieldname": "status",
+      "fieldtype": "Select",
+      "in_list_view": 1,
+      "label": "Status",
+      "options": "Draft\nPrepared\nPosted\nPaid\nCancelled",
+      "reqd": 1
+    },
+    {
+      "default": "1",
+      "fieldname": "period_month",
+      "fieldtype": "Select",
+      "label": "Period Month",
+      "options": "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12",
+      "reqd": 1
+    },
+    {
+      "default": "2024",
+      "fieldname": "period_year",
+      "fieldtype": "Int",
+      "label": "Period Year",
+      "reqd": 1
+    },
+    {
+      "fieldname": "date_from",
+      "fieldtype": "Date",
+      "label": "Date From",
+      "read_only": 1
+    },
+    {
+      "fieldname": "date_to",
+      "fieldtype": "Date",
+      "label": "Date To",
+      "read_only": 1
+    },
+    {
+      "collapsible": 1,
+      "collapsible_depends_on": "eval:doc.period_month && doc.period_year",
+      "fieldname": "section_payment",
+      "fieldtype": "Section Break",
+      "label": "Payment Details"
+    },
+    {
+      "fieldname": "source_closing",
+      "fieldtype": "Link",
+      "label": "Source Tax Period Closing",
+      "options": "Tax Period Closing"
+    },
+    {
+      "fieldname": "tax_profile",
+      "fieldtype": "Link",
+      "label": "Tax Profile",
+      "options": "Tax Profile"
+    },
+    {
+      "fieldname": "posting_date",
+      "fieldtype": "Date",
+      "label": "Payment Posting Date"
+    },
+    {
+      "fieldname": "payment_date",
+      "fieldtype": "Date",
+      "label": "Payment Date"
+    },
+    {
+      "fieldname": "due_date",
+      "fieldtype": "Date",
+      "label": "Due Date"
+    },
+    {
+      "fieldname": "payable_account",
+      "fieldtype": "Link",
+      "label": "Payable Account",
+      "options": "Account"
+    },
+    {
+      "fieldname": "payment_account",
+      "fieldtype": "Link",
+      "label": "Payment Account",
+      "options": "Account"
+    },
+    {
+      "fieldname": "payment_mode",
+      "fieldtype": "Link",
+      "label": "Mode of Payment",
+      "options": "Mode of Payment"
+    },
+    {
+      "fieldname": "party_type",
+      "fieldtype": "Link",
+      "label": "Party Type",
+      "options": "DocType"
+    },
+    {
+      "fieldname": "party",
+      "fieldtype": "Dynamic Link",
+      "label": "Party",
+      "options": "party_type"
+    },
+    {
+      "depends_on": "eval:doc.tax_type==\"PPh\"",
+      "fieldname": "pph_type",
+      "fieldtype": "Link",
+      "label": "PPh Type",
+      "options": "Tax Withholding Category"
+    },
+    {
+      "fieldname": "amount",
+      "fieldtype": "Currency",
+      "label": "Amount"
+    },
+    {
+      "fieldname": "journal_entry",
+      "fieldtype": "Link",
+      "label": "Journal Entry",
+      "options": "Journal Entry",
+      "read_only": 1
+    },
+    {
+      "fieldname": "payment_entry",
+      "fieldtype": "Link",
+      "label": "Payment Entry",
+      "options": "Payment Entry",
+      "read_only": 1
+    },
+    {
+      "fieldname": "references_section",
+      "fieldtype": "Section Break",
+      "label": "References"
+    },
+    {
+      "fieldname": "references",
+      "fieldtype": "Table",
+      "label": "References",
+      "options": "Tax Payment Reference"
+    },
+    {
+      "fieldname": "created_by_user",
+      "fieldtype": "Link",
+      "label": "Created By",
+      "options": "User",
+      "read_only": 1,
+      "no_copy": 1
+    },
+    {
+      "fieldname": "submit_on",
+      "fieldtype": "Datetime",
+      "label": "Submit On",
+      "read_only": 1,
+      "no_copy": 1
+    }
+  ],
+  "index_web_pages_for_search": 1,
+  "is_submittable": 1,
+  "issingle": 0,
+  "links": [],
+  "modified": "2024-01-01 00:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Imogi Finance",
+  "name": "Tax Payment Batch",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "System Manager",
+      "share": 1,
+      "write": 1
+    },
+    {
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "Accounts Manager",
+      "share": 1,
+      "write": 1
+    },
+    {
+      "read": 1,
+      "report": 1,
+      "role": "Tax Reviewer",
+      "share": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC"
+}

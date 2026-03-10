@@ -1,0 +1,383 @@
+{
+  "actions": [],
+  "allow_rename": 0,
+  "autoname": "field:fp_no",
+  "creation": "2024-01-01 00:00:00.000000",
+  "default_view": "Form",
+  "doctype": "DocType",
+  "editable_grid": 0,
+  "engine": "InnoDB",
+  "field_order": [
+    "upload_section",
+    "tax_invoice_pdf",
+    "section_basic_info",
+    "fp_no",
+    "fp_date",
+    "column_break_basic",
+    "tax_invoice_type",
+    "tax_invoice_type_description",
+    "section_tax_details",
+    "npwp",
+    "ppn_type",
+    "tax_rate",
+    "column_break_tax",
+    "harga_jual",
+    "potongan_harga",
+    "dpp",
+    "ppn",
+    "ppnbm",
+    "dpp_nilai_lain_flag",
+    "nilai_lain_factor",
+    "nilai_lain_note",
+    "recommended_ppn_template",
+    "section_verification",
+    "verification_status",
+    "section_verification_notes",
+    "verification_notes",
+    "section_ocr_summary",
+    "ocr_summary_json",
+    "section_ocr",
+    "ocr_status",
+    "ocr_started_at",
+    "ocr_error_log",
+    "ocr_confidence",
+    "column_break_ocr",
+    "ocr_text",
+    "ocr_raw_json",
+    "parsing_debug_json",
+    "created_by_user",
+    "submit_on"
+  ],
+  "fields": [
+    {
+      "fieldname": "upload_section",
+      "fieldtype": "Section Break",
+      "label": "📄 Upload Faktur Pajak",
+      "description": "Upload file PDF faktur pajak untuk proses OCR otomatis"
+    },
+    {
+      "fieldname": "tax_invoice_pdf",
+      "fieldtype": "Attach",
+      "label": "File Faktur Pajak (PDF)",
+      "reqd": 1
+    },
+    {
+      "fieldname": "section_basic_info",
+      "fieldtype": "Section Break",
+      "label": "ℹ️ Informasi Dasar"
+    },
+    {
+      "fieldname": "fp_no",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "label": "Nomor Faktur Pajak",
+      "reqd": 1,
+      "unique": 1,
+      "bold": 1
+    },
+    {
+      "fieldname": "fp_date",
+      "fieldtype": "Date",
+      "label": "Tanggal Faktur Pajak"
+    },
+    {
+      "fieldname": "column_break_basic",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "tax_invoice_type",
+      "fieldtype": "Link",
+      "label": "Tipe Faktur Pajak",
+      "options": "Tax Invoice Type",
+      "read_only": 1
+    },
+    {
+      "fieldname": "tax_invoice_type_description",
+      "fieldtype": "Small Text",
+      "label": "Deskripsi Jenis Faktur",
+      "read_only": 1
+    },
+    {
+      "collapsible": 0,
+      "fieldname": "section_tax_details",
+      "fieldtype": "Section Break",
+      "label": "💰 Detail Pajak"
+    },
+    {
+      "fieldname": "npwp",
+      "fieldtype": "Data",
+      "label": "NPWP Supplier",
+      "description": "Nomor Pokok Wajib Pajak"
+    },
+    {
+      "fieldname": "company",
+      "fieldtype": "Link",
+      "label": "Company",
+      "options": "Company",
+      "description": "Opsional — digunakan untuk mencari PPN Template yang sesuai secara otomatis."
+    },
+    {
+      "fieldname": "ppn_type",
+      "fieldtype": "Select",
+      "label": "Tipe PPN",
+      "options": "\nStandard 11% (PPN 2022-2024)\nStandard 12% (PPN 2025+)\nZero Rated (Ekspor)\nPPN Tidak Dipungut (Fasilitas)\nPPN Dibebaskan (Fasilitas)\nBukan Objek PPN\nDigital 1.1% (PMSE)\nCustom/Other (Tarif Khusus)",
+      "reqd": 1,
+      "description": "Pilih jenis PPN sesuai faktur pajak. Required untuk validasi. Pilih 'Custom/Other' untuk tarif khusus."
+    },
+    {
+      "default": "0.11",
+      "fieldname": "tax_rate",
+      "fieldtype": "Float",
+      "label": "Tax Rate (PPN %)",
+      "description": "Tarif PPN untuk validasi (default 11%)",
+      "precision": 4
+    },
+    {
+      "fieldname": "column_break_tax",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "harga_jual",
+      "fieldtype": "Currency",
+      "label": "Harga Jual / Penggantian / Uang Muka / Termin",
+      "description": "Nilai Harga Jual dari Faktur Pajak"
+    },
+    {
+      "fieldname": "potongan_harga",
+      "fieldtype": "Currency",
+      "label": "Dikurangi Potongan Harga",
+      "description": "Nilai potongan harga / diskon dari Faktur Pajak"
+    },
+    {
+      "fieldname": "dpp",
+      "fieldtype": "Currency",
+      "label": "DPP (Dasar Pengenaan Pajak)",
+      "description": "Nilai sebelum pajak"
+    },
+    {
+      "fieldname": "ppn",
+      "fieldtype": "Currency",
+      "label": "PPN (Pajak Pertambahan Nilai)",
+      "bold": 1
+    },
+    {
+      "fieldname": "ppnbm",
+      "fieldtype": "Currency",
+      "label": "PPnBM (Pajak Penjualan Barang Mewah)"
+    },
+    {
+      "default": "0",
+      "fieldname": "dpp_nilai_lain_flag",
+      "fieldtype": "Check",
+      "label": "Nilai Lain Detected",
+      "read_only": 1,
+      "hidden": 1,
+      "description": "System-set flag: DPP calculation indicates Nilai Lain scenario"
+    },
+    {
+      "fieldname": "nilai_lain_factor",
+      "fieldtype": "Float",
+      "label": "Nilai Lain Factor",
+      "read_only": 1,
+      "hidden": 1,
+      "precision": 6,
+      "description": "Calculated factor if Nilai Lain detected (e.g., 0.9167 for 11/12)"
+    },
+    {
+      "fieldname": "nilai_lain_note",
+      "fieldtype": "Small Text",
+      "label": "Nilai Lain Note",
+      "read_only": 1,
+      "hidden": 1,
+      "description": "Note about Nilai Lain detection for audit trail"
+    },
+    {
+      "fieldname": "recommended_ppn_template",
+      "fieldtype": "Link",
+      "label": "Recommended PPN Template",
+      "options": "Purchase Taxes and Charges Template",
+      "read_only": 1,
+      "description": "Template PPN yang disarankan berdasarkan PPN Type dan tarif yang terdeteksi. Akan di-copy otomatis ke field PPN Template di Expense Request saat sync."
+    },
+    {
+      "collapsible": 0,
+      "fieldname": "section_verification",
+      "fieldtype": "Section Break",
+      "label": "✅ Status Verifikasi"
+    },
+    {
+      "default": "Needs Review",
+      "fieldname": "verification_status",
+      "fieldtype": "Select",
+      "label": "Status Verifikasi",
+      "options": "Needs Review\nVerified\nRejected",
+      "read_only": 1,
+      "bold": 1,
+      "description": "Auto-calculated: Verified jika nomor faktur valid dan data lengkap"
+    },
+    {
+      "fieldname": "section_verification_notes",
+      "fieldtype": "Section Break"
+    },
+    {
+      "fieldname": "verification_notes",
+      "fieldtype": "Small Text",
+      "label": "Catatan Verifikasi",
+      "read_only": 1,
+      "description": "Hasil validasi otomatis: nomor faktur, format, dan kelengkapan data"
+    },
+    {
+      "collapsible": 1,
+      "fieldname": "section_ocr_summary",
+      "fieldtype": "Section Break",
+      "label": "📋 OCR Summary (JSON)"
+    },
+    {
+      "fieldname": "ocr_summary_json",
+      "fieldtype": "Code",
+      "label": "OCR Parsed Summary (JSON)",
+      "options": "JSON",
+      "read_only": 1,
+      "description": "Structured JSON hasil parsing OCR: faktur_pajak info dan ringkasan_pajak"
+    },
+    {
+      "collapsible": 1,
+      "collapsible_depends_on": "1",
+      "fieldname": "section_ocr",
+      "fieldtype": "Section Break",
+      "label": "🤖 Hasil OCR (Optical Character Recognition)",
+      "description": "Data hasil ekstraksi otomatis dari PDF"
+    },
+    {
+      "default": "Not Started",
+      "fieldname": "ocr_status",
+      "fieldtype": "Select",
+      "in_list_view": 0,
+      "label": "Status OCR",
+      "options": "Not Started\nQueued\nProcessing\nDone\nFailed",
+      "read_only": 1
+    },
+    {
+      "fieldname": "ocr_started_at",
+      "fieldtype": "Datetime",
+      "label": "OCR Started At",
+      "read_only": 1,
+      "hidden": 1,
+      "description": "Timestamp when OCR processing started (for crash recovery)"
+    },
+    {
+      "fieldname": "ocr_error_log",
+      "fieldtype": "Small Text",
+      "label": "OCR Error Log",
+      "read_only": 1,
+      "description": "Technical errors during OCR processing (API failures, worker crashes, parsing errors)",
+      "depends_on": "eval:doc.ocr_status=='Failed'"
+    },
+    {
+      "fieldname": "ocr_confidence",
+      "fieldtype": "Float",
+      "label": "Confidence Level (%)",
+      "read_only": 1,
+      "description": "Tingkat kepercayaan hasil OCR"
+    },
+    {
+      "fieldname": "column_break_ocr",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "ocr_text",
+      "fieldtype": "Long Text",
+      "label": "OCR Text (Raw)",
+      "read_only": 1,
+      "description": "Hasil ekstraksi text mentah dari OCR"
+    },
+    {
+      "fieldname": "ocr_raw_json",
+      "fieldtype": "Code",
+      "label": "Vision API Response / OCR Raw Data (JSON)",
+      "options": "JSON",
+      "read_only": 1,
+      "description": "Complete Vision API response dengan text blocks dan coordinates untuk line items parsing"
+    },
+    {
+      "fieldname": "parsing_debug_json",
+      "fieldtype": "Code",
+      "label": "Parsing Debug Data (JSON)",
+      "options": "JSON",
+      "read_only": 1,
+      "description": "Token positions, column ranges, table boundaries untuk debugging"
+    },
+    {
+      "fieldname": "created_by_user",
+      "fieldtype": "Link",
+      "label": "Created By",
+      "options": "User",
+      "read_only": 1,
+      "no_copy": 1
+    },
+    {
+      "fieldname": "submit_on",
+      "fieldtype": "Datetime",
+      "label": "Submit On",
+      "read_only": 1,
+      "no_copy": 1
+    }
+  ],
+  "hide_toolbar": 0,
+  "idx": 0,
+  "index_web_pages_for_search": 1,
+  "issingle": 0,
+  "links": [],
+  "modified": "2024-01-01 00:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Imogi Finance",
+  "name": "Tax Invoice OCR Upload",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "Accounts User",
+      "share": 1,
+      "write": 1
+    },
+    {
+      "cancel": 1,
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "Accounts Manager",
+      "share": 1,
+      "submit": 1,
+      "write": 1
+    },
+    {
+      "cancel": 1,
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "System Manager",
+      "share": 1,
+      "submit": 1,
+      "write": 1
+    }
+  ],
+  "quick_entry": 0,
+  "show_name_in_global_search": 1,
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "track_changes": 1
+}
