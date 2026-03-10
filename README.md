@@ -186,8 +186,8 @@ frappe.call("imogi_finance.accounting.create_purchase_invoice_from_request", exp
 ### Credits
 
 - PT. Inovasi Terbaik Bangsa © 2026
-- Contributors: dannyaudian, abisena
-- Contact: m.abisena.putrawan@cao-group.co.id
+- Contributors: dannyaudian
+- Contact: danny.a.pratama@cao-group.co.id
 
 ### License
 
