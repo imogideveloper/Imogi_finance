@@ -1,0 +1,138 @@
+{
+  "actions": [],
+  "allow_rename": 0,
+  "autoname": "field:fp_prefix",
+  "creation": "2024-01-01 00:00:00.000000",
+  "doctype": "DocType",
+  "editable_grid": 0,
+  "engine": "InnoDB",
+  "field_order": [
+    "fp_prefix",
+    "transaction_code",
+    "transaction_description",
+    "status_code",
+    "status_description",
+    "is_replacement",
+    "section_break_ppn_mapping",
+    "expected_ppn_types",
+    "ppn_type_notes",
+    "section_break_info",
+    "usage_notes"
+  ],
+  "fields": [
+    {
+      "fieldname": "fp_prefix",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "label": "Tax Invoice Prefix (3 Digits)",
+      "reqd": 1,
+      "unique": 1
+    },
+    {
+      "fieldname": "transaction_code",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "label": "Transaction Code",
+      "reqd": 1
+    },
+    {
+      "fieldname": "transaction_description",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "label": "Transaction Description"
+    },
+    {
+      "fieldname": "status_code",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "label": "Status Code",
+      "reqd": 1
+    },
+    {
+      "fieldname": "status_description",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "label": "Status Description"
+    },
+    {
+      "default": 0,
+      "fieldname": "is_replacement",
+      "fieldtype": "Check",
+      "in_list_view": 1,
+      "label": "Replacement"
+    },
+    {
+      "collapsible": 1,
+      "fieldname": "section_break_ppn_mapping",
+      "fieldtype": "Section Break",
+      "label": "PPN Type Mapping"
+    },
+    {
+      "fieldname": "expected_ppn_types",
+      "fieldtype": "Small Text",
+      "label": "Expected PPN Types",
+      "description": "Jenis PPN yang biasanya digunakan untuk kode faktur ini (pisahkan dengan koma)"
+    },
+    {
+      "fieldname": "ppn_type_notes",
+      "fieldtype": "Text",
+      "label": "PPN Type Notes",
+      "description": "Catatan tentang penggunaan PPN Type untuk kode ini"
+    },
+    {
+      "collapsible": 1,
+      "fieldname": "section_break_info",
+      "fieldtype": "Section Break",
+      "label": "Additional Information"
+    },
+    {
+      "fieldname": "usage_notes",
+      "fieldtype": "Text",
+      "label": "Usage Notes",
+      "description": "Catatan penggunaan dan referensi peraturan"
+    }
+  ],
+  "index_web_pages_for_search": 1,
+  "is_submittable": 0,
+  "issingle": 0,
+  "links": [],
+  "modified": "2024-01-01 00:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Imogi Finance",
+  "name": "Tax Invoice Type",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "Accounts Manager",
+      "share": 1,
+      "write": 1
+    },
+    {
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "System Manager",
+      "share": 1,
+      "write": 1
+    },
+    {
+      "read": 1,
+      "report": 1,
+      "role": "Tax Reviewer",
+      "share": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC"
+}

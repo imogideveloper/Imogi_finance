@@ -1,0 +1,66 @@
+{
+  "add_total_row": 1,
+  "creation": "2024-01-01 00:00:00.000000",
+  "disable_prepared_report": 0,
+  "disabled": 0,
+  "doctype": "Report",
+  "filters": [
+    {
+      "fieldname": "company",
+      "fieldtype": "Link",
+      "label": "Company",
+      "mandatory": 1,
+      "options": "Company",
+      "reqd": 1
+    },
+    {
+      "fieldname": "from_date",
+      "fieldtype": "Date",
+      "label": "From Date"
+    },
+    {
+      "fieldname": "to_date",
+      "fieldtype": "Date",
+      "label": "To Date"
+    },
+    {
+      "fieldname": "accounts",
+      "fieldtype": "Link",
+      "label": "Filter by Account",
+      "options": "Account"
+    },
+    {
+      "fieldname": "party",
+      "fieldtype": "Link",
+      "label": "Party",
+      "options": "Supplier"
+    },
+    {
+      "fieldname": "voucher_type",
+      "fieldtype": "Select",
+      "label": "Voucher Type",
+      "options": "\nPurchase Invoice\nPayment Entry\nJournal Entry\nExpense Claim"
+    }
+  ],
+  "idx": 0,
+  "is_standard": "Yes",
+  "json": "{}",
+  "modified": "2026-02-13 00:00:00.000000",
+  "module": "Imogi Finance",
+  "name": "Withholding Register",
+  "prepared_report": 0,
+  "ref_doctype": "GL Entry",
+  "report_name": "Withholding Register",
+  "report_type": "Script Report",
+  "roles": [
+    {
+      "role": "System Manager"
+    },
+    {
+      "role": "Accounts Manager"
+    },
+    {
+      "role": "Tax Reviewer"
+    }
+  ]
+}

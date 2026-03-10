@@ -1,0 +1,79 @@
+{
+  "actions": [],
+  "allow_rename": 0,
+  "creation": "2024-01-01 00:00:00.000000",
+  "doctype": "DocType",
+  "editable_grid": 1,
+  "engine": "InnoDB",
+  "field_order": [
+    "action",
+    "timestamp",
+    "user",
+    "stamp_cost",
+    "payment_reference_doctype",
+    "payment_reference",
+    "provider_response"
+  ],
+  "fields": [
+    { 
+      "fieldname": "action", 
+      "fieldtype": "Data", 
+      "label": "Action", 
+      "in_list_view": 1,
+      "read_only": 1
+    },
+    { 
+      "fieldname": "timestamp", 
+      "fieldtype": "Datetime", 
+      "label": "Timestamp", 
+      "in_list_view": 1,
+      "read_only": 1
+    },
+    { 
+      "fieldname": "user", 
+      "fieldtype": "Data", 
+      "label": "User",
+      "read_only": 1
+    },
+    {
+      "default": "10000",
+      "fieldname": "stamp_cost",
+      "fieldtype": "Currency",
+      "label": "Stamp Cost",
+      "in_list_view": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "payment_reference_doctype",
+      "fieldtype": "Select",
+      "label": "Payment Reference Type",
+      "options": "\nPayment Entry\nJournal Entry",
+      "read_only": 1
+    },
+    {
+      "fieldname": "payment_reference",
+      "fieldtype": "Dynamic Link",
+      "label": "Payment Reference",
+      "options": "payment_reference_doctype",
+      "in_list_view": 1,
+      "read_only": 1
+    },
+    { 
+      "fieldname": "provider_response", 
+      "fieldtype": "Small Text", 
+      "label": "Provider Response",
+      "read_only": 1
+    }
+  ],
+  "idx": 0,
+  "istable": 1,
+  "links": [],
+  "modified": "2024-01-01 00:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Imogi Finance",
+  "name": "Customer Receipt Stamp Log",
+  "owner": "Administrator",
+  "permissions": [],
+  "quick_entry": 1,
+  "track_changes": 1
+}

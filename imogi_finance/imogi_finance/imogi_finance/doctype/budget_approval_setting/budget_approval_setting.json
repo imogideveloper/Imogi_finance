@@ -1,0 +1,123 @@
+{
+  "actions": [],
+  "allow_rename": 0,
+  "autoname": "format:BAS-{######}",
+  "creation": "",
+  "docstatus": 0,
+  "doctype": "DocType",
+  "editable_grid": 0,
+  "engine": "InnoDB",
+  "field_order": [
+    "basic_info_section",
+    "cost_center",
+    "column_break_basic",
+    "is_active",
+    "section_break_info",
+    "info_html",
+    "approval_lines_section",
+    "budget_approval_lines"
+  ],
+  "fields": [
+    {
+      "fieldname": "basic_info_section",
+      "fieldtype": "Section Break",
+      "label": "📋 Informasi Dasar"
+    },
+    {
+      "fieldname": "cost_center",
+      "fieldtype": "Link",
+      "label": "Cost Center",
+      "options": "Cost Center",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "description": "Pilih Cost Center yang akan menggunakan setting approval ini. Kosongkan untuk System Default."
+    },
+    {
+      "fieldname": "column_break_basic",
+      "fieldtype": "Column Break"
+    },
+    {
+      "default": "1",
+      "fieldname": "is_active",
+      "fieldtype": "Check",
+      "label": "Is Active",
+      "in_list_view": 1,
+      "bold": 1,
+      "description": "Hanya satu setting aktif per Cost Center"
+    },
+    {
+      "fieldname": "section_break_info",
+      "fieldtype": "Section Break",
+      "collapsible": 1,
+      "collapsible_depends_on": "eval:1",
+      "label": "ℹ️ Panduan Penggunaan"
+    },
+    {
+      "fieldname": "info_html",
+      "fieldtype": "HTML",
+      "options": "<div class=\"alert alert-info\" style=\"margin-bottom: 0;\">\n<h5>📖 Cara Kerja Approval Budget</h5>\n<ol style=\"margin-bottom: 10px;\">\n<li><strong>Cost Center Matching:</strong> Sistem mencari setting berdasarkan Cost Center dari request</li>\n<li><strong>Fallback Default:</strong> Jika tidak ada setting untuk Cost Center tertentu, gunakan System Default (Cost Center kosong)</li>\n<li><strong>Level Approval:</strong> Request akan melewati approval sesuai level yang didefinisikan (Level 1 → Level 2 → Level 3)</li>\n</ol>\n<h5>💡 Tips Setup</h5>\n<ul style=\"margin-bottom: 0;\">\n<li>Buat <strong>System Default</strong> dengan Cost Center kosong sebagai fallback untuk semua Cost Center</li>\n<li>Untuk Cost Center tertentu yang perlu approval khusus, buat setting terpisah</li>\n<li>Minimal isi Level 1, Level 2 dan 3 opsional tergantung kebutuhan</li>\n<li>Approval berjenjang: jika ada Level 2, maka Level 1 harus approve dulu, dst.</li>\n</ul>\n</div>"
+    },
+    {
+      "fieldname": "approval_lines_section",
+      "fieldtype": "Section Break",
+      "label": "✅ Approval Lines",
+      "description": "Definisikan level approval berjenjang untuk pengajuan budget"
+    },
+    {
+      "fieldname": "budget_approval_lines",
+      "fieldtype": "Table",
+      "label": "Daftar Approval Lines",
+      "options": "Budget Approval Line",
+      "reqd": 1,
+      "description": "Tambahkan minimal 1 line dengan Level 1 approver"
+    }
+  ],
+  "index_web_pages_for_search": 1,
+  "istable": 0,
+  "links": [
+    {
+      "link_doctype": "Additional Budget Request",
+      "link_fieldname": "approval_setting"
+    },
+    {
+      "link_doctype": "Budget Reclass Request",
+      "link_fieldname": "approval_setting"
+    }
+  ],
+  "module": "Imogi Finance",
+  "name": "Budget Approval Setting",
+  "naming_rule": "Expression",
+  "permissions": [
+    {
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "System Manager",
+      "share": 1,
+      "write": 1
+    },
+    {
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "Budget Controller",
+      "share": 1,
+      "write": 1
+    }
+  ],
+  "quick_entry": 0,
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "title_field": "cost_center",
+  "track_changes": 1
+}

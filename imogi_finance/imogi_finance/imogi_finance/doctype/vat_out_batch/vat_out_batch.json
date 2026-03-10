@@ -1,0 +1,209 @@
+{
+  "actions": [],
+  "allow_rename": 0,
+  "creation": "2026-02-13 00:00:00.000000",
+  "doctype": "DocType",
+  "editable_grid": 0,
+  "engine": "InnoDB",
+  "field_order": [
+    "section_basic",
+    "company",
+    "company_abbr",
+    "date_from",
+    "date_to",
+    "column_break_basic",
+    "template_version",
+    "status",
+    "section_export",
+    "coretax_upload_status",
+    "upload_notes",
+    "uploaded_on",
+    "column_break_export",
+    "coretax_export_file",
+    "reconciliation_file",
+    "exported_on",
+    "section_metadata",
+    "created_by_user",
+    "column_break_metadata",
+    "submit_on"
+  ],
+  "fields": [
+    {
+      "fieldname": "section_basic",
+      "fieldtype": "Section Break",
+      "label": "Basic Information"
+    },
+    {
+      "fieldname": "company",
+      "fieldtype": "Link",
+      "in_list_view": 1,
+      "label": "Company",
+      "options": "Company",
+      "reqd": 1
+    },
+    {
+      "fieldname": "company_abbr",
+      "fieldtype": "Data",
+      "label": "Company Abbr",
+      "fetch_from": "company.abbr",
+      "read_only": 1,
+      "hidden": 1,
+      "no_copy": 1
+    },
+    {
+      "fieldname": "date_from",
+      "fieldtype": "Date",
+      "in_list_view": 1,
+      "label": "Date From",
+      "reqd": 1
+    },
+    {
+      "fieldname": "date_to",
+      "fieldtype": "Date",
+      "in_list_view": 1,
+      "label": "Date To",
+      "reqd": 1
+    },
+    {
+      "fieldname": "column_break_basic",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "template_version",
+      "fieldtype": "Data",
+      "label": "Template Version",
+      "read_only": 1,
+      "description": "DJP template version used for export"
+    },
+    {
+      "default": "Draft",
+      "fieldname": "status",
+      "fieldtype": "Select",
+      "in_list_view": 1,
+      "label": "Status",
+      "options": "Draft\nExported\nImporting\nReady to Submit\nSubmitted",
+      "read_only": 1
+    },
+    {
+      "collapsible": 1,
+      "fieldname": "section_export",
+      "fieldtype": "Section Break",
+      "label": "CoreTax Export & Upload Status"
+    },
+    {
+      "default": "Not Started",
+      "fieldname": "coretax_upload_status",
+      "fieldtype": "Select",
+      "label": "CoreTax Upload Status",
+      "options": "Not Started\nIn Progress\nCompleted\nFailed"
+    },
+    {
+      "fieldname": "upload_notes",
+      "fieldtype": "Text",
+      "label": "Upload Notes"
+    },
+    {
+      "fieldname": "uploaded_on",
+      "fieldtype": "Datetime",
+      "label": "Uploaded On",
+      "read_only": 1
+    },
+    {
+      "fieldname": "column_break_export",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "coretax_export_file",
+      "fieldtype": "Attach",
+      "label": "CoreTax Export File (for DJP Upload)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "reconciliation_file",
+      "fieldtype": "Attach",
+      "label": "Reconciliation File (Internal)"
+    },
+    {
+      "fieldname": "exported_on",
+      "fieldtype": "Datetime",
+      "label": "Exported On",
+      "read_only": 1,
+      "description": "Locks grouping after export"
+    },
+    {
+      "collapsible": 1,
+      "fieldname": "section_metadata",
+      "fieldtype": "Section Break",
+      "label": "Metadata"
+    },
+    {
+      "fieldname": "created_by_user",
+      "fieldtype": "Link",
+      "label": "Created By",
+      "options": "User",
+      "read_only": 1,
+      "no_copy": 1
+    },
+    {
+      "fieldname": "column_break_metadata",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "submit_on",
+      "fieldtype": "Datetime",
+      "label": "Submit On",
+      "read_only": 1,
+      "no_copy": 1
+    }
+  ],
+  "index_web_pages_for_search": 1,
+  "is_submittable": 1,
+  "issingle": 0,
+  "links": [],
+  "modified": "2026-02-13 00:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Imogi Finance",
+  "name": "VAT OUT Batch",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "System Manager",
+      "share": 1,
+      "submit": 1,
+      "write": 1,
+      "cancel": 1,
+      "amend": 1
+    },
+    {
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "Accounts Manager",
+      "share": 1,
+      "submit": 1,
+      "write": 1,
+      "cancel": 1
+    },
+    {
+      "read": 1,
+      "report": 1,
+      "role": "Tax Reviewer",
+      "share": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1
+}

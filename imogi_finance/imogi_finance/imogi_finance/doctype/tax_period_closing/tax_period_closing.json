@@ -1,0 +1,462 @@
+{
+  "actions": [],
+  "allow_rename": 0,
+  "autoname": "format:TXCL-{period_year}-{period_month}-{######}",
+  "creation": "2024-01-01 00:00:00.000000",
+  "doctype": "DocType",
+  "document_type": "Document",
+  "editable_grid": 0,
+  "engine": "InnoDB",
+  "track_changes": 1,
+  "track_seen": 1,
+  "field_order": [
+    "tab_main",
+    "company",
+    "period_month",
+    "period_year",
+    "column_break_dates",
+    "date_from",
+    "date_to",
+    "column_break_status",
+    "status",
+    "tax_profile",
+    "section_totals",
+    "input_vat_total",
+    "input_vat_carry_forward",
+    "effective_input_vat",
+    "column_break_totals",
+    "output_vat_total",
+    "column_break_vat_net",
+    "vat_net",
+    "section_other_totals",
+    "pph_total",
+    "column_break_pb1",
+    "pb1_total",
+    "section_register_details",
+    "input_invoice_count",
+    "column_break_register_counts",
+    "output_invoice_count",
+    "column_break_withholding_count",
+    "withholding_entry_count",
+    "section_verification",
+    "verification_status",
+    "column_break_data_source",
+    "data_source",
+    "section_snapshot",
+    "last_refresh_on",
+    "is_generating",
+    "register_snapshot",
+    "tab_exports",
+    "section_exports",
+    "coretax_settings_input",
+    "coretax_settings_output",
+    "section_export_files",
+    "coretax_input_export",
+    "coretax_output_export",
+    "tab_netting",
+    "netting_section",
+    "netting_payable_account",
+    "netting_posting_date",
+    "column_break_netting",
+    "vat_netting_journal_entry",
+    "tab_audit",
+    "section_audit",
+    "created_by_user",
+    "column_break_audit",
+    "submit_on"
+  ],
+  "fields": [
+    {
+      "fieldname": "tab_main",
+      "fieldtype": "Tab Break",
+      "label": "Main Details"
+    },
+    {
+      "fieldname": "company",
+      "fieldtype": "Link",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "label": "Company",
+      "options": "Company",
+      "reqd": 1
+    },
+    {
+      "default": "1",
+      "fieldname": "period_month",
+      "fieldtype": "Select",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "label": "Period Month",
+      "options": "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12",
+      "reqd": 1
+    },
+    {
+      "default": "2024",
+      "fieldname": "period_year",
+      "fieldtype": "Int",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "label": "Period Year",
+      "reqd": 1
+    },
+    {
+      "fieldname": "column_break_dates",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "date_from",
+      "fieldtype": "Date",
+      "label": "Date From",
+      "read_only": 1
+    },
+    {
+      "fieldname": "date_to",
+      "fieldtype": "Date",
+      "label": "Date To",
+      "read_only": 1
+    },
+    {
+      "fieldname": "column_break_status",
+      "fieldtype": "Column Break"
+    },
+    {
+      "default": "Draft",
+      "fieldname": "status",
+      "fieldtype": "Select",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "label": "Status",
+      "options": "Draft\nReviewed\nApproved\nClosed",
+      "reqd": 1
+    },
+    {
+      "fieldname": "tax_profile",
+      "fieldtype": "Link",
+      "label": "Tax Profile",
+      "options": "Tax Profile",
+      "description": "Auto-fetched based on company. Required for CoreTax exports and VAT netting."
+    },
+    {
+      "fieldname": "section_totals",
+      "fieldtype": "Section Break",
+      "label": "Tax Register Totals"
+    },
+    {
+      "fieldname": "input_vat_total",
+      "fieldtype": "Currency",
+      "label": "Input VAT Total",
+      "read_only": 1,
+      "bold": 1,
+      "description": "Invoice total for current period only"
+    },
+    {
+      "fieldname": "input_vat_carry_forward",
+      "fieldtype": "Currency",
+      "label": "Input VAT Carry Forward",
+      "read_only": 1,
+      "description": "Unused input VAT credit carried over from previous periods (GL balance)"
+    },
+    {
+      "fieldname": "effective_input_vat",
+      "fieldtype": "Currency",
+      "label": "Effective Input VAT",
+      "read_only": 1,
+      "bold": 1,
+      "description": "Total input VAT available for netting = Current Period + Carry Forward"
+    },
+    {
+      "fieldname": "column_break_totals",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "output_vat_total",
+      "fieldtype": "Currency",
+      "label": "Output VAT Total",
+      "read_only": 1,
+      "bold": 1
+    },
+    {
+      "fieldname": "column_break_vat_net",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "vat_net",
+      "fieldtype": "Currency",
+      "label": "VAT Net (Output - Input)",
+      "read_only": 1,
+      "bold": 1
+    },
+    {
+      "fieldname": "section_other_totals",
+      "fieldtype": "Section Break",
+      "label": "Other Tax Totals"
+    },
+    {
+      "fieldname": "pph_total",
+      "fieldtype": "Currency",
+      "label": "PPh Total",
+      "read_only": 1
+    },
+    {
+      "fieldname": "column_break_pb1",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "pb1_total",
+      "fieldtype": "Currency",
+      "label": "PB1 Total",
+      "read_only": 1
+    },
+    {
+      "collapsible": 1,
+      "fieldname": "section_register_details",
+      "fieldtype": "Section Break",
+      "label": "Register Statistics"
+    },
+    {
+      "fieldname": "input_invoice_count",
+      "fieldtype": "Int",
+      "label": "Input Invoice Count",
+      "read_only": 1,
+      "description": "Number of verified Purchase Invoices in this period"
+    },
+    {
+      "fieldname": "column_break_register_counts",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "output_invoice_count",
+      "fieldtype": "Int",
+      "label": "Output Invoice Count",
+      "read_only": 1,
+      "description": "Number of verified Sales Invoices in this period"
+    },
+    {
+      "fieldname": "column_break_withholding_count",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "withholding_entry_count",
+      "fieldtype": "Int",
+      "label": "Withholding Entry Count",
+      "read_only": 1,
+      "description": "Number of PPh GL entries in this period"
+    },
+    {
+      "collapsible": 1,
+      "fieldname": "section_verification",
+      "fieldtype": "Section Break",
+      "label": "Data Quality"
+    },
+    {
+      "fieldname": "verification_status",
+      "fieldtype": "Data",
+      "label": "Verification Status",
+      "read_only": 1,
+      "default": "Verified",
+      "description": "Filter applied to VAT registers (Verified/All)"
+    },
+    {
+      "fieldname": "column_break_data_source",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "data_source",
+      "fieldtype": "Data",
+      "label": "Data Source",
+      "read_only": 1,
+      "default": "register_integration",
+      "description": "Source of register data (register_integration/fallback_empty)"
+    },
+    {
+      "collapsible": 1,
+      "fieldname": "section_snapshot",
+      "fieldtype": "Section Break",
+      "label": "Register Snapshot"
+    },
+    {
+      "fieldname": "last_refresh_on",
+      "fieldtype": "Datetime",
+      "label": "Last Refresh On",
+      "read_only": 1,
+      "description": "Timestamp of last register snapshot generation"
+    },
+    {
+      "default": "0",
+      "fieldname": "is_generating",
+      "fieldtype": "Check",
+      "label": "Generation In Progress",
+      "read_only": 1,
+      "description": "Indicates if snapshot generation is running in background"
+    },
+    {
+      "fieldname": "register_snapshot",
+      "fieldtype": "JSON",
+      "label": "Register Snapshot (JSON)",
+      "read_only": 1,
+      "hidden": 1
+    },
+    {
+      "fieldname": "tab_exports",
+      "fieldtype": "Tab Break",
+      "label": "CoreTax Exports"
+    },
+    {
+      "fieldname": "section_exports",
+      "fieldtype": "Section Break",
+      "label": "Export Settings"
+    },
+    {
+      "fieldname": "coretax_settings_input",
+      "fieldtype": "Link",
+      "label": "CoreTax Input Settings",
+      "options": "CoreTax Export Settings"
+    },
+    {
+      "fieldname": "coretax_settings_output",
+      "fieldtype": "Link",
+      "label": "CoreTax Output Settings",
+      "options": "CoreTax Export Settings"
+    },
+    {
+      "collapsible": 1,
+      "depends_on": "eval:doc.coretax_input_export || doc.coretax_output_export",
+      "fieldname": "section_export_files",
+      "fieldtype": "Section Break",
+      "label": "Generated Export Files"
+    },
+    {
+      "fieldname": "coretax_input_export",
+      "fieldtype": "Attach",
+      "label": "CoreTax Input Export",
+      "read_only": 1
+    },
+    {
+      "fieldname": "coretax_output_export",
+      "fieldtype": "Attach",
+      "label": "CoreTax Output Export",
+      "read_only": 1
+    },
+    {
+      "fieldname": "tab_netting",
+      "fieldtype": "Tab Break",
+      "label": "VAT Netting"
+    },
+    {
+      "fieldname": "netting_section",
+      "fieldtype": "Section Break",
+      "label": "VAT Netting Entry Details"
+    },
+    {
+      "fieldname": "netting_payable_account",
+      "fieldtype": "Link",
+      "label": "PPN Payable Account",
+      "options": "Account",
+      "description": "Override default PPN Payable account from Tax Profile"
+    },
+    {
+      "fieldname": "netting_posting_date",
+      "fieldtype": "Date",
+      "label": "Netting Posting Date",
+      "description": "Defaults to period end date if not specified"
+    },
+    {
+      "fieldname": "column_break_netting",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "vat_netting_journal_entry",
+      "fieldtype": "Link",
+      "label": "VAT Netting Journal Entry",
+      "options": "Journal Entry",
+      "read_only": 1
+    },
+    {
+      "fieldname": "tab_audit",
+      "fieldtype": "Tab Break",
+      "label": "Audit Trail"
+    },
+    {
+      "fieldname": "section_audit",
+      "fieldtype": "Section Break",
+      "label": "Document Metadata"
+    },
+    {
+      "fieldname": "created_by_user",
+      "fieldtype": "Link",
+      "label": "Created By",
+      "options": "User",
+      "read_only": 1,
+      "no_copy": 1
+    },
+    {
+      "fieldname": "column_break_audit",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "submit_on",
+      "fieldtype": "Datetime",
+      "label": "Submitted On",
+      "read_only": 1,
+      "no_copy": 1
+    }
+  ],
+  "index_web_pages_for_search": 1,
+  "is_submittable": 1,
+  "issingle": 0,
+  "links": [],
+  "modified": "2026-02-13 00:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Imogi Finance",
+  "name": "Tax Period Closing",
+  "naming_rule": "By fieldname",
+  "owner": "Administrator",
+  "title_field": "company",
+  "permissions": [
+    {
+      "amend": 1,
+      "cancel": 1,
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "System Manager",
+      "share": 1,
+      "submit": 1,
+      "write": 1
+    },
+    {
+      "amend": 1,
+      "cancel": 1,
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "Accounts Manager",
+      "share": 1,
+      "submit": 1,
+      "write": 1
+    },
+    {
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "Tax Reviewer",
+      "share": 1
+    }
+  ],
+  "show_title_field_in_link": 1,
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "allow_events_in_timeline": 1,
+  "allow_import": 0
+}
