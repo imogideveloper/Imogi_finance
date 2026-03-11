@@ -797,12 +797,45 @@ def before_cancel(doc, method=None):
 
 def before_delete(doc, method=None):
     """Set flag to ignore link validation before deletion.
-
     This prevents LinkExistsError when deleting draft PI that is linked to ER.
     The actual link cleanup happens in on_trash.
     """
-    if doc.get("imogi_expense_request"):
-        doc.flags.ignore_links = True
+    # Cek Payment Entry yang masih submitted - harus cancel PE dulu
+    pe = frappe.db.get_value(
+        "Payment Entry",
+        {"reference_name": doc.name, "docstatus": 1},
+        "name"
+    )
+    if pe:
+        frappe.throw(
+            f"Tidak bisa delete Purchase Invoice. Payment Entry <b>{pe}</b> harus di-cancel terlebih dahulu.",
+            title="Cancel Payment Entry Dulu"
+        )
+
+    # Always ignore links to allow deletion
+    doc.flags.ignore_links = True
+
+    # Delete linked Budget Control Entries
+    bce_list = frappe.get_all(
+        "Budget Control Entry",
+        filters={"purchase_invoice": doc.name},
+        pluck="name"
+    )
+    for bce in bce_list:
+        frappe.delete_doc("Budget Control Entry", bce, ignore_permissions=True, force=True)
+        frappe.logger().info(f"[PI before_delete] Deleted BCE {bce} linked to PI {doc.name}")
+
+    # Delete linked Payment Ledger Entries
+    ple_list = frappe.get_all(
+        "Payment Ledger Entry",
+        filters={"voucher_no": doc.name},
+        pluck="name"
+    )
+    for ple in ple_list:
+        frappe.delete_doc("Payment Ledger Entry", ple, ignore_permissions=True, force=True)
+        frappe.logger().info(f"[PI before_delete] Deleted PLE {ple} linked to PI {doc.name}")
+
+
 
 
 def on_cancel(doc, method=None):
@@ -861,6 +894,12 @@ def on_cancel(doc, method=None):
 
 def on_trash(doc, method=None):
     """Clear links from Expense Request before deleting PI to avoid LinkExistsError."""
+    # Delete linked entries BEFORE Frappe link check (on_trash runs before check_if_doc_is_linked)
+    frappe.db.delete("Payment Ledger Entry", {"voucher_no": doc.name})
+    frappe.db.delete("Budget Control Entry", {"ref_doctype": "Purchase Invoice", "ref_name": doc.name})
+    frappe.db.delete("GL Entry", {"voucher_type": "Purchase Invoice", "voucher_no": doc.name})
+    frappe.db.commit()
+
     expense_request = doc.get("imogi_expense_request")
 
     # Handle Expense Request
