@@ -1,2 +1,0 @@
-"""Public assets package."""
-
