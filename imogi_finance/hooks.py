@@ -179,20 +179,14 @@ override_doctype_class = {
 # ---------------
 
 doc_events = {
-    "Tax Invoice OCR Upload": {
-        "validate": [
-            "imogi_finance.events.metadata_fields.set_created_by",
-            "imogi_finance.events.tax_invoice_ocr_upload.set_tax_invoice_display_fields",
-        ],
-        "before_save": [
-            "imogi_finance.events.tax_invoice_ocr_upload.set_tax_invoice_display_fields",
-            "imogi_finance.api.tax_invoice.set_tax_invoice_display_fields",
-        ],
-        "on_submit": [
-            "imogi_finance.events.metadata_fields.set_submit_on",
-        ],
-    },
-
+"Tax Invoice OCR Upload": {
+    "validate": [
+        "imogi_finance.events.metadata_fields.set_created_by",
+    ],
+    "on_submit": [
+        "imogi_finance.events.metadata_fields.set_submit_on",
+    ],
+},
     "Bank Statement Import": {
         "before_insert": "imogi_finance.imogi_finance.events.bank_statement_import_handler.bank_statement_import_on_before_insert",
         "before_submit": "imogi_finance.imogi_finance.events.bank_statement_import_handler.bank_statement_import_before_submit",
@@ -235,42 +229,32 @@ doc_events = {
         "on_submit": "imogi_finance.expense_claim_integration.expense_claim_advances.link_employee_advances",
     },
 
-    "Expense Request": {
-        "validate": [
-            "imogi_finance.tax_operations.validate_tax_period_lock",
-            "imogi_finance.events.expense_request.validate_workflow_action",
-            "imogi_finance.events.metadata_fields.set_created_by",
-        ],
-        "on_update": [
-            "imogi_finance.events.expense_request.sync_status_with_workflow",
-            "imogi_finance.events.expense_request.handle_budget_workflow",
-        ],
-        "on_update_after_submit": [
-            "imogi_finance.events.expense_request.sync_status_with_workflow",
-            "imogi_finance.events.expense_request.handle_budget_workflow",
-            "imogi_finance.events.expense_request_ocr.sync_tax_invoice_usage",
-        ],
-        "on_submit": [
-            "imogi_finance.events.metadata_fields.set_submit_on",
-            "imogi_finance.events.expense_request_ocr.mark_tax_invoice_as_used_on_submit",
-            "imogi_finance.events.expense_request_ocr.sync_tax_invoice_usage",
-
-            # Aktifkan lagi setelah field-field OCR tambahan sudah benar-benar ada di cloud
-            # "imogi_finance.events.expense_request.sync_ocr_data_from_expense_request",
-            # "imogi_finance.events.tax_invoice_ocr_upload.sync_tax_invoice_from_expense",
-        ],
-        "on_cancel": [
-            "imogi_finance.events.expense_request_ocr.release_tax_invoice_on_cancel",
-            "imogi_finance.events.expense_request.release_ocr_data_from_expense_request",
-
-            # Aktifkan lagi setelah schema OCR di cloud sudah sinkron
-            # "imogi_finance.events.tax_invoice_ocr_upload.release_tax_invoice_on_cancel",
-        ],
-        "before_save": [
-            # Aktifkan lagi setelah field custom display OCR sudah sinkron
-            # "imogi_finance.events.expense_request.sync_ocr_data_from_expense_request",
-        ],
-    },
+   "Expense Request": {
+    "validate": [
+        "imogi_finance.tax_operations.validate_tax_period_lock",
+        "imogi_finance.events.expense_request.validate_workflow_action",
+        "imogi_finance.events.metadata_fields.set_created_by",
+    ],
+    "on_update": [
+        "imogi_finance.events.expense_request.sync_status_with_workflow",
+        "imogi_finance.events.expense_request.handle_budget_workflow",
+    ],
+    "on_update_after_submit": [
+        "imogi_finance.events.expense_request.sync_status_with_workflow",
+        "imogi_finance.events.expense_request.handle_budget_workflow",
+        "imogi_finance.events.expense_request_ocr.sync_tax_invoice_usage",
+    ],
+    "on_submit": [
+        "imogi_finance.events.metadata_fields.set_submit_on",
+        "imogi_finance.events.expense_request_ocr.mark_tax_invoice_as_used_on_submit",
+        "imogi_finance.events.expense_request_ocr.sync_tax_invoice_usage",
+        "imogi_finance.events.tax_invoice_ocr_upload.sync_tax_invoice_from_expense",
+    ],
+    "on_cancel": [
+        "imogi_finance.events.expense_request_ocr.release_tax_invoice_on_cancel",
+        "imogi_finance.events.tax_invoice_ocr_upload.release_tax_invoice_on_cancel",
+    ],
+},
 
     "Advanced Expense Request": {
         "validate": [
