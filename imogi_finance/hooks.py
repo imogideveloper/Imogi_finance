@@ -276,6 +276,9 @@ doc_events = {
         "validate": ["imogi_finance.events.metadata_fields.set_created_by"],
         "on_submit": ["imogi_finance.events.metadata_fields.set_submit_on"],
     },
+    "Budget": {
+        "before_delete": "imogi_finance.events.budget.before_delete",
+    },
     "Budget Control Entry": {
         "validate": ["imogi_finance.events.metadata_fields.set_created_by"],
         "on_submit": ["imogi_finance.events.metadata_fields.set_submit_on"],
