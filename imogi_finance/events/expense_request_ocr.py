@@ -33,7 +33,7 @@ def release_tax_invoice_on_cancel(doc, method=None):
         tax_invoice_name,
         {
             "custom_used_in": None,
-            "custom_fp_status": "Released"
+            "custom_fp_status": "Available"
         },
         update_modified=False
     )
@@ -63,7 +63,7 @@ def sync_tax_invoice_usage(doc, method=None):
             tax_invoice_name,
             {
                 "custom_used_in": None,
-                "custom_fp_status": "Released"
+                "custom_fp_status": "Available"
             },
             update_modified=False
         )
