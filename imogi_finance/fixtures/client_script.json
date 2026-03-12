@@ -3,6 +3,17 @@
   "docstatus": 0,
   "doctype": "Client Script",
   "dt": "Purchase Invoice",
+  "enabled": 0,
+  "modified": "2026-03-11 10:34:08.312228",
+  "module": null,
+  "name": "Purchase Invoice",
+  "script": "frappe.ui.form.on('Purchase Invoice', {\r\n\trefresh(frm) {\r\n\t\t// your code here\r\n\t}\r\n})",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Purchase Invoice",
   "enabled": 1,
   "modified": "2026-03-10 17:31:38.254270",
   "module": null,

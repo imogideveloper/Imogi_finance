@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Budget Control Settings",
+    "docstatus": 0,
+    "idx": "0",
+    "enable_budget_lock": 1,
+    "enable_budget_reclass": 0,
+    "enable_additional_budget": 0,
+    "enable_internal_charge": 1,
+    "budget_controller_role": "Budget Controller",
+    "require_budget_controller_review": 1,
+    "lock_on_workflow_state": "Approved",
+    "enforce_mode": "Both",
+    "budget_check_basis": "Fiscal Year",
+    "dimension_mode": "Native (Cost Center + Account)",
+    "allow_budget_overrun_role": null,
+    "allow_reclass_override_role": null,
+    "internal_charge_required_before_er_approval": 1,
+    "internal_charge_posting_mode": "Auto JE on PI Submit",
+    "doctype": "Budget Control Settings"
+  }
+]

@@ -1,2 +1,0 @@
-"""Expense request doctype package."""
-

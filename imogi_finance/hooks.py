@@ -16,13 +16,13 @@ from imogi_finance.api.payroll_sync import is_payroll_installed
 
 # Each item in the list will be shown as an app in the apps page
 # add_to_apps_screen = [
-# 	{
-# 		"name": "imogi_finance",
-# 		"logo": "/assets/imogi_finance/logo.png",
-# 		"title": "Imogi Finance",
-# 		"route": "/imogi_finance",
-# 		"has_permission": "imogi_finance.api.permission.has_app_permission"
-# 	}
+#     {
+#         "name": "imogi_finance",
+#         "logo": "/assets/imogi_finance/logo.png",
+#         "title": "Imogi Finance",
+#         "route": "/imogi_finance",
+#         "has_permission": "imogi_finance.api.permission.has_app_permission"
+#     }
 # ]
 
 # Includes in <head>
@@ -44,7 +44,7 @@ from imogi_finance.api.payroll_sync import is_payroll_installed
 # webform_include_css = {"doctype": "public/css/doctype.css"}
 
 # include js in page
-# page_js = {"page" : "public/js/file.js"}
+# page_js = {"page": "public/js/file.js"}
 
 # include js in doctype views
 doctype_js = {
@@ -71,15 +71,19 @@ doctype_js = {
         "public/js/payment_reconciliation_helper.js",
     ],
 }
+
 doctype_list_js = {
     "BCA Bank Statement Import": "imogi_finance/doctype/bca_bank_statement_import/bca_bank_statement_import_list.js",
     "Administrative Payment Voucher": "imogi_finance/doctype/administrative_payment_voucher/administrative_payment_voucher_list.js",
     "Expense Request": "imogi_finance/doctype/expense_request/expense_request_list.js",
     "Advanced Expense Request": "imogi_finance/doctype/advanced_expense_request/advanced_expense_request_list.js",
     "Payment Entry": "public/js/payment_entry_list.js",
+    "Budget": "public/js/budget_list.js",
+    "Tax Invoice OCR Upload": "public/js/tax_invoice_ocr_upload_list.js",
 }
-# doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
-# doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
+
+# doctype_tree_js = {"doctype": "public/js/doctype_tree.js"}
+# doctype_calendar_js = {"doctype": "public/js/doctype_calendar.js"}
 
 # Svg Icons
 # ------------------
@@ -94,7 +98,7 @@ doctype_list_js = {
 
 # website user home page (by Role)
 # role_home_page = {
-# 	"Role": "home_page"
+#     "Role": "home_page"
 # }
 
 # Generators
@@ -120,65 +124,51 @@ jinja = {
 # ------------
 
 before_install = "imogi_finance.install.before_install"
-# after_install = "imogi_finance.install.after_install"
 after_install = "imogi_finance.utils.ensure_coretax_export_doctypes"
 
-# Migration safeguards
-# (see consolidated before_migrate hook near the bottom of this file)
+# Fixtures
+# ------------
 
 fixtures = [
-
     {"doctype": "Custom Field"},
     {"doctype": "Property Setter"},
     {"doctype": "Client Script"},
     {"doctype": "Workflow"},
     {"doctype": "Workflow State"},
     {"doctype": "Workspace"},
-    {"doctype": "Report"}
+    {"doctype": "Report"},
 ]
+
 # Uninstallation
 # ------------
-
 # before_uninstall = "imogi_finance.uninstall.before_uninstall"
 # after_uninstall = "imogi_finance.uninstall.after_uninstall"
 
 # Integration Setup
 # ------------------
-# To set up dependencies/integrations with other apps
-# Name of the app being installed is passed as an argument
-
 # before_app_install = "imogi_finance.utils.before_app_install"
 # after_app_install = "imogi_finance.utils.after_app_install"
 
 # Integration Cleanup
 # -------------------
-# To clean up dependencies/integrations with other apps
-# Name of the app being uninstalled is passed as an argument
-
 # before_app_uninstall = "imogi_finance.utils.before_app_uninstall"
 # after_app_uninstall = "imogi_finance.utils.after_app_uninstall"
 
 # Desk Notifications
 # ------------------
-# See frappe.core.notifications.get_notification_config
-
 # notification_config = "imogi_finance.notifications.get_notification_config"
 
 # Permissions
 # -----------
-# Permissions evaluated in scripted ways
-
 # permission_query_conditions = {
-# 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
+#     "Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
 # }
-#
 # has_permission = {
-# 	"Event": "frappe.desk.doctype.event.event.has_permission",
+#     "Event": "frappe.desk.doctype.event.event.has_permission",
 # }
 
 # DocType Class
 # ---------------
-# Override standard doctype classes
 
 override_doctype_class = {
     "Sales Invoice": "imogi_finance.overrides.sales_invoice.CustomSalesInvoice",
@@ -187,13 +177,27 @@ override_doctype_class = {
 
 # Document Events
 # ---------------
-# Hook on document methods and events
 
 doc_events = {
+    "Tax Invoice OCR Upload": {
+        "validate": [
+            "imogi_finance.events.metadata_fields.set_created_by",
+            "imogi_finance.events.tax_invoice_ocr_upload.set_tax_invoice_display_fields",
+        ],
+        "before_save": [
+            "imogi_finance.events.tax_invoice_ocr_upload.set_tax_invoice_display_fields",
+            "imogi_finance.api.tax_invoice.set_tax_invoice_display_fields",
+        ],
+        "on_submit": [
+            "imogi_finance.events.metadata_fields.set_submit_on",
+        ],
+    },
+
     "Bank Statement Import": {
         "before_insert": "imogi_finance.imogi_finance.events.bank_statement_import_handler.bank_statement_import_on_before_insert",
         "before_submit": "imogi_finance.imogi_finance.events.bank_statement_import_handler.bank_statement_import_before_submit",
     },
+
     "Purchase Invoice": {
         "onload": "imogi_finance.events.utils.normalize_tax_invoice_ppn_types",
         "validate": [
@@ -211,6 +215,7 @@ doc_events = {
         "before_delete": "imogi_finance.events.purchase_invoice.before_delete",
         "on_trash": "imogi_finance.events.purchase_invoice.on_trash",
     },
+
     "Sales Invoice": {
         "onload": "imogi_finance.events.utils.normalize_tax_invoice_ppn_types",
         "validate": [
@@ -219,14 +224,17 @@ doc_events = {
         ],
         "on_update_after_submit": "imogi_finance.events.sales_invoice.on_update_after_submit",
     },
+
     "Sales Order": {
         "validate": "imogi_finance.events.sales_order.compute_outstanding_amount",
         "on_update_after_submit": "imogi_finance.events.sales_order.compute_outstanding_amount",
     },
+
     "Expense Claim": {
         "before_submit": "imogi_finance.expense_claim_integration.expense_claim_advances.set_approval_status",
         "on_submit": "imogi_finance.expense_claim_integration.expense_claim_advances.link_employee_advances",
     },
+
     "Expense Request": {
         "validate": [
             "imogi_finance.tax_operations.validate_tax_period_lock",
@@ -240,11 +248,30 @@ doc_events = {
         "on_update_after_submit": [
             "imogi_finance.events.expense_request.sync_status_with_workflow",
             "imogi_finance.events.expense_request.handle_budget_workflow",
+            "imogi_finance.events.expense_request_ocr.sync_tax_invoice_usage",
         ],
         "on_submit": [
             "imogi_finance.events.metadata_fields.set_submit_on",
+            "imogi_finance.events.expense_request_ocr.mark_tax_invoice_as_used_on_submit",
+            "imogi_finance.events.expense_request_ocr.sync_tax_invoice_usage",
+
+            # Aktifkan lagi setelah field-field OCR tambahan sudah benar-benar ada di cloud
+            # "imogi_finance.events.expense_request.sync_ocr_data_from_expense_request",
+            # "imogi_finance.events.tax_invoice_ocr_upload.sync_tax_invoice_from_expense",
+        ],
+        "on_cancel": [
+            "imogi_finance.events.expense_request_ocr.release_tax_invoice_on_cancel",
+            "imogi_finance.events.expense_request.release_ocr_data_from_expense_request",
+
+            # Aktifkan lagi setelah schema OCR di cloud sudah sinkron
+            # "imogi_finance.events.tax_invoice_ocr_upload.release_tax_invoice_on_cancel",
+        ],
+        "before_save": [
+            # Aktifkan lagi setelah field custom display OCR sudah sinkron
+            # "imogi_finance.events.expense_request.sync_ocr_data_from_expense_request",
         ],
     },
+
     "Advanced Expense Request": {
         "validate": [
             "imogi_finance.tax_operations.validate_tax_period_lock",
@@ -254,6 +281,7 @@ doc_events = {
             "imogi_finance.events.metadata_fields.set_submit_on",
         ],
     },
+
     "Internal Charge Request": {
         "validate": [
             "imogi_finance.events.metadata_fields.set_created_by",
@@ -268,10 +296,12 @@ doc_events = {
             "imogi_finance.events.metadata_fields.set_submit_on",
         ],
     },
+
     "Additional Budget Request": {
         "validate": ["imogi_finance.events.metadata_fields.set_created_by"],
         "on_submit": ["imogi_finance.events.metadata_fields.set_submit_on"],
     },
+
     "Administrative Payment Voucher": {
         "validate": ["imogi_finance.events.metadata_fields.set_created_by"],
         "on_submit": ["imogi_finance.events.metadata_fields.set_submit_on"],
@@ -283,30 +313,37 @@ doc_events = {
         "validate": ["imogi_finance.events.metadata_fields.set_created_by"],
         "on_submit": ["imogi_finance.events.metadata_fields.set_submit_on"],
     },
+
     "Budget Reclass Request": {
         "validate": ["imogi_finance.events.metadata_fields.set_created_by"],
         "on_submit": ["imogi_finance.events.metadata_fields.set_submit_on"],
     },
+
+    "Budget": {
+        "validate": "imogi_finance.events.budget.set_budget_display_fields",
+        "before_save": "imogi_finance.events.budget.set_budget_display_fields",
+    },
+
     "Cash Bank Daily Report": {
         "validate": ["imogi_finance.events.metadata_fields.set_created_by"],
         "on_submit": ["imogi_finance.events.metadata_fields.set_submit_on"],
     },
+
     "Customer Receipt": {
         "validate": ["imogi_finance.events.metadata_fields.set_created_by"],
         "on_submit": ["imogi_finance.events.metadata_fields.set_submit_on"],
     },
-    "Tax Invoice OCR Upload": {
-        "validate": ["imogi_finance.events.metadata_fields.set_created_by"],
-        "on_submit": ["imogi_finance.events.metadata_fields.set_submit_on"],
-    },
+
     "Tax Invoice Upload": {
         "validate": ["imogi_finance.events.metadata_fields.set_created_by"],
         "on_submit": ["imogi_finance.events.metadata_fields.set_submit_on"],
     },
+
     "Tax Payment Batch": {
         "validate": ["imogi_finance.events.metadata_fields.set_created_by"],
         "on_submit": ["imogi_finance.events.metadata_fields.set_submit_on"],
     },
+
     "Tax Period Closing": {
         "validate": [
             "imogi_finance.events.metadata_fields.set_created_by",
@@ -323,6 +360,7 @@ doc_events = {
             "imogi_finance.events.tax_period_closing.on_period_reopened",
         ],
     },
+
     "Transfer Application": {
         "validate": [
             "imogi_finance.events.metadata_fields.set_created_by",
@@ -336,45 +374,47 @@ doc_events = {
         ],
         "on_submit": ["imogi_finance.events.metadata_fields.set_submit_on"],
     },
-   "Payment Entry": {
-    "validate": [
-        "imogi_finance.receipt_control.payment_entry_hooks.validate_customer_receipt_link",
-        "imogi_finance.transfer_application.payment_entry_hooks.validate_transfer_application_link",
-    ],
-    "after_insert": [
-        "imogi_finance.events.payment_entry.after_insert",
-    ],
-    "on_update": [
-        "imogi_finance.events.payment_entry.on_update",
-    ],
-    "before_submit": [
-        "imogi_finance.receipt_control.payment_entry_hooks.validate_customer_receipt_link",
-    ],
-    "on_submit": [
-        "imogi_finance.events.payment_entry.on_submit",
-        "imogi_finance.receipt_control.payment_entry_hooks.record_payment_entry",
-        "imogi_finance.transfer_application.payment_entry_hooks.on_submit",
-        "imogi_finance.events.sales_order.update_sales_order_outstanding_from_payment",
-        "imogi_finance.imogi_finance.doctype.expense_request.expense_request.update_er_status_on_payment",  # ← TAMBAHKAN INI
-    ],
-    "on_update_after_submit": [
-        "imogi_finance.events.payment_entry.on_update_after_submit",
-    ],
-    "before_cancel": [
-        "imogi_finance.events.payment_entry.before_cancel",
-    ],
-    "on_cancel": [
-        "imogi_finance.events.payment_entry.on_cancel",
-        "imogi_finance.receipt_control.payment_entry_hooks.remove_payment_entry",
-        "imogi_finance.transfer_application.payment_entry_hooks.on_cancel",
-        "imogi_finance.events.sales_order.update_sales_order_outstanding_from_payment",
-        "imogi_finance.imogi_finance.doctype.expense_request.expense_request.revert_er_status_on_payment_cancel",  # ← TAMBAHKAN INI
-    ],
-    "before_delete": "imogi_finance.events.payment_entry.before_delete",
-    "on_trash": [
-        "imogi_finance.events.payment_entry.on_trash",
-    ],
-},
+
+    "Payment Entry": {
+        "validate": [
+            "imogi_finance.receipt_control.payment_entry_hooks.validate_customer_receipt_link",
+            "imogi_finance.transfer_application.payment_entry_hooks.validate_transfer_application_link",
+        ],
+        "after_insert": [
+            "imogi_finance.events.payment_entry.after_insert",
+        ],
+        "on_update": [
+            "imogi_finance.events.payment_entry.on_update",
+        ],
+        "before_submit": [
+            "imogi_finance.receipt_control.payment_entry_hooks.validate_customer_receipt_link",
+        ],
+        "on_submit": [
+            "imogi_finance.events.payment_entry.on_submit",
+            "imogi_finance.receipt_control.payment_entry_hooks.record_payment_entry",
+            "imogi_finance.transfer_application.payment_entry_hooks.on_submit",
+            "imogi_finance.events.sales_order.update_sales_order_outstanding_from_payment",
+            "imogi_finance.imogi_finance.doctype.expense_request.expense_request.update_er_status_on_payment",
+        ],
+        "on_update_after_submit": [
+            "imogi_finance.events.payment_entry.on_update_after_submit",
+        ],
+        "before_cancel": [
+            "imogi_finance.events.payment_entry.before_cancel",
+        ],
+        "on_cancel": [
+            "imogi_finance.events.payment_entry.on_cancel",
+            "imogi_finance.receipt_control.payment_entry_hooks.remove_payment_entry",
+            "imogi_finance.transfer_application.payment_entry_hooks.on_cancel",
+            "imogi_finance.events.sales_order.update_sales_order_outstanding_from_payment",
+            "imogi_finance.imogi_finance.doctype.expense_request.expense_request.revert_er_status_on_payment_cancel",
+        ],
+        "before_delete": "imogi_finance.events.payment_entry.before_delete",
+        "on_trash": [
+            "imogi_finance.events.payment_entry.on_trash",
+        ],
+    },
+
     "Bank Transaction": {
         "before_cancel": "imogi_finance.events.bank_transaction.before_cancel",
         "on_submit": "imogi_finance.transfer_application.matching.handle_bank_transaction",
@@ -383,6 +423,7 @@ doc_events = {
             "imogi_finance.events.bank_transaction.on_update_after_submit",
         ],
     },
+
     "Payroll Entry": {},
 }
 
@@ -405,8 +446,6 @@ scheduler_events = {
     "monthly": [
         "imogi_finance.reporting.tasks.run_monthly_reconciliation",
     ],
-    # 🔧 OCR Crash-Gap Recovery: Detect and recover stale Processing jobs
-    # Runs every 15 minutes to handle worker crashes/restarts
     "cron": {
         "*/15 * * * *": [
             "imogi_finance.tax_invoice_ocr.recover_stale_ocr_jobs"
@@ -419,40 +458,37 @@ scheduler_events = {
 
 # before_tests = "imogi_finance.install.before_tests"
 
-# Run fixture sanitization first to avoid malformed rows during migrate,
-# then ensure CoreTax export doctypes are present.
 before_migrate = [
     "imogi_finance.fixtures.sanitize_fixture_files",
     "imogi_finance.utils.ensure_coretax_export_doctypes",
 ]
+
 after_migrate = [
     "imogi_finance.utils.ensure_coretax_export_doctypes",
     "imogi_finance.utils.ensure_advances_allow_on_submit",
+    "imogi_finance.imogi_finance.utils.ensure_budget_control_settings",
 ]
 
 # Overriding Methods
 # ------------------------------
-#
+
 override_whitelisted_methods = {
-    "erpnext.accounts.doctype.payment_entry.payment_entry.get_payment_entry": "imogi_finance.overrides.payment_entry.get_payment_entry",
+    "erpnext.accounts.doctype.payment_entry.payment_entry.get_payment_entry":
+        "imogi_finance.overrides.payment_entry.get_payment_entry",
+
     # Suppress TableMissingError (DocType belum migrate) — log ke Error Log, return 0, no HTTP 500
-    "frappe.desk.reportview.get_count": "imogi_finance.api.reportview_patch.get_count",
+    "frappe.desk.reportview.get_count":
+        "imogi_finance.api.reportview_patch.get_count",
 }
-#
-# each overriding function accepts a `data` argument;
-# generated from the base implementation of the doctype dashboard,
-# along with any modifications made in other Frappe apps
+
 # override_doctype_dashboards = {
-# 	"Task": "imogi_finance.task.get_dashboard_data"
+#     "Task": "imogi_finance.task.get_dashboard_data"
 # }
 
-# exempt linked doctypes from being automatically cancelled
-#
 # auto_cancel_exempted_doctypes = ["Auto Repeat"]
 
 # Ignore links to specified DocTypes when deleting documents
 # -----------------------------------------------------------
-
 # ignore_links_on_delete = ["Communication", "ToDo"]
 
 # Request Events
@@ -469,36 +505,35 @@ override_whitelisted_methods = {
 # --------------------
 
 # user_data_fields = [
-# 	{
-# 		"doctype": "{doctype_1}",
-# 		"filter_by": "{filter_by}",
-# 		"redact_fields": ["{field_1}", "{field_2}"],
-# 		"partial": 1,
-# 	},
-# 	{
-# 		"doctype": "{doctype_2}",
-# 		"filter_by": "{filter_by}",
-# 		"partial": 1,
-# 	},
-# 	{
-# 		"doctype": "{doctype_3}",
-# 		"strict": False,
-# 	},
-# 	{
-# 		"doctype": "{doctype_4}"
-# 	}
+#     {
+#         "doctype": "{doctype_1}",
+#         "filter_by": "{filter_by}",
+#         "redact_fields": ["{field_1}", "{field_2}"],
+#         "partial": 1,
+#     },
+#     {
+#         "doctype": "{doctype_2}",
+#         "filter_by": "{filter_by}",
+#         "partial": 1,
+#     },
+#     {
+#         "doctype": "{doctype_3}",
+#         "strict": False,
+#     },
+#     {
+#         "doctype": "{doctype_4}"
+#     }
 # ]
 
 # Authentication and authorization
 # --------------------------------
-
 # auth_hooks = [
-# 	"imogi_finance.auth.validate"
+#     "imogi_finance.auth.validate"
 # ]
 
 # Automatically update python controller files with type annotations for this app.
 # export_python_type_annotations = True
 
 # default_log_clearing_doctypes = {
-# 	"Logging DocType Name": 30  # days to retain logs
+#     "Logging DocType Name": 30  # days to retain logs
 # }

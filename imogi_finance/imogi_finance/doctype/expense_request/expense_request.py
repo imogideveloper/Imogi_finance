@@ -272,6 +272,23 @@ class ExpenseRequest(Document):
                 title=_("Budget Release Error")
             )
 
+    def mark_as_paid(self, payment_entry_name: str | None = None):
+        """Mark this Expense Request as Paid after linked PI is fully settled.
+
+        Dipanggil dari update_er_status_on_payment() saat Payment Entry di-submit
+        dan Purchase Invoice terkait sudah lunas (outstanding_amount = 0).
+        """
+        if self.status != "PI Created":
+            return
+        self.db_set("status", "Paid", notify=True, commit=False)
+        if payment_entry_name:
+            self.db_set("linked_payment_entry", payment_entry_name, commit=False)
+        frappe.db.commit()
+        frappe.logger().info(
+            f"[ER PAID] {self.name} → status diubah ke 'Paid'"
+            + (f" via Payment Entry {payment_entry_name}" if payment_entry_name else "")
+        )
+
     def on_trash(self):
         """Clean up OCR links and monitoring records before deletion.
 
@@ -336,8 +353,15 @@ class ExpenseRequest(Document):
 
         # Calculate variance with decimal precision (don't round to integer)
         # This allows tracking sub-rupiah variances like Rp 0.11
+
+        # Calculate variance with decimal precision
         variance_raw = ocr_ppn - expected_ppn
-        variance = round(variance_raw, 2)  # Round to 2 decimal places
+        variance = round(variance_raw, 2)
+
+# Ignore tiny rounding differences below Rp 1
+        if abs(variance) < 1:
+            variance_raw = 0
+            variance = 0
 
         # Get PPN Variance account from GL mappings
         variance_account = None
@@ -361,7 +385,7 @@ class ExpenseRequest(Document):
         ]
 
         # Tolerance check: if variance is negligible (< 1 sen), delete variance items
-        if abs(variance) < 0.01:
+        if abs(variance) < 1:
             # Delete all variance rows if variance is negligible
             if ppn_var_rows:
                 for row in ppn_var_rows:
@@ -763,3 +787,119 @@ class ExpenseRequest(Document):
             except Exception:
                 pass
         return previous
+
+
+# ===================== Payment Entry Hooks =====================
+
+def update_er_status_on_payment(doc, method):
+    """
+    Dipanggil otomatis saat Payment Entry di-submit (via hooks.py doc_events).
+
+    Alur:
+    1. Ambil semua Purchase Invoice yang dibayar di Payment Entry ini
+    2. Cek apakah PI sudah lunas (outstanding_amount <= 0)
+    3. Cari Expense Request yang linked ke PI tersebut
+    4. Update status ER dari 'PI Created' → 'Paid'
+    """
+    paid_invoices = [
+        ref.reference_name
+        for ref in (doc.references or [])
+        if ref.reference_doctype == "Purchase Invoice"
+    ]
+
+    if not paid_invoices:
+        return
+
+    for pi_name in paid_invoices:
+        # Cek apakah PI sudah lunas
+        pi = frappe.db.get_value(
+            "Purchase Invoice",
+            pi_name,
+            ["outstanding_amount", "docstatus"],
+            as_dict=True,
+        )
+
+        if not pi or pi.docstatus != 1:
+            continue
+
+        if flt(pi.outstanding_amount) > 0.01:
+            # Belum lunas (partial payment), skip
+            continue
+
+        # Cari ER yang linked ke PI ini
+        # Field imogi_expense_request ada di Purchase Invoice (berdasarkan before_cancel check)
+        er_name = frappe.db.get_value(
+            "Purchase Invoice",
+            pi_name,
+            "imogi_expense_request",
+        )
+
+        if not er_name:
+            continue
+
+        # Pastikan ER masih berstatus PI Created
+        er_status = frappe.db.get_value("Expense Request", er_name, "status")
+        if er_status != "PI Created":
+            continue
+
+        # Update status ER ke Paid via method mark_as_paid
+        try:
+            er_doc = frappe.get_doc("Expense Request", er_name)
+            er_doc.mark_as_paid(payment_entry_name=doc.name)
+        except Exception as e:
+            frappe.log_error(
+                message=f"Gagal update ER {er_name} ke Paid: {str(e)}",
+                title="update_er_status_on_payment Error"
+            )
+
+
+def revert_er_status_on_payment_cancel(doc, method):
+    """
+    Dipanggil otomatis saat Payment Entry di-cancel (via hooks.py doc_events).
+
+    Alur:
+    1. Ambil semua Purchase Invoice yang ada di Payment Entry yang dibatalkan
+    2. Cari Expense Request yang linked ke PI tersebut
+    3. Kembalikan status ER dari 'Paid' → 'PI Created'
+    """
+    paid_invoices = [
+        ref.reference_name
+        for ref in (doc.references or [])
+        if ref.reference_doctype == "Purchase Invoice"
+    ]
+
+    if not paid_invoices:
+        return
+
+    for pi_name in paid_invoices:
+        # Cari ER yang linked ke PI ini
+        er_name = frappe.db.get_value(
+            "Purchase Invoice",
+            pi_name,
+            "imogi_expense_request",
+        )
+
+        if not er_name:
+            continue
+
+        # Hanya revert jika status saat ini adalah Paid
+        er_status = frappe.db.get_value("Expense Request", er_name, "status")
+        if er_status != "Paid":
+            continue
+
+        try:
+            frappe.db.set_value("Expense Request", er_name, {
+                "status": "PI Created",
+                "linked_payment_entry": None,
+            })
+            frappe.db.commit()
+
+            frappe.logger().info(
+                f"[ER REVERT] {er_name} → status dikembalikan ke 'PI Created' "
+                f"karena Payment Entry {doc.name} di-cancel"
+            )
+        except Exception as e:
+            frappe.log_error(
+                message=f"Gagal revert ER {er_name} ke PI Created: {str(e)}",
+                title="revert_er_status_on_payment_cancel Error"
+            )

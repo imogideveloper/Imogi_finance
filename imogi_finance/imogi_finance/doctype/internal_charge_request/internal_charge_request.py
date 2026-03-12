@@ -33,6 +33,7 @@ class InternalChargeRequest(Document):
             return
 
         self._validate_amounts()
+        self._validate_budget_per_line()
         self._populate_line_routes()
         self._sync_status()
 
@@ -84,6 +85,56 @@ class InternalChargeRequest(Document):
                     self.fiscal_year = utils.resolve_fiscal_year(None, company=company)
                 except Exception:
                     pass
+
+    def _validate_budget_per_line(self):
+        """Validasi budget tersedia untuk setiap target cost center di lines."""
+        company = getattr(self, "company", None)
+        fiscal_year = getattr(self, "fiscal_year", None)
+
+        for line in (self.internal_charge_lines or []):
+            cost_center = line.get("target_cost_center")
+            expense_account = line.get("expense_account")
+            amount = line.get("amount") or 0
+
+            if not cost_center or amount <= 0:
+                continue
+
+            dims = utils.Dimensions(
+                company=company,
+                fiscal_year=fiscal_year,
+                cost_center=cost_center,
+                account=expense_account,
+            )
+
+            # Cek apakah budget EXISTS untuk cost center ini (strict)
+            budget_exists = frappe.db.exists("Budget", {
+                "company": company,
+                "fiscal_year": fiscal_year,
+                "cost_center": cost_center,
+                "docstatus": 1,
+            })
+            if not budget_exists:
+                frappe.throw(
+                    _("Tidak ada budget untuk Cost Center {0}. Buat Budget terlebih dahulu.").format(cost_center),
+                    title=_("Budget Belum Dikonfigurasi")
+                )
+            result = service.check_budget_available(dims, amount)
+
+            if not result.ok:
+                frappe.throw(
+                    _("Budget tidak tersedia untuk Internal Charge.<br><br>"
+                      "Target Cost Center: {0}<br>"
+                      "Expense Account: {1}<br>"
+                      "Jumlah: {2}<br>"
+                      "Tersedia: {3}").format(
+                        cost_center,
+                        expense_account or "(tidak diset)",
+                        frappe.format_value(amount, {"fieldtype": "Currency"}),
+                        frappe.format_value(result.available, {"fieldtype": "Currency"})
+                            if result.available is not None else "N/A"
+                    ),
+                    title=_("Budget Tidak Tersedia")
+                )
 
     def before_submit(self):
         settings = utils.get_settings()

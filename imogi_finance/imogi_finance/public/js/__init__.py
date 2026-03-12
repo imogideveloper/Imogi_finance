@@ -1,2 +1,0 @@
-"""JavaScript assets package."""
-

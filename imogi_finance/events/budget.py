@@ -7,6 +7,23 @@ import frappe
 from frappe import _
 
 
+def set_budget_display_fields(doc, method=None):
+
+    if not getattr(doc, "accounts", None):
+        doc.custom_akun = None
+        doc.custom_budget_amount = 0
+        return
+
+    first_row = doc.accounts[0] if doc.accounts else None
+    doc.custom_akun = first_row.account if first_row else None
+
+    total_budget = 0
+    for row in doc.accounts:
+        total_budget += row.budget_amount or 0
+
+    doc.custom_budget_amount = total_budget
+
+
 def before_delete(doc, method=None):
     """Prevent deletion of Budget if linked transactions exist."""
 
@@ -74,7 +91,7 @@ def before_delete(doc, method=None):
         for pe in pe_list:
             linked.append("Payment Entry: {}".format(pe.get("name")))
 
-    # 4. Cek Expense Request aktif (pakai cost_center saja, tidak ada company/fiscal_year)
+    # 4. Cek Expense Request aktif
     if cost_center:
         er_list = frappe.get_all(
             "Expense Request",

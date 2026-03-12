@@ -1,2 +1,0 @@
-"""Patches package."""
-

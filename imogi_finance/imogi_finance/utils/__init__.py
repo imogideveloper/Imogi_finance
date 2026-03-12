@@ -101,3 +101,36 @@ __all__ = [
     "ensure_coretax_export_doctypes",
     "ensure_advances_allow_on_submit",
 ]
+
+
+def ensure_budget_control_settings():
+    """Load default Budget Control Settings from fixtures after migrate."""
+    import json
+    import os
+    import frappe
+
+    fixture_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "fixtures", "budget_control_settings.json"
+    )
+    if not os.path.exists(fixture_path):
+        return
+
+    with open(fixture_path, "r") as f:
+        data = json.load(f)
+
+    if not data:
+        return
+
+    doc_data = data[0]
+    try:
+        doc = frappe.get_doc("Budget Control Settings")
+        # Hanya update jika belum pernah di-set (masih default)
+        if not doc.enable_budget_lock and not doc.enable_internal_charge:
+            for key, value in doc_data.items():
+                if key not in ["doctype", "name", "idx", "docstatus"]:
+                    setattr(doc, key, value)
+            doc.save()
+            frappe.db.commit()
+    except Exception as e:
+        frappe.log_error(title="ensure_budget_control_settings failed", message=str(e))

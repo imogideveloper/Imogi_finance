@@ -196,3 +196,76 @@ def _advance_approval_level(doc):
             return
 
     # No more levels - shouldn't happen if workflow conditions are correct
+
+
+
+def sync_ocr_data_from_expense_request(doc, method=None):
+    tax_invoice_name = doc.get("custom_tax_invoice_ocr_upload") or doc.get("ti_tax_invoice_upload")
+    if not tax_invoice_name:
+        return
+
+    if not frappe.db.exists("Tax Invoice OCR Upload", tax_invoice_name):
+        return
+
+    meta = frappe.get_meta("Tax Invoice OCR Upload")
+    values = {}
+
+    supplier_value = doc.get("supplier_name") or doc.get("supplier") or ""
+
+    if meta.has_field("custom_display_supplier_text"):
+        values["custom_display_supplier_text"] = supplier_value
+
+    if meta.has_field("custom_display_date"):
+        values["custom_display_date"] = doc.get("ti_fp_date") or doc.get("request_date")
+
+    if meta.has_field("custom_used_in_doctype"):
+        values["custom_used_in_doctype"] = doc.doctype
+
+    if meta.has_field("custom_used_in"):
+        values["custom_used_in"] = doc.name
+
+    if meta.has_field("custom_fp_status"):
+        values["custom_fp_status"] = "Used"
+
+    if values:
+        frappe.db.set_value(
+            "Tax Invoice OCR Upload",
+            tax_invoice_name,
+            values,
+            update_modified=False
+        )
+
+
+def release_ocr_data_from_expense_request(doc, method=None):
+    tax_invoice_name = doc.get("custom_tax_invoice_ocr_upload") or doc.get("ti_tax_invoice_upload")
+    if not tax_invoice_name:
+        return
+
+    if not frappe.db.exists("Tax Invoice OCR Upload", tax_invoice_name):
+        return
+
+    meta = frappe.get_meta("Tax Invoice OCR Upload")
+    values = {}
+
+    if meta.has_field("custom_display_supplier_text"):
+        values["custom_display_supplier_text"] = None
+
+    if meta.has_field("custom_display_date"):
+        values["custom_display_date"] = None
+
+    if meta.has_field("custom_used_in_doctype"):
+        values["custom_used_in_doctype"] = None
+
+    if meta.has_field("custom_used_in"):
+        values["custom_used_in"] = None
+
+    if meta.has_field("custom_fp_status"):
+        values["custom_fp_status"] = "Available"
+
+    if values:
+        frappe.db.set_value(
+            "Tax Invoice OCR Upload",
+            tax_invoice_name,
+            values,
+            update_modified=False
+        )
