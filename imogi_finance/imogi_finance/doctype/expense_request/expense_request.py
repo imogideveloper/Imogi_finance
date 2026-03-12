@@ -353,8 +353,15 @@ class ExpenseRequest(Document):
 
         # Calculate variance with decimal precision (don't round to integer)
         # This allows tracking sub-rupiah variances like Rp 0.11
+
+        # Calculate variance with decimal precision
         variance_raw = ocr_ppn - expected_ppn
-        variance = round(variance_raw, 2)  # Round to 2 decimal places
+        variance = round(variance_raw, 2)
+
+# Ignore tiny rounding differences below Rp 1
+        if abs(variance) < 1:
+            variance_raw = 0
+            variance = 0
 
         # Get PPN Variance account from GL mappings
         variance_account = None
@@ -378,7 +385,7 @@ class ExpenseRequest(Document):
         ]
 
         # Tolerance check: if variance is negligible (< 1 sen), delete variance items
-        if abs(variance) < 0.01:
+        if abs(variance) < 1:
             # Delete all variance rows if variance is negligible
             if ppn_var_rows:
                 for row in ppn_var_rows:

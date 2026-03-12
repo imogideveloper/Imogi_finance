@@ -77,6 +77,8 @@ doctype_list_js = {
     "Expense Request": "imogi_finance/doctype/expense_request/expense_request_list.js",
     "Advanced Expense Request": "imogi_finance/doctype/advanced_expense_request/advanced_expense_request_list.js",
     "Payment Entry": "public/js/payment_entry_list.js",
+    "Budget": "public/js/budget_list.js",
+    "Tax Invoice OCR Upload": "public/js/tax_invoice_ocr_upload_list.js",
 }
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -190,6 +192,19 @@ override_doctype_class = {
 # Hook on document methods and events
 
 doc_events = {
+    "Tax Invoice OCR Upload": {
+        "validate": [
+            "imogi_finance.events.metadata_fields.set_created_by",
+            "imogi_finance.events.tax_invoice_ocr_upload.set_tax_invoice_display_fields",
+        ],
+        "before_save": [
+            "imogi_finance.events.tax_invoice_ocr_upload.set_tax_invoice_display_fields",
+            "imogi_finance.api.tax_invoice.set_tax_invoice_display_fields"
+        ],
+        "on_submit": [
+            "imogi_finance.events.metadata_fields.set_submit_on",
+        ],
+    },
     "Bank Statement Import": {
         "before_insert": "imogi_finance.imogi_finance.events.bank_statement_import_handler.bank_statement_import_on_before_insert",
         "before_submit": "imogi_finance.imogi_finance.events.bank_statement_import_handler.bank_statement_import_before_submit",
@@ -240,9 +255,22 @@ doc_events = {
         "on_update_after_submit": [
             "imogi_finance.events.expense_request.sync_status_with_workflow",
             "imogi_finance.events.expense_request.handle_budget_workflow",
+            "imogi_finance.events.expense_request_ocr.sync_tax_invoice_usage",
         ],
         "on_submit": [
             "imogi_finance.events.metadata_fields.set_submit_on",
+            "imogi_finance.events.expense_request_ocr.mark_tax_invoice_as_used_on_submit",
+            "imogi_finance.events.expense_request_ocr.sync_tax_invoice_usage",
+            "imogi_finance.events.expense_request.sync_ocr_data_from_expense_request",
+            "imogi_finance.events.tax_invoice_ocr_upload.sync_tax_invoice_from_expense",
+        ],
+        "on_cancel": [
+            "imogi_finance.events.expense_request_ocr.release_tax_invoice_on_cancel",
+            "imogi_finance.events.expense_request.release_ocr_data_from_expense_request",
+            "imogi_finance.events.tax_invoice_ocr_upload.release_tax_invoice_on_cancel",
+        ],
+        "before_save": [
+            "imogi_finance.events.expense_request.sync_ocr_data_from_expense_request",
         ],
     },
     "Advanced Expense Request": {
