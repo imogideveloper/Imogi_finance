@@ -49,3 +49,19 @@ frappe.ui.form.on('Additional Budget Request', {
 		}
 	}
 });
+
+frappe.listview_settings["Additional Budget Request"] = {
+    add_fields: ["status", "workflow_state"],
+    get_indicator: function(doc) {
+        const status = doc.status || doc.workflow_state;
+        const map = {
+            "Draft":            ["gray",   "Draft"],
+            "Pending Approval": ["orange", "Pending Approval"],
+            "Approved":         ["green",  "Approved"],
+            "Rejected":         ["red",    "Rejected"],
+        };
+        const s = map[status];
+        if (s) return [__(s[1]), s[0], "status,=," + status];
+        return [__(status || "Submitted"), "blue", "status,=," + status];
+    }
+};

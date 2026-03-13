@@ -180,3 +180,46 @@ function _showSimpleCancelDialog(frm) {
   );
 }
 
+
+
+// Payment Entry List View Settings
+frappe.listview_settings["Payment Entry"] = {
+    add_fields: ["payment_type", "party", "paid_amount", "unallocated_amount", "references"],
+    get_indicator: function(doc) {
+        if (doc.docstatus === 2) {
+            return [__("Cancelled"), "red", "docstatus,=,2"];
+        }
+        if (doc.docstatus === 0) {
+            return [__("Draft"), "gray", "docstatus,=,0"];
+        }
+
+        const unalloc = parseFloat(doc.unallocated_amount || 0);
+
+        if (unalloc > 0) {
+            return [__("Unallocated"), "orange", "unallocated_amount,>,0"];
+        }
+        return [__("Allocated"), "green", "unallocated_amount,=,0"];
+    },
+    onload: function(listview) {
+        // Add filter shortcuts
+        listview.page.add_inner_button(__("Unallocated"), function() {
+            listview.filter_area.add([[
+                "Payment Entry", "unallocated_amount", ">", "0"
+            ]]);
+        }, __("Filter By"));
+
+        listview.page.add_inner_button(__("Allocated"), function() {
+            listview.filter_area.add([[
+                "Payment Entry", "unallocated_amount", "=", "0"
+            ]]);
+        }, __("Filter By"));
+    },
+    formatters: {
+        unallocated_amount: function(value, field, doc) {
+            if (!value || value === 0) {
+                return `<span style="color: green;">✓ ${format_currency(0)}</span>`;
+            }
+            return `<span style="color: orange; font-weight: bold;">⚠ ${format_currency(value)}</span>`;
+        }
+    }
+};

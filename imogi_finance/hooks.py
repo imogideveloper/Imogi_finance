@@ -282,8 +282,12 @@ doc_events = {
     },
 
     "Additional Budget Request": {
+        "on_workflow_action": "imogi_finance.events.additional_budget_request.on_workflow_action",
         "validate": ["imogi_finance.events.metadata_fields.set_created_by"],
-        "on_submit": ["imogi_finance.events.metadata_fields.set_submit_on"],
+        "on_submit": [
+            "imogi_finance.events.metadata_fields.set_submit_on",
+            "imogi_finance.events.additional_budget_request.on_submit",
+        ],
     },
 
     "Administrative Payment Voucher": {
