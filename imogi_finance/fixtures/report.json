@@ -11,3606 +11,6 @@
   "javascript": null,
   "json": null,
   "letter_head": null,
-  "modified": "2026-03-11 10:00:00",
-  "module": "Imogi Finance",
-  "name": "Budget Detail",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Budget",
-  "reference_report": null,
-  "report_name": "Budget Detail",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Budget Detail",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "System Manager"
-   },
-   {
-    "parent": "Budget Detail",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts Manager"
-   },
-   {
-    "parent": "Budget Detail",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2017-06-23 04:46:43.209008",
-  "module": "Manufacturing",
-  "name": "BOM Stock Report",
-  "prepared_report": 0,
-  "query": "SELECT \n\tbom_item.item_code as \"Item:Link/Item:200\",\n\tbom_item.description as \"Description:Data:300\",\n\tbom_item.qty as \"Required Qty:Float:100\",\n\tledger.actual_qty  as \"In Stock Qty:Float:100\",\n\tFLOOR(ledger.actual_qty /bom_item.qty) as \"Enough Parts to Build:Int:100\"\nFROM\n\t`tabBOM Item` AS bom_item \n\tLEFT JOIN `tabBin` AS ledger\t\n\t\tON bom_item.item_code = ledger.item_code  \n\t\tAND ledger.warehouse = %(warehouse)s\nWHERE\n\tbom_item.parent=%(bom)s\n\nGROUP BY bom_item.item_code",
-  "ref_doctype": "BOM",
-  "reference_report": null,
-  "report_name": "BOM Stock Report",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "BOM Stock Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing Manager"
-   },
-   {
-    "parent": "BOM Stock Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2018-02-13 04:47:04.158213",
-  "module": "Manufacturing",
-  "name": "Work Order Stock Report",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Work Order",
-  "reference_report": null,
-  "report_name": "Work Order Stock Report",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Work Order Stock Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing User"
-   },
-   {
-    "parent": "Work Order Stock Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2017-04-04 10:00:10.253224",
-  "module": "CRM",
-  "name": "Prospects Engaged But Not Converted",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Lead",
-  "reference_report": null,
-  "report_name": "Prospects Engaged But Not Converted",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Prospects Engaged But Not Converted",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales User"
-   },
-   {
-    "parent": "Prospects Engaged But Not Converted",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales Manager"
-   },
-   {
-    "parent": "Prospects Engaged But Not Converted",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "System Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-04-17 00:20:27.248275",
-  "module": "CRM",
-  "name": "Campaign Efficiency",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Lead",
-  "reference_report": null,
-  "report_name": "Campaign Efficiency",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Campaign Efficiency",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales User"
-   },
-   {
-    "parent": "Campaign Efficiency",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales Manager"
-   },
-   {
-    "parent": "Campaign Efficiency",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "System Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2017-04-17 00:45:10.139004",
-  "module": "CRM",
-  "name": "Lead Owner Efficiency",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Lead",
-  "reference_report": null,
-  "report_name": "Lead Owner Efficiency",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Lead Owner Efficiency",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales User"
-   },
-   {
-    "parent": "Lead Owner Efficiency",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales Manager"
-   },
-   {
-    "parent": "Lead Owner Efficiency",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "System Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2017-06-26 14:05:50.256693",
-  "module": "Stock",
-  "name": "Total Stock Summary",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Stock Entry",
-  "reference_report": null,
-  "report_name": "Total Stock Summary",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Total Stock Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   },
-   {
-    "parent": "Total Stock Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing User"
-   },
-   {
-    "parent": "Total Stock Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing Manager"
-   },
-   {
-    "parent": "Total Stock Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2017-07-13 17:14:40.408706",
-  "module": "Support",
-  "name": "Support Hour Distribution",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Issue",
-  "reference_report": null,
-  "report_name": "Support Hour Distribution",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Support Hour Distribution",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Support Team"
-   },
-   {
-    "parent": "Support Hour Distribution",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "System Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": "{\"add_total_row\": 0, \"sort_by\": \"Asset Maintenance.modified\", \"add_totals_row\": 0, \"sort_order\": \"desc\", \"sort_by_next\": null, \"filters\": [], \"sort_order_next\": \"desc\", \"columns\": [[\"name\", \"Asset Maintenance\"], [\"asset_name\", \"Asset Maintenance\"], [\"item_code\", \"Asset Maintenance\"], [\"maintenance_type\", \"Asset Maintenance Task\"], [\"maintenance_task\", \"Asset Maintenance Task\"], [\"description\", \"Asset Maintenance Task\"], [\"assign_to_name\", \"Asset Maintenance Task\"], [\"maintenance_status\", \"Asset Maintenance Task\"], [\"next_due_date\", \"Asset Maintenance Task\"], [\"last_completion_date\", \"Asset Maintenance Task\"]]}",
-  "letter_head": null,
-  "modified": "2017-10-27 22:49:56.286781",
-  "module": "Assets",
-  "name": "Asset Maintenance",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Asset Maintenance",
-  "reference_report": null,
-  "report_name": "Asset Maintenance",
-  "report_script": null,
-  "report_type": "Report Builder",
-  "roles": [
-   {
-    "parent": "Asset Maintenance",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "System Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2017-11-04 05:15:35.892659",
-  "module": "Accounts",
-  "name": "Sales Payment Summary",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Sales Invoice",
-  "reference_report": null,
-  "report_name": "Sales Payment Summary",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Sales Payment Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts Manager"
-   },
-   {
-    "parent": "Sales Payment Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2017-11-16 06:24:10.818276",
-  "module": "Stock",
-  "name": "Item Variant Details",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Item",
-  "reference_report": null,
-  "report_name": "Item Variant Details",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Item Variant Details",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Maintenance User"
-   },
-   {
-    "parent": "Item Variant Details",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   },
-   {
-    "parent": "Item Variant Details",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   },
-   {
-    "parent": "Item Variant Details",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock Manager"
-   },
-   {
-    "parent": "Item Variant Details",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Purchase User"
-   },
-   {
-    "parent": "Item Variant Details",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales User"
-   },
-   {
-    "parent": "Item Variant Details",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing User"
-   },
-   {
-    "parent": "Item Variant Details",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Item Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2017-12-06 17:01:48.727970",
-  "module": "Stock",
-  "name": "Item Price Stock",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Item",
-  "reference_report": null,
-  "report_name": "Item Price Stock",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Item Price Stock",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Item Manager"
-   },
-   {
-    "parent": "Item Price Stock",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock Manager"
-   },
-   {
-    "parent": "Item Price Stock",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   },
-   {
-    "parent": "Item Price Stock",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales User"
-   },
-   {
-    "parent": "Item Price Stock",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Purchase User"
-   },
-   {
-    "parent": "Item Price Stock",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Maintenance User"
-   },
-   {
-    "parent": "Item Price Stock",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   },
-   {
-    "parent": "Item Price Stock",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-04-19 10:50:36.061588",
-  "module": "Accounts",
-  "name": "Share Ledger",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Share Transfer",
-  "reference_report": null,
-  "report_name": "Share Ledger",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Share Ledger",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Administrator"
-   },
-   {
-    "parent": "Share Ledger",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "System Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2017-12-28 16:12:37.155649",
-  "module": "Accounts",
-  "name": "Share Balance",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Share Transfer",
-  "reference_report": null,
-  "report_name": "Share Balance",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Share Balance",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "System Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2018-02-12 17:45:04.627654",
-  "module": "Stock",
-  "name": "Warehouse wise Item Balance Age and Value",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Stock Ledger Entry",
-  "reference_report": null,
-  "report_name": "Warehouse wise Item Balance Age and Value",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Warehouse wise Item Balance Age and Value",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts Manager"
-   },
-   {
-    "parent": "Warehouse wise Item Balance Age and Value",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   },
-   {
-    "parent": "Warehouse wise Item Balance Age and Value",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock Manager"
-   },
-   {
-    "parent": "Warehouse wise Item Balance Age and Value",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2018-02-19 12:03:53.902167",
-  "module": "Stock",
-  "name": "Item Balance (Simple)",
-  "prepared_report": 0,
-  "query": "select a.item_code as \"Item:Link/Item:120\",\n\t  a.item_name as \"Item Name::150\",\n\t  a.item_group as \"Item Group:Link/Item Group:120\",\n\t  a.brand as \"Brand:Link/Brand:120\",\n\t  a.description as \"Description::150\",\n\t  b.warehouse as \"Warehouse:Link/Warehouse:120\",\n\t  b.actual_qty as \"Balance Qty:Float:140\"\n from `tabItem` a left join `tabBin` b\n ON a.item_code = b.item_code",
-  "ref_doctype": "Bin",
-  "reference_report": null,
-  "report_name": "Item Balance (Simple)",
-  "report_script": null,
-  "report_type": "Query Report",
-  "roles": [
-   {
-    "parent": "Item Balance (Simple)",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales User"
-   },
-   {
-    "parent": "Item Balance (Simple)",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Purchase User"
-   },
-   {
-    "parent": "Item Balance (Simple)",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2018-12-27 18:10:29.785415",
-  "module": "Core",
-  "name": "Transaction Log Report",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Transaction Log",
-  "reference_report": null,
-  "report_name": "Transaction Log Report",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Transaction Log Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Administrator"
-   },
-   {
-    "parent": "Transaction Log Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "System Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2018-04-14 16:01:07.919565",
-  "module": "Accounts",
-  "name": "Consolidated Financial Statement",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Account",
-  "reference_report": null,
-  "report_name": "Consolidated Financial Statement",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Consolidated Financial Statement",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   },
-   {
-    "parent": "Consolidated Financial Statement",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Auditor"
-   },
-   {
-    "parent": "Consolidated Financial Statement",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales User"
-   },
-   {
-    "parent": "Consolidated Financial Statement",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Purchase User"
-   },
-   {
-    "parent": "Consolidated Financial Statement",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2018-06-18 13:33:18.103220",
-  "module": "Manufacturing",
-  "name": "BOM Stock Calculated",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "BOM",
-  "reference_report": null,
-  "report_name": "BOM Stock Calculated",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "BOM Stock Calculated",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing Manager"
-   },
-   {
-    "parent": "BOM Stock Calculated",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2018-05-21 11:06:11.920622",
-  "module": "Selling",
-  "name": "Customers Without Any Sales Transactions",
-  "prepared_report": 0,
-  "query": "SELECT\n\t`tabCustomer`.name as \"Customer:Link/Customer:120\",\n\t`tabCustomer`.customer_name as \"Customer Name::120\",\n\t`tabCustomer`.territory as \"Territory:Link/Territory:120\",\n\t`tabCustomer`.customer_group as \"Customer Group:Link/Customer Group:120\"\nFROM\n\t`tabCustomer`\nWHERE\n\tnot exists(select name from `tabSales Invoice` where `tabCustomer`.name = `tabSales Invoice`.customer and `tabSales Invoice`.docstatus=1 limit 1)\n\tand not exists(select name from `tabSales Order` where `tabCustomer`.name = `tabSales Order`.customer and `tabSales Order`.docstatus=1 limit 1)",
-  "ref_doctype": "Sales Invoice",
-  "reference_report": null,
-  "report_name": "Customers Without Any Sales Transactions",
-  "report_script": null,
-  "report_type": "Query Report",
-  "roles": [
-   {
-    "parent": "Customers Without Any Sales Transactions",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales User"
-   },
-   {
-    "parent": "Customers Without Any Sales Transactions",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales Manager"
-   },
-   {
-    "parent": "Customers Without Any Sales Transactions",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "System Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2018-06-28 16:22:24.040106",
-  "module": "Manufacturing",
-  "name": "BOM Variance Report",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Stock Entry",
-  "reference_report": null,
-  "report_name": "BOM Variance Report",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "BOM Variance Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing Manager"
-   },
-   {
-    "parent": "BOM Variance Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock Manager"
-   },
-   {
-    "parent": "BOM Variance Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   },
-   {
-    "parent": "BOM Variance Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2018-06-01 09:39:39.604944",
-  "module": "Selling",
-  "name": "Address And Contacts",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Address",
-  "reference_report": null,
-  "report_name": "Address And Contacts",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Address And Contacts",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales User"
-   },
-   {
-    "parent": "Address And Contacts",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Purchase User"
-   },
-   {
-    "parent": "Address And Contacts",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Maintenance User"
-   },
-   {
-    "parent": "Address And Contacts",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2021-09-20 17:43:39.518851",
-  "module": "Accounts",
-  "name": "TDS Computation Summary",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Purchase Invoice",
-  "reference_report": null,
-  "report_name": "TDS Computation Summary",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "TDS Computation Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Purchase User"
-   },
-   {
-    "parent": "TDS Computation Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts Manager"
-   },
-   {
-    "parent": "TDS Computation Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   },
-   {
-    "parent": "TDS Computation Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Auditor"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2021-09-20 12:05:50.387572",
-  "module": "Accounts",
-  "name": "Tax Withholding Details",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Purchase Invoice",
-  "reference_report": null,
-  "report_name": "Tax Withholding Details",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Tax Withholding Details",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Purchase User"
-   },
-   {
-    "parent": "Tax Withholding Details",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts Manager"
-   },
-   {
-    "parent": "Tax Withholding Details",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   },
-   {
-    "parent": "Tax Withholding Details",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Auditor"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-09-19 14:40:52.035394",
-  "module": "CRM",
-  "name": "Lead Conversion Time",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Communication",
-  "reference_report": null,
-  "report_name": "Lead Conversion Time",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Lead Conversion Time",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales Manager"
-   },
-   {
-    "parent": "Lead Conversion Time",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-01-17 08:30:41.863572",
-  "module": "Regional",
-  "name": "IRS 1099",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Supplier",
-  "reference_report": null,
-  "report_name": "IRS 1099",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "IRS 1099",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "System Manager"
-   },
-   {
-    "parent": "IRS 1099",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2018-09-11 17:49:27.256304",
-  "module": "Selling",
-  "name": "Sales Person Commission Summary",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Sales Order",
-  "reference_report": null,
-  "report_name": "Sales Person Commission Summary",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Sales Person Commission Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales Manager"
-   },
-   {
-    "parent": "Sales Person Commission Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Maintenance User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2020-06-19 17:41:03.132101",
-  "module": "Selling",
-  "name": "Sales Analytics",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Sales Order",
-  "reference_report": null,
-  "report_name": "Sales Analytics",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Sales Analytics",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   },
-   {
-    "parent": "Sales Analytics",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Maintenance User"
-   },
-   {
-    "parent": "Sales Analytics",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   },
-   {
-    "parent": "Sales Analytics",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-02-12 14:32:29.107109",
-  "module": "Buying",
-  "name": "Purchase Analytics",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Purchase Order",
-  "reference_report": null,
-  "report_name": "Purchase Analytics",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Purchase Analytics",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Purchase Manager"
-   },
-   {
-    "parent": "Purchase Analytics",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Purchase User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-02-12 14:32:22.874082",
-  "module": "Stock",
-  "name": "Stock Analytics",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Stock Entry",
-  "reference_report": null,
-  "report_name": "Stock Analytics",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Stock Analytics",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing Manager"
-   },
-   {
-    "parent": "Stock Analytics",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock Manager"
-   },
-   {
-    "parent": "Stock Analytics",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   },
-   {
-    "parent": "Stock Analytics",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-02-12 14:32:16.392521",
-  "module": "Manufacturing",
-  "name": "Production Analytics",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Work Order",
-  "reference_report": null,
-  "report_name": "Production Analytics",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Production Analytics",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing User"
-   },
-   {
-    "parent": "Production Analytics",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2020-02-01 11:03:23.816448",
-  "module": "Quality Management",
-  "name": "Review",
-  "prepared_report": 0,
-  "query": "SELECT\n  `tabQuality Action`.name as \"Name:Data:200\",\n  `tabQuality Action`.corrective_preventive as \"Action:Select/[Corrective,Preventive]:200\",\n  `tabQuality Action`.document_type as \"Document Type:Select/[Quality Review, Quality Feedback]:200\",\n  `tabQuality Action`.date as \"Date:Date:120\",\n  `tabQuality Action`.status as \"Status:Select/Planned:150\"\nFROM\n  `tabQuality Action`\nWHERE\n  `tabQuality Action`.document_type='Quality Review'\n  \n  ",
-  "ref_doctype": "Quality Action",
-  "reference_report": null,
-  "report_name": "Review",
-  "report_script": null,
-  "report_type": "Query Report",
-  "roles": [
-   {
-    "parent": "Review",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "System Manager"
-   },
-   {
-    "parent": "Review",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Quality Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2018-11-12 14:08:27.241332",
-  "module": "Selling",
-  "name": "Pending SO Items For Purchase Request",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Sales Order",
-  "reference_report": null,
-  "report_name": "Pending SO Items For Purchase Request",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Pending SO Items For Purchase Request",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   },
-   {
-    "parent": "Pending SO Items For Purchase Request",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales Manager"
-   },
-   {
-    "parent": "Pending SO Items For Purchase Request",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Maintenance User"
-   },
-   {
-    "parent": "Pending SO Items For Purchase Request",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   },
-   {
-    "parent": "Pending SO Items For Purchase Request",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [
-   {
-    "default": null,
-    "fieldname": "company",
-    "fieldtype": "Link",
-    "label": "Company",
-    "mandatory": 1,
-    "options": "Company",
-    "parent": "Trial Balance (Simple)",
-    "parentfield": "filters",
-    "parenttype": "Report",
-    "wildcard_filter": 0
-   }
-  ],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2025-08-28 19:06:54.273322",
-  "module": "Accounts",
-  "name": "Trial Balance (Simple)",
-  "prepared_report": 0,
-  "query": "select fiscal_year as \"Fiscal Year:Data:80\",\n\tcompany as \"Company:Data:220\",\n\tposting_date as \"Posting Date:Date:100\",\n\taccount as \"Account:Data:380\",\n\tsum(debit) as \"Debit:Currency:140\",\n\tsum(credit) as \"Credit:Currency:140\",\n\tfinance_book as \"Finance Book:Link/Finance Book:140\"\nfrom `tabGL Entry`\nwhere is_cancelled = 0 and company = %(company)s\ngroup by fiscal_year, company, posting_date, account\norder by fiscal_year, company, posting_date, account",
-  "ref_doctype": "GL Entry",
-  "reference_report": null,
-  "report_name": "Trial Balance (Simple)",
-  "report_script": null,
-  "report_type": "Query Report",
-  "roles": [
-   {
-    "parent": "Trial Balance (Simple)",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   },
-   {
-    "parent": "Trial Balance (Simple)",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts Manager"
-   },
-   {
-    "parent": "Trial Balance (Simple)",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Auditor"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2018-12-11 00:59:21.708343",
-  "module": "Accounts",
-  "name": "Customer Ledger Summary",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Sales Invoice",
-  "reference_report": null,
-  "report_name": "Customer Ledger Summary",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Customer Ledger Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts Manager"
-   },
-   {
-    "parent": "Customer Ledger Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-02-12 05:10:02.987274",
-  "module": "Accounts",
-  "name": "Supplier Ledger Summary",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Purchase Invoice",
-  "reference_report": null,
-  "report_name": "Supplier Ledger Summary",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Supplier Ledger Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts Manager"
-   },
-   {
-    "parent": "Supplier Ledger Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": "{\"order_by\": \"`tabOpportunity`.`modified` desc\", \"filters\": [[\"Opportunity\", \"status\", \"=\", \"Lost\"]], \"fields\": [[\"name\", \"Opportunity\"], [\"opportunity_from\", \"Opportunity\"], [\"party_name\", \"Opportunity\"], [\"customer_name\", \"Opportunity\"], [\"opportunity_type\", \"Opportunity\"], [\"status\", \"Opportunity\"], [\"docstatus\", \"Opportunity\"], [\"lost_reason\", \"Lost Reason Detail\"]], \"add_totals_row\": 0, \"add_total_row\": 0, \"page_length\": 20}",
-  "letter_head": null,
-  "modified": "2022-06-04 15:49:02.848845",
-  "module": "CRM",
-  "name": "Lost Opportunity",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Opportunity",
-  "reference_report": null,
-  "report_name": "Lost Opportunity",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Lost Opportunity",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales User"
-   },
-   {
-    "parent": "Lost Opportunity",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-01-02 18:01:46.691685",
-  "module": "Accounts",
-  "name": "Account Balance",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Bank Account",
-  "reference_report": null,
-  "report_name": "Account Balance",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 1,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-01-13 19:03:56.187748",
-  "module": "Regional",
-  "name": "Electronic Invoice Register",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Sales Invoice",
-  "reference_report": null,
-  "report_name": "Electronic Invoice Register",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-02-08 10:58:55.763090",
-  "module": "Accounts",
-  "name": "Gross and Net Profit Report",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "GL Entry",
-  "reference_report": null,
-  "report_name": "Gross and Net Profit Report",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Gross and Net Profit Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   },
-   {
-    "parent": "Gross and Net Profit Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts Manager"
-   },
-   {
-    "parent": "Gross and Net Profit Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Auditor"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-03-06 01:40:35.418304",
-  "module": "Stock",
-  "name": "Product Bundle Balance",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Stock Ledger Entry",
-  "reference_report": null,
-  "report_name": "Product Bundle Balance",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Product Bundle Balance",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-06-13 15:54:49.213973",
-  "module": "Projects",
-  "name": "Employee Billing Summary",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Timesheet",
-  "reference_report": null,
-  "report_name": "Employee Billing Summary",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Employee Billing Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Projects User"
-   },
-   {
-    "parent": "Employee Billing Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "HR User"
-   },
-   {
-    "parent": "Employee Billing Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing User"
-   },
-   {
-    "parent": "Employee Billing Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Employee"
-   },
-   {
-    "parent": "Employee Billing Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-06-13 15:54:55.255947",
-  "module": "Projects",
-  "name": "Project Billing Summary",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Timesheet",
-  "reference_report": null,
-  "report_name": "Project Billing Summary",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Project Billing Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Projects User"
-   },
-   {
-    "parent": "Project Billing Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "HR User"
-   },
-   {
-    "parent": "Project Billing Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing User"
-   },
-   {
-    "parent": "Project Billing Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Employee"
-   },
-   {
-    "parent": "Project Billing Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-04-15 15:22:15.012318",
-  "module": "Selling",
-  "name": "Sales Partner Commission Summary",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Sales Order",
-  "reference_report": null,
-  "report_name": "Sales Partner Commission Summary",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Sales Partner Commission Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales Manager"
-   },
-   {
-    "parent": "Sales Partner Commission Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Maintenance User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-04-25 18:15:09.920739",
-  "module": "Selling",
-  "name": "Sales Partner Transaction Summary",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Sales Order",
-  "reference_report": null,
-  "report_name": "Sales Partner Transaction Summary",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Sales Partner Transaction Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales User"
-   },
-   {
-    "parent": "Sales Partner Transaction Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales Manager"
-   },
-   {
-    "parent": "Sales Partner Transaction Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Maintenance User"
-   },
-   {
-    "parent": "Sales Partner Transaction Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   },
-   {
-    "parent": "Sales Partner Transaction Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-04-25 18:22:37.323995",
-  "module": "Selling",
-  "name": "Sales Partner Target Variance based on Item Group",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Sales Order",
-  "reference_report": null,
-  "report_name": "Sales Partner Target Variance based on Item Group",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Sales Partner Target Variance based on Item Group",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales User"
-   },
-   {
-    "parent": "Sales Partner Target Variance based on Item Group",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales Manager"
-   },
-   {
-    "parent": "Sales Partner Target Variance based on Item Group",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Maintenance User"
-   },
-   {
-    "parent": "Sales Partner Target Variance based on Item Group",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   },
-   {
-    "parent": "Sales Partner Target Variance based on Item Group",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-04-25 22:16:49.040998",
-  "module": "Selling",
-  "name": "Sales Person Target Variance Based On Item Group",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Sales Order",
-  "reference_report": null,
-  "report_name": "Sales Person Target Variance Based On Item Group",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Sales Person Target Variance Based On Item Group",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales User"
-   },
-   {
-    "parent": "Sales Person Target Variance Based On Item Group",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales Manager"
-   },
-   {
-    "parent": "Sales Person Target Variance Based On Item Group",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Maintenance User"
-   },
-   {
-    "parent": "Sales Person Target Variance Based On Item Group",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   },
-   {
-    "parent": "Sales Person Target Variance Based On Item Group",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-04-25 22:20:59.033199",
-  "module": "Selling",
-  "name": "Territory Target Variance Based On Item Group",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Sales Order",
-  "reference_report": null,
-  "report_name": "Territory Target Variance Based On Item Group",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Territory Target Variance Based On Item Group",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales User"
-   },
-   {
-    "parent": "Territory Target Variance Based On Item Group",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales Manager"
-   },
-   {
-    "parent": "Territory Target Variance Based On Item Group",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Maintenance User"
-   },
-   {
-    "parent": "Territory Target Variance Based On Item Group",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   },
-   {
-    "parent": "Territory Target Variance Based On Item Group",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-07-21 23:24:21.094269",
-  "module": "Buying",
-  "name": "Procurement Tracker",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Purchase Order",
-  "reference_report": null,
-  "report_name": "Procurement Tracker",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Procurement Tracker",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Purchase Manager"
-   },
-   {
-    "parent": "Procurement Tracker",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Purchase User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-05-01 13:00:26.545278",
-  "module": "Accounts",
-  "name": "Inactive Sales Items",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Sales Invoice",
-  "reference_report": null,
-  "report_name": "Inactive Sales Items",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Inactive Sales Items",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   },
-   {
-    "parent": "Inactive Sales Items",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts Manager"
-   },
-   {
-    "parent": "Inactive Sales Items",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Auditor"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-05-03 11:25:03.685247",
-  "module": "Buying",
-  "name": "Subcontracted Item To Be Received",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Subcontracting Order",
-  "reference_report": null,
-  "report_name": "Subcontracted Item To Be Received",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Subcontracted Item To Be Received",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   },
-   {
-    "parent": "Subcontracted Item To Be Received",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Purchase Manager"
-   },
-   {
-    "parent": "Subcontracted Item To Be Received",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Purchase User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-05-03 12:04:24.203721",
-  "module": "Buying",
-  "name": "Subcontracted Raw Materials To Be Transferred",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Subcontracting Order",
-  "reference_report": null,
-  "report_name": "Subcontracted Raw Materials To Be Transferred",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Subcontracted Raw Materials To Be Transferred",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   },
-   {
-    "parent": "Subcontracted Raw Materials To Be Transferred",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Purchase Manager"
-   },
-   {
-    "parent": "Subcontracted Raw Materials To Be Transferred",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Purchase User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-06-06 15:42:53.021714",
-  "module": "Manufacturing",
-  "name": "BOM Explorer",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "BOM",
-  "reference_report": null,
-  "report_name": "BOM Explorer",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "BOM Explorer",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing Manager"
-   },
-   {
-    "parent": "BOM Explorer",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-06-14 03:25:36.263179",
-  "module": "Selling",
-  "name": "Customer-wise Item Price",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Customer",
-  "reference_report": null,
-  "report_name": "Customer-wise Item Price",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Customer-wise Item Price",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales User"
-   },
-   {
-    "parent": "Customer-wise Item Price",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock Manager"
-   },
-   {
-    "parent": "Customer-wise Item Price",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   },
-   {
-    "parent": "Customer-wise Item Price",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts Manager"
-   },
-   {
-    "parent": "Customer-wise Item Price",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales Manager"
-   },
-   {
-    "parent": "Customer-wise Item Price",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales Master Manager"
-   },
-   {
-    "parent": "Customer-wise Item Price",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-06-17 12:45:07.324014",
-  "module": "Stock",
-  "name": "Delayed Item Report",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Delivery Note",
-  "reference_report": null,
-  "report_name": "Delayed Item Report",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Delayed Item Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   },
-   {
-    "parent": "Delayed Item Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales User"
-   },
-   {
-    "parent": "Delayed Item Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock Manager"
-   },
-   {
-    "parent": "Delayed Item Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   },
-   {
-    "parent": "Delayed Item Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Maintenance User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2019-06-17 12:45:56.359322",
-  "module": "Stock",
-  "name": "Delayed Order Report",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Delivery Note",
-  "reference_report": null,
-  "report_name": "Delayed Order Report",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Delayed Order Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   },
-   {
-    "parent": "Delayed Order Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales User"
-   },
-   {
-    "parent": "Delayed Order Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock Manager"
-   },
-   {
-    "parent": "Delayed Order Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   },
-   {
-    "parent": "Delayed Order Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Maintenance User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2023-07-26 21:03:20.722628",
-  "module": "Assets",
-  "name": "Fixed Asset Register",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Asset",
-  "reference_report": null,
-  "report_name": "Fixed Asset Register",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Fixed Asset Register",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   },
-   {
-    "parent": "Fixed Asset Register",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Quality Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2020-01-09 14:42:45.254751",
-  "module": "Stock",
-  "name": "Stock and Account Value Comparison",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Stock Ledger Entry",
-  "reference_report": null,
-  "report_name": "Stock and Account Value Comparison",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Stock and Account Value Comparison",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   },
-   {
-    "parent": "Stock and Account Value Comparison",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2020-01-31 10:34:33.319047",
-  "module": "Selling",
-  "name": "Territory-wise Sales",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Opportunity",
-  "reference_report": null,
-  "report_name": "Territory-wise Sales",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Territory-wise Sales",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales User"
-   },
-   {
-    "parent": "Territory-wise Sales",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2022-01-20 14:21:47.771591",
-  "module": "Manufacturing",
-  "name": "BOM Operations Time",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "BOM",
-  "reference_report": null,
-  "report_name": "BOM Operations Time",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "BOM Operations Time",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing Manager"
-   },
-   {
-    "parent": "BOM Operations Time",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2020-03-06 11:38:05.789851",
-  "module": "Manufacturing",
-  "name": "Production Planning Report",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Work Order",
-  "reference_report": null,
-  "report_name": "Production Planning Report",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Production Planning Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing User"
-   },
-   {
-    "parent": "Production Planning Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   },
-   {
-    "parent": "Production Planning Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2020-04-17 16:10:30.168312",
-  "module": "Website",
-  "name": "Website Analytics",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Web Page View",
-  "reference_report": null,
-  "report_name": "Website Analytics",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Website Analytics",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "System Manager"
-   },
-   {
-    "parent": "Website Analytics",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Website Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2020-04-19 16:59:47.979278",
-  "module": "Manufacturing",
-  "name": "Work Order Summary",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Work Order",
-  "reference_report": null,
-  "report_name": "Work Order Summary",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Work Order Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing User"
-   },
-   {
-    "parent": "Work Order Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   },
-   {
-    "parent": "Work Order Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2020-12-30 11:49:21.713561",
-  "module": "Manufacturing",
-  "name": "Job Card Summary",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Job Card",
-  "reference_report": null,
-  "report_name": "Job Card Summary",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Job Card Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing User"
-   },
-   {
-    "parent": "Job Card Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   },
-   {
-    "parent": "Job Card Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing Manager"
-   },
-   {
-    "parent": "Job Card Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2020-04-20 18:26:04.345289",
-  "module": "Manufacturing",
-  "name": "Downtime Analysis",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Downtime Entry",
-  "reference_report": null,
-  "report_name": "Downtime Analysis",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Downtime Analysis",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "System Manager"
-   },
-   {
-    "parent": "Downtime Analysis",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing User"
-   },
-   {
-    "parent": "Downtime Analysis",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": "{}",
-  "letter_head": null,
-  "modified": "2020-04-26 18:24:50.529940",
-  "module": "Manufacturing",
-  "name": "Quality Inspection Summary",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Quality Inspection",
-  "reference_report": null,
-  "report_name": "Quality Inspection Summary",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Quality Inspection Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Quality Manager"
-   },
-   {
-    "parent": "Quality Inspection Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   },
-   {
-    "parent": "Quality Inspection Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2020-05-15 20:57:52.623455",
-  "module": "Buying",
-  "name": "Purchase Order Analysis",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Purchase Order",
-  "reference_report": null,
-  "report_name": "Purchase Order Analysis",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Purchase Order Analysis",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Purchase Manager"
-   },
-   {
-    "parent": "Purchase Order Analysis",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Purchase User"
-   },
-   {
-    "parent": "Purchase Order Analysis",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   },
-   {
-    "parent": "Purchase Order Analysis",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Supplier"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2020-05-04 19:32:53.177213",
-  "module": "Projects",
-  "name": "Project Summary",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Project",
-  "reference_report": null,
-  "report_name": "Project Summary",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Project Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Projects User"
-   },
-   {
-    "parent": "Project Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Projects Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2020-05-15 05:18:55.838030",
-  "module": "Manufacturing",
-  "name": "Exponential Smoothing Forecasting",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Sales Order",
-  "reference_report": null,
-  "report_name": "Exponential Smoothing Forecasting",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Exponential Smoothing Forecasting",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing User"
-   },
-   {
-    "parent": "Exponential Smoothing Forecasting",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   },
-   {
-    "parent": "Exponential Smoothing Forecasting",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing Manager"
-   },
-   {
-    "parent": "Exponential Smoothing Forecasting",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock Manager"
-   },
-   {
-    "parent": "Exponential Smoothing Forecasting",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales Manager"
-   },
-   {
-    "parent": "Exponential Smoothing Forecasting",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2020-05-29 14:54:53.591445",
-  "module": "Selling",
-  "name": "Sales Order Analysis",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Sales Order",
-  "reference_report": null,
-  "report_name": "Sales Order Analysis",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Sales Order Analysis",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales User"
-   },
-   {
-    "parent": "Sales Order Analysis",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales Manager"
-   },
-   {
-    "parent": "Sales Order Analysis",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Maintenance User"
-   },
-   {
-    "parent": "Sales Order Analysis",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   },
-   {
-    "parent": "Sales Order Analysis",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2020-07-10 14:28:21.041310",
-  "module": "Buying",
-  "name": "Requested Items to Order and Receive",
-  "prepared_report": 0,
-  "query": "",
-  "ref_doctype": "Material Request",
-  "reference_report": null,
-  "report_name": "Requested Items to Order and Receive",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Requested Items to Order and Receive",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Purchase Manager"
-   },
-   {
-    "parent": "Requested Items to Order and Receive",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock Manager"
-   },
-   {
-    "parent": "Requested Items to Order and Receive",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   },
-   {
-    "parent": "Requested Items to Order and Receive",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Purchase User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2020-07-23 19:32:02.168185",
-  "module": "Stock",
-  "name": "Stock Qty vs Serial No Count",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Item",
-  "reference_report": null,
-  "report_name": "Stock Qty vs Serial No Count",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Stock Qty vs Serial No Count",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock Manager"
-   },
-   {
-    "parent": "Stock Qty vs Serial No Count",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Stock User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2020-08-02 05:05:00.457093",
-  "module": "Utilities",
-  "name": "YouTube Interactions",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Video",
-  "reference_report": null,
-  "report_name": "YouTube Interactions",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "YouTube Interactions",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "All"
-   },
-   {
-    "parent": "YouTube Interactions",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "System Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2020-08-10 18:12:42.391224",
-  "module": "Support",
-  "name": "First Response Time for Issues",
-  "prepared_report": 0,
-  "query": "select date(creation) as creation_date, avg(mins_to_first_response) from tabIssue where creation > '2016-05-01' group by date(creation) order by creation_date;",
-  "ref_doctype": "Issue",
-  "reference_report": null,
-  "report_name": "First Response Time for Issues",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "First Response Time for Issues",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Support Team"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2020-08-10 18:34:19.083872",
-  "module": "CRM",
-  "name": "First Response Time for Opportunity",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Opportunity",
-  "reference_report": null,
-  "report_name": "First Response Time for Opportunity",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "First Response Time for Opportunity",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales User"
-   },
-   {
-    "parent": "First Response Time for Opportunity",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Sales Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2020-09-10 08:51:02.298482",
-  "module": "Regional",
-  "name": "UAE VAT 201",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "GL Entry",
-  "reference_report": null,
-  "report_name": "UAE VAT 201",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": "{}",
-  "letter_head": null,
-  "modified": "2020-09-10 19:25:15.851331",
-  "module": "Accounts",
-  "name": "POS Register",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "POS Invoice",
-  "reference_report": null,
-  "report_name": "POS Register",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "POS Register",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts Manager"
-   },
-   {
-    "parent": "POS Register",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Accounts User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 1,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2020-10-11 19:43:19.358625",
-  "module": "Support",
-  "name": "Issue Analytics",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Issue",
-  "reference_report": null,
-  "report_name": "Issue Analytics",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Issue Analytics",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Support Team"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2020-10-12 14:54:55.655920",
-  "module": "Support",
-  "name": "Issue Summary",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Issue",
-  "reference_report": null,
-  "report_name": "Issue Summary",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Issue Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Support Team"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2020-12-27 11:43:42.677584",
-  "module": "Manufacturing",
-  "name": "Production Plan Summary",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Production Plan",
-  "reference_report": null,
-  "report_name": "Production Plan Summary",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Production Plan Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing User"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": "{}",
-  "letter_head": null,
-  "modified": "2021-01-11 11:11:03.594242",
-  "module": "Manufacturing",
-  "name": "Cost of Poor Quality Report",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Job Card",
-  "reference_report": null,
-  "report_name": "Cost of Poor Quality Report",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Cost of Poor Quality Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "System Manager"
-   },
-   {
-    "parent": "Cost of Poor Quality Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing User"
-   },
-   {
-    "parent": "Cost of Poor Quality Report",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Manufacturing Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
-  "modified": "2021-04-15 15:49:35.432486",
-  "module": "Projects",
-  "name": "Delayed Tasks Summary",
-  "prepared_report": 0,
-  "query": null,
-  "ref_doctype": "Task",
-  "reference_report": null,
-  "report_name": "Delayed Tasks Summary",
-  "report_script": null,
-  "report_type": "Script Report",
-  "roles": [
-   {
-    "parent": "Delayed Tasks Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Projects User"
-   },
-   {
-    "parent": "Delayed Tasks Summary",
-    "parentfield": "roles",
-    "parenttype": "Report",
-    "role": "Projects Manager"
-   }
-  ],
-  "timeout": 0
- },
- {
-  "add_total_row": 0,
-  "add_translate_data": 0,
-  "columns": [],
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Report",
-  "filters": [],
-  "is_standard": "Yes",
-  "javascript": null,
-  "json": null,
-  "letter_head": null,
   "modified": "2021-03-31 08:48:30.944429",
   "module": "Accounts",
   "name": "Billed Items To Be Received",
@@ -4738,6 +1138,50 @@
   "javascript": null,
   "json": null,
   "letter_head": null,
+  "modified": "2026-03-11 10:00:00",
+  "module": "Imogi Finance",
+  "name": "Budget Detail",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Budget",
+  "reference_report": null,
+  "report_name": "Budget Detail",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Budget Detail",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
+   },
+   {
+    "parent": "Budget Detail",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   },
+   {
+    "parent": "Budget Detail",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
   "modified": "2023-11-23 19:27:28.854108",
   "module": "Selling",
   "name": "Lost Quotations",
@@ -4810,6 +1254,82 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Receipt Auditor"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2017-06-23 04:46:43.209008",
+  "module": "Manufacturing",
+  "name": "BOM Stock Report",
+  "prepared_report": 0,
+  "query": "SELECT \n\tbom_item.item_code as \"Item:Link/Item:200\",\n\tbom_item.description as \"Description:Data:300\",\n\tbom_item.qty as \"Required Qty:Float:100\",\n\tledger.actual_qty  as \"In Stock Qty:Float:100\",\n\tFLOOR(ledger.actual_qty /bom_item.qty) as \"Enough Parts to Build:Int:100\"\nFROM\n\t`tabBOM Item` AS bom_item \n\tLEFT JOIN `tabBin` AS ledger\t\n\t\tON bom_item.item_code = ledger.item_code  \n\t\tAND ledger.warehouse = %(warehouse)s\nWHERE\n\tbom_item.parent=%(bom)s\n\nGROUP BY bom_item.item_code",
+  "ref_doctype": "BOM",
+  "reference_report": null,
+  "report_name": "BOM Stock Report",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "BOM Stock Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing Manager"
+   },
+   {
+    "parent": "BOM Stock Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2018-02-13 04:47:04.158213",
+  "module": "Manufacturing",
+  "name": "Work Order Stock Report",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Work Order",
+  "reference_report": null,
+  "report_name": "Work Order Stock Report",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Work Order Stock Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing User"
+   },
+   {
+    "parent": "Work Order Stock Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
    }
   ],
   "timeout": 0
@@ -4926,6 +1446,50 @@
   "disabled": 0,
   "docstatus": 0,
   "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2017-04-04 10:00:10.253224",
+  "module": "CRM",
+  "name": "Prospects Engaged But Not Converted",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Lead",
+  "reference_report": null,
+  "report_name": "Prospects Engaged But Not Converted",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Prospects Engaged But Not Converted",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
+   },
+   {
+    "parent": "Prospects Engaged But Not Converted",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales Manager"
+   },
+   {
+    "parent": "Prospects Engaged But Not Converted",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
   "filters": [
    {
     "default": null,
@@ -4996,6 +1560,50 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Tax Reviewer"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2019-04-17 00:20:27.248275",
+  "module": "CRM",
+  "name": "Campaign Efficiency",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Lead",
+  "reference_report": null,
+  "report_name": "Campaign Efficiency",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Campaign Efficiency",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
+   },
+   {
+    "parent": "Campaign Efficiency",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales Manager"
+   },
+   {
+    "parent": "Campaign Efficiency",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
    }
   ],
   "timeout": 0
@@ -5101,6 +1709,100 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "System Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2017-04-17 00:45:10.139004",
+  "module": "CRM",
+  "name": "Lead Owner Efficiency",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Lead",
+  "reference_report": null,
+  "report_name": "Lead Owner Efficiency",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Lead Owner Efficiency",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
+   },
+   {
+    "parent": "Lead Owner Efficiency",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales Manager"
+   },
+   {
+    "parent": "Lead Owner Efficiency",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2017-06-26 14:05:50.256693",
+  "module": "Stock",
+  "name": "Total Stock Summary",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Stock Entry",
+  "reference_report": null,
+  "report_name": "Total Stock Summary",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Total Stock Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   },
+   {
+    "parent": "Total Stock Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing User"
+   },
+   {
+    "parent": "Total Stock Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing Manager"
+   },
+   {
+    "parent": "Total Stock Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock Manager"
    }
   ],
   "timeout": 0
@@ -5223,6 +1925,44 @@
   "disabled": 0,
   "docstatus": 0,
   "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2017-07-13 17:14:40.408706",
+  "module": "Support",
+  "name": "Support Hour Distribution",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Issue",
+  "reference_report": null,
+  "report_name": "Support Hour Distribution",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Support Hour Distribution",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Support Team"
+   },
+   {
+    "parent": "Support Hour Distribution",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
   "filters": [
    {
     "default": null,
@@ -5317,6 +2057,76 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Tax Reviewer"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": "{\"add_total_row\": 0, \"sort_by\": \"Asset Maintenance.modified\", \"add_totals_row\": 0, \"sort_order\": \"desc\", \"sort_by_next\": null, \"filters\": [], \"sort_order_next\": \"desc\", \"columns\": [[\"name\", \"Asset Maintenance\"], [\"asset_name\", \"Asset Maintenance\"], [\"item_code\", \"Asset Maintenance\"], [\"maintenance_type\", \"Asset Maintenance Task\"], [\"maintenance_task\", \"Asset Maintenance Task\"], [\"description\", \"Asset Maintenance Task\"], [\"assign_to_name\", \"Asset Maintenance Task\"], [\"maintenance_status\", \"Asset Maintenance Task\"], [\"next_due_date\", \"Asset Maintenance Task\"], [\"last_completion_date\", \"Asset Maintenance Task\"]]}",
+  "letter_head": null,
+  "modified": "2017-10-27 22:49:56.286781",
+  "module": "Assets",
+  "name": "Asset Maintenance",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Asset Maintenance",
+  "reference_report": null,
+  "report_name": "Asset Maintenance",
+  "report_script": null,
+  "report_type": "Report Builder",
+  "roles": [
+   {
+    "parent": "Asset Maintenance",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2017-11-04 05:15:35.892659",
+  "module": "Accounts",
+  "name": "Sales Payment Summary",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Sales Invoice",
+  "reference_report": null,
+  "report_name": "Sales Payment Summary",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Sales Payment Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   },
+   {
+    "parent": "Sales Payment Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
    }
   ],
   "timeout": 0
@@ -5489,6 +2299,80 @@
   "timeout": 0
  },
  {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2017-11-16 06:24:10.818276",
+  "module": "Stock",
+  "name": "Item Variant Details",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Item",
+  "reference_report": null,
+  "report_name": "Item Variant Details",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Item Variant Details",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Maintenance User"
+   },
+   {
+    "parent": "Item Variant Details",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   },
+   {
+    "parent": "Item Variant Details",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   },
+   {
+    "parent": "Item Variant Details",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock Manager"
+   },
+   {
+    "parent": "Item Variant Details",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Purchase User"
+   },
+   {
+    "parent": "Item Variant Details",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
+   },
+   {
+    "parent": "Item Variant Details",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing User"
+   },
+   {
+    "parent": "Item Variant Details",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Item Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
   "add_total_row": 1,
   "add_translate_data": 0,
   "columns": [],
@@ -5522,6 +2406,80 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Accounts Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2017-12-06 17:01:48.727970",
+  "module": "Stock",
+  "name": "Item Price Stock",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Item",
+  "reference_report": null,
+  "report_name": "Item Price Stock",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Item Price Stock",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Item Manager"
+   },
+   {
+    "parent": "Item Price Stock",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock Manager"
+   },
+   {
+    "parent": "Item Price Stock",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   },
+   {
+    "parent": "Item Price Stock",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
+   },
+   {
+    "parent": "Item Price Stock",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Purchase User"
+   },
+   {
+    "parent": "Item Price Stock",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Maintenance User"
+   },
+   {
+    "parent": "Item Price Stock",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   },
+   {
+    "parent": "Item Price Stock",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing User"
    }
   ],
   "timeout": 0
@@ -5601,6 +2559,44 @@
   "javascript": null,
   "json": null,
   "letter_head": null,
+  "modified": "2019-04-19 10:50:36.061588",
+  "module": "Accounts",
+  "name": "Share Ledger",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Share Transfer",
+  "reference_report": null,
+  "report_name": "Share Ledger",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Share Ledger",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Administrator"
+   },
+   {
+    "parent": "Share Ledger",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
   "modified": "2025-02-07 17:27:53.441631",
   "module": "Core",
   "name": "Prepared Report Analytics",
@@ -5617,6 +2613,88 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "System Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2017-12-28 16:12:37.155649",
+  "module": "Accounts",
+  "name": "Share Balance",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Share Transfer",
+  "reference_report": null,
+  "report_name": "Share Balance",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Share Balance",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2018-02-12 17:45:04.627654",
+  "module": "Stock",
+  "name": "Warehouse wise Item Balance Age and Value",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Stock Ledger Entry",
+  "reference_report": null,
+  "report_name": "Warehouse wise Item Balance Age and Value",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Warehouse wise Item Balance Age and Value",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   },
+   {
+    "parent": "Warehouse wise Item Balance Age and Value",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   },
+   {
+    "parent": "Warehouse wise Item Balance Age and Value",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock Manager"
+   },
+   {
+    "parent": "Warehouse wise Item Balance Age and Value",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
    }
   ],
   "timeout": 0
@@ -5719,6 +2797,50 @@
   "javascript": null,
   "json": null,
   "letter_head": null,
+  "modified": "2018-02-19 12:03:53.902167",
+  "module": "Stock",
+  "name": "Item Balance (Simple)",
+  "prepared_report": 0,
+  "query": "select a.item_code as \"Item:Link/Item:120\",\n\t  a.item_name as \"Item Name::150\",\n\t  a.item_group as \"Item Group:Link/Item Group:120\",\n\t  a.brand as \"Brand:Link/Brand:120\",\n\t  a.description as \"Description::150\",\n\t  b.warehouse as \"Warehouse:Link/Warehouse:120\",\n\t  b.actual_qty as \"Balance Qty:Float:140\"\n from `tabItem` a left join `tabBin` b\n ON a.item_code = b.item_code",
+  "ref_doctype": "Bin",
+  "reference_report": null,
+  "report_name": "Item Balance (Simple)",
+  "report_script": null,
+  "report_type": "Query Report",
+  "roles": [
+   {
+    "parent": "Item Balance (Simple)",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
+   },
+   {
+    "parent": "Item Balance (Simple)",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Purchase User"
+   },
+   {
+    "parent": "Item Balance (Simple)",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
   "modified": "2025-03-07 10:54:09.429215",
   "module": "Stock",
   "name": "Available Serial No",
@@ -5741,6 +2863,44 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Accounts Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2018-12-27 18:10:29.785415",
+  "module": "Core",
+  "name": "Transaction Log Report",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Transaction Log",
+  "reference_report": null,
+  "report_name": "Transaction Log Report",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Transaction Log Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Administrator"
+   },
+   {
+    "parent": "Transaction Log Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
    }
   ],
   "timeout": 0
@@ -5807,6 +2967,62 @@
   "javascript": null,
   "json": null,
   "letter_head": null,
+  "modified": "2018-04-14 16:01:07.919565",
+  "module": "Accounts",
+  "name": "Consolidated Financial Statement",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Account",
+  "reference_report": null,
+  "report_name": "Consolidated Financial Statement",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Consolidated Financial Statement",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   },
+   {
+    "parent": "Consolidated Financial Statement",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Auditor"
+   },
+   {
+    "parent": "Consolidated Financial Statement",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
+   },
+   {
+    "parent": "Consolidated Financial Statement",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Purchase User"
+   },
+   {
+    "parent": "Consolidated Financial Statement",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
   "modified": "2025-11-18 11:35:04.615085",
   "module": "Stock",
   "name": "Stock Qty vs Batch Qty",
@@ -5823,6 +3039,44 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Item Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2018-06-18 13:33:18.103220",
+  "module": "Manufacturing",
+  "name": "BOM Stock Calculated",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "BOM",
+  "reference_report": null,
+  "report_name": "BOM Stock Calculated",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "BOM Stock Calculated",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing Manager"
+   },
+   {
+    "parent": "BOM Stock Calculated",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing User"
    }
   ],
   "timeout": 0
@@ -5922,6 +3176,100 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "System Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2018-05-21 11:06:11.920622",
+  "module": "Selling",
+  "name": "Customers Without Any Sales Transactions",
+  "prepared_report": 0,
+  "query": "SELECT\n\t`tabCustomer`.name as \"Customer:Link/Customer:120\",\n\t`tabCustomer`.customer_name as \"Customer Name::120\",\n\t`tabCustomer`.territory as \"Territory:Link/Territory:120\",\n\t`tabCustomer`.customer_group as \"Customer Group:Link/Customer Group:120\"\nFROM\n\t`tabCustomer`\nWHERE\n\tnot exists(select name from `tabSales Invoice` where `tabCustomer`.name = `tabSales Invoice`.customer and `tabSales Invoice`.docstatus=1 limit 1)\n\tand not exists(select name from `tabSales Order` where `tabCustomer`.name = `tabSales Order`.customer and `tabSales Order`.docstatus=1 limit 1)",
+  "ref_doctype": "Sales Invoice",
+  "reference_report": null,
+  "report_name": "Customers Without Any Sales Transactions",
+  "report_script": null,
+  "report_type": "Query Report",
+  "roles": [
+   {
+    "parent": "Customers Without Any Sales Transactions",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
+   },
+   {
+    "parent": "Customers Without Any Sales Transactions",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales Manager"
+   },
+   {
+    "parent": "Customers Without Any Sales Transactions",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2018-06-28 16:22:24.040106",
+  "module": "Manufacturing",
+  "name": "BOM Variance Report",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Stock Entry",
+  "reference_report": null,
+  "report_name": "BOM Variance Report",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "BOM Variance Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing Manager"
+   },
+   {
+    "parent": "BOM Variance Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock Manager"
+   },
+   {
+    "parent": "BOM Variance Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   },
+   {
+    "parent": "BOM Variance Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing User"
    }
   ],
   "timeout": 0
@@ -6050,6 +3398,56 @@
   "timeout": 0
  },
  {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2018-06-01 09:39:39.604944",
+  "module": "Selling",
+  "name": "Address And Contacts",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Address",
+  "reference_report": null,
+  "report_name": "Address And Contacts",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Address And Contacts",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
+   },
+   {
+    "parent": "Address And Contacts",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Purchase User"
+   },
+   {
+    "parent": "Address And Contacts",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Maintenance User"
+   },
+   {
+    "parent": "Address And Contacts",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
   "add_total_row": 1,
   "add_translate_data": 0,
   "columns": [],
@@ -6097,6 +3495,56 @@
   "filters": [],
   "is_standard": "Yes",
   "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2021-09-20 17:43:39.518851",
+  "module": "Accounts",
+  "name": "TDS Computation Summary",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Purchase Invoice",
+  "reference_report": null,
+  "report_name": "TDS Computation Summary",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "TDS Computation Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Purchase User"
+   },
+   {
+    "parent": "TDS Computation Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   },
+   {
+    "parent": "TDS Computation Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   },
+   {
+    "parent": "TDS Computation Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Auditor"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
   "json": "{}",
   "letter_head": null,
   "modified": "2026-02-01 10:00:00",
@@ -6121,6 +3569,56 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Accounts User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2021-09-20 12:05:50.387572",
+  "module": "Accounts",
+  "name": "Tax Withholding Details",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Purchase Invoice",
+  "reference_report": null,
+  "report_name": "Tax Withholding Details",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Tax Withholding Details",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Purchase User"
+   },
+   {
+    "parent": "Tax Withholding Details",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   },
+   {
+    "parent": "Tax Withholding Details",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   },
+   {
+    "parent": "Tax Withholding Details",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Auditor"
    }
   ],
   "timeout": 0
@@ -6217,6 +3715,44 @@
   "javascript": null,
   "json": null,
   "letter_head": null,
+  "modified": "2019-09-19 14:40:52.035394",
+  "module": "CRM",
+  "name": "Lead Conversion Time",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Communication",
+  "reference_report": null,
+  "report_name": "Lead Conversion Time",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Lead Conversion Time",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales Manager"
+   },
+   {
+    "parent": "Lead Conversion Time",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
   "modified": "2014-06-29 08:18:17.144598",
   "module": "Support",
   "name": "Maintenance Schedules",
@@ -6228,6 +3764,44 @@
   "report_script": null,
   "report_type": "Query Report",
   "roles": [],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2019-01-17 08:30:41.863572",
+  "module": "Regional",
+  "name": "IRS 1099",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Supplier",
+  "reference_report": null,
+  "report_name": "IRS 1099",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "IRS 1099",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
+   },
+   {
+    "parent": "IRS 1099",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   }
+  ],
   "timeout": 0
  },
  {
@@ -6270,6 +3844,44 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Auditor"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2018-09-11 17:49:27.256304",
+  "module": "Selling",
+  "name": "Sales Person Commission Summary",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Sales Order",
+  "reference_report": null,
+  "report_name": "Sales Person Commission Summary",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Sales Person Commission Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales Manager"
+   },
+   {
+    "parent": "Sales Person Commission Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Maintenance User"
    }
   ],
   "timeout": 0
@@ -6319,6 +3931,94 @@
   "timeout": 0
  },
  {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2020-06-19 17:41:03.132101",
+  "module": "Selling",
+  "name": "Sales Analytics",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Sales Order",
+  "reference_report": null,
+  "report_name": "Sales Analytics",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Sales Analytics",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   },
+   {
+    "parent": "Sales Analytics",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Maintenance User"
+   },
+   {
+    "parent": "Sales Analytics",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   },
+   {
+    "parent": "Sales Analytics",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2019-02-12 14:32:29.107109",
+  "module": "Buying",
+  "name": "Purchase Analytics",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Purchase Order",
+  "reference_report": null,
+  "report_name": "Purchase Analytics",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Purchase Analytics",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Purchase Manager"
+   },
+   {
+    "parent": "Purchase Analytics",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Purchase User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
   "add_total_row": 0,
   "add_translate_data": 0,
   "columns": [],
@@ -6358,6 +4058,56 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Auditor"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2019-02-12 14:32:22.874082",
+  "module": "Stock",
+  "name": "Stock Analytics",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Stock Entry",
+  "reference_report": null,
+  "report_name": "Stock Analytics",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Stock Analytics",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing Manager"
+   },
+   {
+    "parent": "Stock Analytics",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock Manager"
+   },
+   {
+    "parent": "Stock Analytics",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   },
+   {
+    "parent": "Stock Analytics",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing User"
    }
   ],
   "timeout": 0
@@ -6442,6 +4192,44 @@
   "javascript": null,
   "json": null,
   "letter_head": null,
+  "modified": "2019-02-12 14:32:16.392521",
+  "module": "Manufacturing",
+  "name": "Production Analytics",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Work Order",
+  "reference_report": null,
+  "report_name": "Production Analytics",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Production Analytics",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing User"
+   },
+   {
+    "parent": "Production Analytics",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
   "modified": "2020-04-30 13:46:14.680354",
   "module": "Stock",
   "name": "Stock Balance",
@@ -6464,6 +4252,44 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Accounts Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2020-02-01 11:03:23.816448",
+  "module": "Quality Management",
+  "name": "Review",
+  "prepared_report": 0,
+  "query": "SELECT\n  `tabQuality Action`.name as \"Name:Data:200\",\n  `tabQuality Action`.corrective_preventive as \"Action:Select/[Corrective,Preventive]:200\",\n  `tabQuality Action`.document_type as \"Document Type:Select/[Quality Review, Quality Feedback]:200\",\n  `tabQuality Action`.date as \"Date:Date:120\",\n  `tabQuality Action`.status as \"Status:Select/Planned:150\"\nFROM\n  `tabQuality Action`\nWHERE\n  `tabQuality Action`.document_type='Quality Review'\n  \n  ",
+  "ref_doctype": "Quality Action",
+  "reference_report": null,
+  "report_name": "Review",
+  "report_script": null,
+  "report_type": "Query Report",
+  "roles": [
+   {
+    "parent": "Review",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
+   },
+   {
+    "parent": "Review",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Quality Manager"
    }
   ],
   "timeout": 0
@@ -6502,6 +4328,62 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Accounts User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2018-11-12 14:08:27.241332",
+  "module": "Selling",
+  "name": "Pending SO Items For Purchase Request",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Sales Order",
+  "reference_report": null,
+  "report_name": "Pending SO Items For Purchase Request",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Pending SO Items For Purchase Request",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   },
+   {
+    "parent": "Pending SO Items For Purchase Request",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales Manager"
+   },
+   {
+    "parent": "Pending SO Items For Purchase Request",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Maintenance User"
+   },
+   {
+    "parent": "Pending SO Items For Purchase Request",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   },
+   {
+    "parent": "Pending SO Items For Purchase Request",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
    }
   ],
   "timeout": 0
@@ -6589,6 +4471,63 @@
   "timeout": 0
  },
  {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [
+   {
+    "default": null,
+    "fieldname": "company",
+    "fieldtype": "Link",
+    "label": "Company",
+    "mandatory": 1,
+    "options": "Company",
+    "parent": "Trial Balance (Simple)",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   }
+  ],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2025-08-28 19:06:54.273322",
+  "module": "Accounts",
+  "name": "Trial Balance (Simple)",
+  "prepared_report": 0,
+  "query": "select fiscal_year as \"Fiscal Year:Data:80\",\n\tcompany as \"Company:Data:220\",\n\tposting_date as \"Posting Date:Date:100\",\n\taccount as \"Account:Data:380\",\n\tsum(debit) as \"Debit:Currency:140\",\n\tsum(credit) as \"Credit:Currency:140\",\n\tfinance_book as \"Finance Book:Link/Finance Book:140\"\nfrom `tabGL Entry`\nwhere is_cancelled = 0 and company = %(company)s\ngroup by fiscal_year, company, posting_date, account\norder by fiscal_year, company, posting_date, account",
+  "ref_doctype": "GL Entry",
+  "reference_report": null,
+  "report_name": "Trial Balance (Simple)",
+  "report_script": null,
+  "report_type": "Query Report",
+  "roles": [
+   {
+    "parent": "Trial Balance (Simple)",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   },
+   {
+    "parent": "Trial Balance (Simple)",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   },
+   {
+    "parent": "Trial Balance (Simple)",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Auditor"
+   }
+  ],
+  "timeout": 0
+ },
+ {
   "add_total_row": 0,
   "add_translate_data": 0,
   "columns": [],
@@ -6622,6 +4561,44 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Manufacturing User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2018-12-11 00:59:21.708343",
+  "module": "Accounts",
+  "name": "Customer Ledger Summary",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Sales Invoice",
+  "reference_report": null,
+  "report_name": "Customer Ledger Summary",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Customer Ledger Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   },
+   {
+    "parent": "Customer Ledger Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
    }
   ],
   "timeout": 0
@@ -6666,6 +4643,82 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Auditor"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2019-02-12 05:10:02.987274",
+  "module": "Accounts",
+  "name": "Supplier Ledger Summary",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Purchase Invoice",
+  "reference_report": null,
+  "report_name": "Supplier Ledger Summary",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Supplier Ledger Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   },
+   {
+    "parent": "Supplier Ledger Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": "{\"order_by\": \"`tabOpportunity`.`modified` desc\", \"filters\": [[\"Opportunity\", \"status\", \"=\", \"Lost\"]], \"fields\": [[\"name\", \"Opportunity\"], [\"opportunity_from\", \"Opportunity\"], [\"party_name\", \"Opportunity\"], [\"customer_name\", \"Opportunity\"], [\"opportunity_type\", \"Opportunity\"], [\"status\", \"Opportunity\"], [\"docstatus\", \"Opportunity\"], [\"lost_reason\", \"Lost Reason Detail\"]], \"add_totals_row\": 0, \"add_total_row\": 0, \"page_length\": 20}",
+  "letter_head": null,
+  "modified": "2022-06-04 15:49:02.848845",
+  "module": "CRM",
+  "name": "Lost Opportunity",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Opportunity",
+  "reference_report": null,
+  "report_name": "Lost Opportunity",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Lost Opportunity",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
+   },
+   {
+    "parent": "Lost Opportunity",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales Manager"
    }
   ],
   "timeout": 0
@@ -6726,6 +4779,31 @@
   "javascript": null,
   "json": null,
   "letter_head": null,
+  "modified": "2019-01-02 18:01:46.691685",
+  "module": "Accounts",
+  "name": "Account Balance",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Bank Account",
+  "reference_report": null,
+  "report_name": "Account Balance",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
   "modified": "2017-02-24 20:09:10.287960",
   "module": "Selling",
   "name": "Inactive Customers",
@@ -6771,6 +4849,31 @@
   "timeout": 0
  },
  {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 1,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2019-01-13 19:03:56.187748",
+  "module": "Regional",
+  "name": "Electronic Invoice Register",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Sales Invoice",
+  "reference_report": null,
+  "report_name": "Electronic Invoice Register",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [],
+  "timeout": 0
+ },
+ {
   "add_total_row": 1,
   "add_translate_data": 0,
   "columns": [],
@@ -6798,6 +4901,82 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Accounts User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2019-02-08 10:58:55.763090",
+  "module": "Accounts",
+  "name": "Gross and Net Profit Report",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "GL Entry",
+  "reference_report": null,
+  "report_name": "Gross and Net Profit Report",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Gross and Net Profit Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   },
+   {
+    "parent": "Gross and Net Profit Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   },
+   {
+    "parent": "Gross and Net Profit Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Auditor"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2019-03-06 01:40:35.418304",
+  "module": "Stock",
+  "name": "Product Bundle Balance",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Stock Ledger Entry",
+  "reference_report": null,
+  "report_name": "Product Bundle Balance",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Product Bundle Balance",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
    }
   ],
   "timeout": 0
@@ -6845,6 +5024,62 @@
    },
    {
     "parent": "Daily Timesheet Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2019-06-13 15:54:49.213973",
+  "module": "Projects",
+  "name": "Employee Billing Summary",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Timesheet",
+  "reference_report": null,
+  "report_name": "Employee Billing Summary",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Employee Billing Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Projects User"
+   },
+   {
+    "parent": "Employee Billing Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "HR User"
+   },
+   {
+    "parent": "Employee Billing Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing User"
+   },
+   {
+    "parent": "Employee Billing Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Employee"
+   },
+   {
+    "parent": "Employee Billing Summary",
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Accounts User"
@@ -6903,6 +5138,62 @@
   "timeout": 0
  },
  {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2019-06-13 15:54:55.255947",
+  "module": "Projects",
+  "name": "Project Billing Summary",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Timesheet",
+  "reference_report": null,
+  "report_name": "Project Billing Summary",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Project Billing Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Projects User"
+   },
+   {
+    "parent": "Project Billing Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "HR User"
+   },
+   {
+    "parent": "Project Billing Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing User"
+   },
+   {
+    "parent": "Project Billing Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Employee"
+   },
+   {
+    "parent": "Project Billing Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
   "add_total_row": 0,
   "add_translate_data": 0,
   "columns": [],
@@ -6942,6 +5233,44 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Auditor"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2019-04-15 15:22:15.012318",
+  "module": "Selling",
+  "name": "Sales Partner Commission Summary",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Sales Order",
+  "reference_report": null,
+  "report_name": "Sales Partner Commission Summary",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Sales Partner Commission Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales Manager"
+   },
+   {
+    "parent": "Sales Partner Commission Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Maintenance User"
    }
   ],
   "timeout": 0
@@ -7035,6 +5364,62 @@
   "timeout": 0
  },
  {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2019-04-25 18:15:09.920739",
+  "module": "Selling",
+  "name": "Sales Partner Transaction Summary",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Sales Order",
+  "reference_report": null,
+  "report_name": "Sales Partner Transaction Summary",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Sales Partner Transaction Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
+   },
+   {
+    "parent": "Sales Partner Transaction Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales Manager"
+   },
+   {
+    "parent": "Sales Partner Transaction Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Maintenance User"
+   },
+   {
+    "parent": "Sales Partner Transaction Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   },
+   {
+    "parent": "Sales Partner Transaction Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
   "add_total_row": 0,
   "add_translate_data": 0,
   "columns": [],
@@ -7071,6 +5456,62 @@
    },
    {
     "parent": "Serial No Warranty Expiry",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2019-04-25 18:22:37.323995",
+  "module": "Selling",
+  "name": "Sales Partner Target Variance based on Item Group",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Sales Order",
+  "reference_report": null,
+  "report_name": "Sales Partner Target Variance based on Item Group",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Sales Partner Target Variance based on Item Group",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
+   },
+   {
+    "parent": "Sales Partner Target Variance based on Item Group",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales Manager"
+   },
+   {
+    "parent": "Sales Partner Target Variance based on Item Group",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Maintenance User"
+   },
+   {
+    "parent": "Sales Partner Target Variance based on Item Group",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   },
+   {
+    "parent": "Sales Partner Target Variance based on Item Group",
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Stock User"
@@ -7134,6 +5575,62 @@
   "javascript": null,
   "json": null,
   "letter_head": null,
+  "modified": "2019-04-25 22:16:49.040998",
+  "module": "Selling",
+  "name": "Sales Person Target Variance Based On Item Group",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Sales Order",
+  "reference_report": null,
+  "report_name": "Sales Person Target Variance Based On Item Group",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Sales Person Target Variance Based On Item Group",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
+   },
+   {
+    "parent": "Sales Person Target Variance Based On Item Group",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales Manager"
+   },
+   {
+    "parent": "Sales Person Target Variance Based On Item Group",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Maintenance User"
+   },
+   {
+    "parent": "Sales Person Target Variance Based On Item Group",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   },
+   {
+    "parent": "Sales Person Target Variance Based On Item Group",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
   "modified": "2017-06-21 18:18:50.748793",
   "module": "Desk",
   "name": "ToDo",
@@ -7150,6 +5647,62 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "System Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2019-04-25 22:20:59.033199",
+  "module": "Selling",
+  "name": "Territory Target Variance Based On Item Group",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Sales Order",
+  "reference_report": null,
+  "report_name": "Territory Target Variance Based On Item Group",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Territory Target Variance Based On Item Group",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
+   },
+   {
+    "parent": "Territory Target Variance Based On Item Group",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales Manager"
+   },
+   {
+    "parent": "Territory Target Variance Based On Item Group",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Maintenance User"
+   },
+   {
+    "parent": "Territory Target Variance Based On Item Group",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   },
+   {
+    "parent": "Territory Target Variance Based On Item Group",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
    }
   ],
   "timeout": 0
@@ -7188,6 +5741,44 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Accounts User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2019-07-21 23:24:21.094269",
+  "module": "Buying",
+  "name": "Procurement Tracker",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Purchase Order",
+  "reference_report": null,
+  "report_name": "Procurement Tracker",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Procurement Tracker",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Purchase Manager"
+   },
+   {
+    "parent": "Procurement Tracker",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Purchase User"
    }
   ],
   "timeout": 0
@@ -7281,6 +5872,50 @@
   "timeout": 0
  },
  {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2019-05-01 13:00:26.545278",
+  "module": "Accounts",
+  "name": "Inactive Sales Items",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Sales Invoice",
+  "reference_report": null,
+  "report_name": "Inactive Sales Items",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Inactive Sales Items",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   },
+   {
+    "parent": "Inactive Sales Items",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   },
+   {
+    "parent": "Inactive Sales Items",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Auditor"
+   }
+  ],
+  "timeout": 0
+ },
+ {
   "add_total_row": 1,
   "add_translate_data": 0,
   "columns": [],
@@ -7314,6 +5949,50 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Accounts User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2019-05-03 11:25:03.685247",
+  "module": "Buying",
+  "name": "Subcontracted Item To Be Received",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Subcontracting Order",
+  "reference_report": null,
+  "report_name": "Subcontracted Item To Be Received",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Subcontracted Item To Be Received",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   },
+   {
+    "parent": "Subcontracted Item To Be Received",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Purchase Manager"
+   },
+   {
+    "parent": "Subcontracted Item To Be Received",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Purchase User"
    }
   ],
   "timeout": 0
@@ -7364,6 +6043,50 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Auditor"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2019-05-03 12:04:24.203721",
+  "module": "Buying",
+  "name": "Subcontracted Raw Materials To Be Transferred",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Subcontracting Order",
+  "reference_report": null,
+  "report_name": "Subcontracted Raw Materials To Be Transferred",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Subcontracted Raw Materials To Be Transferred",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   },
+   {
+    "parent": "Subcontracted Raw Materials To Be Transferred",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Purchase Manager"
+   },
+   {
+    "parent": "Subcontracted Raw Materials To Be Transferred",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Purchase User"
    }
   ],
   "timeout": 0
@@ -7424,6 +6147,44 @@
   "javascript": null,
   "json": null,
   "letter_head": null,
+  "modified": "2019-06-06 15:42:53.021714",
+  "module": "Manufacturing",
+  "name": "BOM Explorer",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "BOM",
+  "reference_report": null,
+  "report_name": "BOM Explorer",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "BOM Explorer",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing Manager"
+   },
+   {
+    "parent": "BOM Explorer",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
   "modified": "2017-02-24 20:19:26.257552",
   "module": "Accounts",
   "name": "Bank Clearance Summary",
@@ -7452,6 +6213,130 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Auditor"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2019-06-14 03:25:36.263179",
+  "module": "Selling",
+  "name": "Customer-wise Item Price",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Customer",
+  "reference_report": null,
+  "report_name": "Customer-wise Item Price",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Customer-wise Item Price",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
+   },
+   {
+    "parent": "Customer-wise Item Price",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock Manager"
+   },
+   {
+    "parent": "Customer-wise Item Price",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   },
+   {
+    "parent": "Customer-wise Item Price",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   },
+   {
+    "parent": "Customer-wise Item Price",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales Manager"
+   },
+   {
+    "parent": "Customer-wise Item Price",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales Master Manager"
+   },
+   {
+    "parent": "Customer-wise Item Price",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2019-06-17 12:45:07.324014",
+  "module": "Stock",
+  "name": "Delayed Item Report",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Delivery Note",
+  "reference_report": null,
+  "report_name": "Delayed Item Report",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Delayed Item Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   },
+   {
+    "parent": "Delayed Item Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
+   },
+   {
+    "parent": "Delayed Item Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock Manager"
+   },
+   {
+    "parent": "Delayed Item Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   },
+   {
+    "parent": "Delayed Item Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Maintenance User"
    }
   ],
   "timeout": 0
@@ -7551,6 +6436,100 @@
   "timeout": 0
  },
  {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2019-06-17 12:45:56.359322",
+  "module": "Stock",
+  "name": "Delayed Order Report",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Delivery Note",
+  "reference_report": null,
+  "report_name": "Delayed Order Report",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Delayed Order Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   },
+   {
+    "parent": "Delayed Order Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
+   },
+   {
+    "parent": "Delayed Order Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock Manager"
+   },
+   {
+    "parent": "Delayed Order Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   },
+   {
+    "parent": "Delayed Order Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Maintenance User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2023-07-26 21:03:20.722628",
+  "module": "Assets",
+  "name": "Fixed Asset Register",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Asset",
+  "reference_report": null,
+  "report_name": "Fixed Asset Register",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Fixed Asset Register",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   },
+   {
+    "parent": "Fixed Asset Register",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Quality Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
   "add_total_row": 1,
   "add_translate_data": 0,
   "columns": [],
@@ -7612,6 +6591,44 @@
   "javascript": null,
   "json": null,
   "letter_head": null,
+  "modified": "2020-01-09 14:42:45.254751",
+  "module": "Stock",
+  "name": "Stock and Account Value Comparison",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Stock Ledger Entry",
+  "reference_report": null,
+  "report_name": "Stock and Account Value Comparison",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Stock and Account Value Comparison",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   },
+   {
+    "parent": "Stock and Account Value Comparison",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
   "modified": "2017-02-24 20:17:17.638545",
   "module": "Accounts",
   "name": "Item-wise Sales Register",
@@ -7634,6 +6651,44 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Accounts User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2020-01-31 10:34:33.319047",
+  "module": "Selling",
+  "name": "Territory-wise Sales",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Opportunity",
+  "reference_report": null,
+  "report_name": "Territory-wise Sales",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Territory-wise Sales",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
+   },
+   {
+    "parent": "Territory-wise Sales",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales Manager"
    }
   ],
   "timeout": 0
@@ -7695,6 +6750,44 @@
   "timeout": 0
  },
  {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2022-01-20 14:21:47.771591",
+  "module": "Manufacturing",
+  "name": "BOM Operations Time",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "BOM",
+  "reference_report": null,
+  "report_name": "BOM Operations Time",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "BOM Operations Time",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing Manager"
+   },
+   {
+    "parent": "BOM Operations Time",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
   "add_total_row": 0,
   "add_translate_data": 0,
   "columns": [],
@@ -7728,6 +6821,50 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Projects Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2020-03-06 11:38:05.789851",
+  "module": "Manufacturing",
+  "name": "Production Planning Report",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Work Order",
+  "reference_report": null,
+  "report_name": "Production Planning Report",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Production Planning Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing User"
+   },
+   {
+    "parent": "Production Planning Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   },
+   {
+    "parent": "Production Planning Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing Manager"
    }
   ],
   "timeout": 0
@@ -7782,6 +6919,44 @@
   "javascript": null,
   "json": null,
   "letter_head": null,
+  "modified": "2020-04-17 16:10:30.168312",
+  "module": "Website",
+  "name": "Website Analytics",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Web Page View",
+  "reference_report": null,
+  "report_name": "Website Analytics",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Website Analytics",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
+   },
+   {
+    "parent": "Website Analytics",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Website Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
   "modified": "2017-02-24 20:17:45.178533",
   "module": "Stock",
   "name": "Item Prices",
@@ -7804,6 +6979,50 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Accounts Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2020-04-19 16:59:47.979278",
+  "module": "Manufacturing",
+  "name": "Work Order Summary",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Work Order",
+  "reference_report": null,
+  "report_name": "Work Order Summary",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Work Order Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing User"
+   },
+   {
+    "parent": "Work Order Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   },
+   {
+    "parent": "Work Order Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing Manager"
    }
   ],
   "timeout": 0
@@ -7854,6 +7073,56 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Accounts Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2020-12-30 11:49:21.713561",
+  "module": "Manufacturing",
+  "name": "Job Card Summary",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Job Card",
+  "reference_report": null,
+  "report_name": "Job Card Summary",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Job Card Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing User"
+   },
+   {
+    "parent": "Job Card Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   },
+   {
+    "parent": "Job Card Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing Manager"
+   },
+   {
+    "parent": "Job Card Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock Manager"
    }
   ],
   "timeout": 0
@@ -7944,6 +7213,94 @@
   "javascript": null,
   "json": null,
   "letter_head": null,
+  "modified": "2020-04-20 18:26:04.345289",
+  "module": "Manufacturing",
+  "name": "Downtime Analysis",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Downtime Entry",
+  "reference_report": null,
+  "report_name": "Downtime Analysis",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Downtime Analysis",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
+   },
+   {
+    "parent": "Downtime Analysis",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing User"
+   },
+   {
+    "parent": "Downtime Analysis",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": "{}",
+  "letter_head": null,
+  "modified": "2020-04-26 18:24:50.529940",
+  "module": "Manufacturing",
+  "name": "Quality Inspection Summary",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Quality Inspection",
+  "reference_report": null,
+  "report_name": "Quality Inspection Summary",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Quality Inspection Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Quality Manager"
+   },
+   {
+    "parent": "Quality Inspection Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   },
+   {
+    "parent": "Quality Inspection Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
   "modified": "2025-11-05 11:55:50.127020",
   "module": "Selling",
   "name": "Quotation Trends",
@@ -7994,6 +7351,56 @@
   "javascript": null,
   "json": null,
   "letter_head": null,
+  "modified": "2020-05-15 20:57:52.623455",
+  "module": "Buying",
+  "name": "Purchase Order Analysis",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Purchase Order",
+  "reference_report": null,
+  "report_name": "Purchase Order Analysis",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Purchase Order Analysis",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Purchase Manager"
+   },
+   {
+    "parent": "Purchase Order Analysis",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Purchase User"
+   },
+   {
+    "parent": "Purchase Order Analysis",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   },
+   {
+    "parent": "Purchase Order Analysis",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Supplier"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
   "modified": "2025-11-05 11:55:50.114173",
   "module": "Stock",
   "name": "Delivery Note Trends",
@@ -8033,7 +7440,45 @@
   "timeout": 0
  },
  {
-  "add_total_row": 1,
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2020-05-04 19:32:53.177213",
+  "module": "Projects",
+  "name": "Project Summary",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Project",
+  "reference_report": null,
+  "report_name": "Project Summary",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Project Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Projects User"
+   },
+   {
+    "parent": "Project Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Projects Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
   "add_translate_data": 0,
   "columns": [],
   "disabled": 0,
@@ -8089,7 +7534,69 @@
   "timeout": 0
  },
  {
-  "add_total_row": 1,
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2020-05-15 05:18:55.838030",
+  "module": "Manufacturing",
+  "name": "Exponential Smoothing Forecasting",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Sales Order",
+  "reference_report": null,
+  "report_name": "Exponential Smoothing Forecasting",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Exponential Smoothing Forecasting",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing User"
+   },
+   {
+    "parent": "Exponential Smoothing Forecasting",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   },
+   {
+    "parent": "Exponential Smoothing Forecasting",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing Manager"
+   },
+   {
+    "parent": "Exponential Smoothing Forecasting",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock Manager"
+   },
+   {
+    "parent": "Exponential Smoothing Forecasting",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales Manager"
+   },
+   {
+    "parent": "Exponential Smoothing Forecasting",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
   "add_translate_data": 0,
   "columns": [],
   "disabled": 0,
@@ -8128,6 +7635,62 @@
  },
  {
   "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2020-05-29 14:54:53.591445",
+  "module": "Selling",
+  "name": "Sales Order Analysis",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Sales Order",
+  "reference_report": null,
+  "report_name": "Sales Order Analysis",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Sales Order Analysis",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
+   },
+   {
+    "parent": "Sales Order Analysis",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales Manager"
+   },
+   {
+    "parent": "Sales Order Analysis",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Maintenance User"
+   },
+   {
+    "parent": "Sales Order Analysis",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   },
+   {
+    "parent": "Sales Order Analysis",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
   "add_translate_data": 0,
   "columns": [],
   "disabled": 0,
@@ -8182,6 +7745,56 @@
   "javascript": null,
   "json": null,
   "letter_head": null,
+  "modified": "2020-07-10 14:28:21.041310",
+  "module": "Buying",
+  "name": "Requested Items to Order and Receive",
+  "prepared_report": 0,
+  "query": "",
+  "ref_doctype": "Material Request",
+  "reference_report": null,
+  "report_name": "Requested Items to Order and Receive",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Requested Items to Order and Receive",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Purchase Manager"
+   },
+   {
+    "parent": "Requested Items to Order and Receive",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock Manager"
+   },
+   {
+    "parent": "Requested Items to Order and Receive",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   },
+   {
+    "parent": "Requested Items to Order and Receive",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Purchase User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
   "modified": "2025-11-05 11:55:49.983683",
   "module": "Stock",
   "name": "Purchase Receipt Trends",
@@ -8221,7 +7834,45 @@
   "timeout": 0
  },
  {
-  "add_total_row": 1,
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2020-07-23 19:32:02.168185",
+  "module": "Stock",
+  "name": "Stock Qty vs Serial No Count",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Item",
+  "reference_report": null,
+  "report_name": "Stock Qty vs Serial No Count",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Stock Qty vs Serial No Count",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock Manager"
+   },
+   {
+    "parent": "Stock Qty vs Serial No Count",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
   "add_translate_data": 0,
   "columns": [],
   "disabled": 0,
@@ -8266,6 +7917,44 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Auditor"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2020-08-02 05:05:00.457093",
+  "module": "Utilities",
+  "name": "YouTube Interactions",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Video",
+  "reference_report": null,
+  "report_name": "YouTube Interactions",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "YouTube Interactions",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "All"
+   },
+   {
+    "parent": "YouTube Interactions",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
    }
   ],
   "timeout": 0
@@ -8338,6 +8027,38 @@
   "javascript": null,
   "json": null,
   "letter_head": null,
+  "modified": "2020-08-10 18:12:42.391224",
+  "module": "Support",
+  "name": "First Response Time for Issues",
+  "prepared_report": 0,
+  "query": "select date(creation) as creation_date, avg(mins_to_first_response) from tabIssue where creation > '2016-05-01' group by date(creation) order by creation_date;",
+  "ref_doctype": "Issue",
+  "reference_report": null,
+  "report_name": "First Response Time for Issues",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "First Response Time for Issues",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Support Team"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
   "modified": "2017-02-24 20:09:56.200184",
   "module": "Selling",
   "name": "Available Stock for Packing Items",
@@ -8366,6 +8087,44 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Sales User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2020-08-10 18:34:19.083872",
+  "module": "CRM",
+  "name": "First Response Time for Opportunity",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Opportunity",
+  "reference_report": null,
+  "report_name": "First Response Time for Opportunity",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "First Response Time for Opportunity",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
+   },
+   {
+    "parent": "First Response Time for Opportunity",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales Manager"
    }
   ],
   "timeout": 0
@@ -8401,6 +8160,69 @@
    },
    {
     "parent": "Delivered Items To Be Billed",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2020-09-10 08:51:02.298482",
+  "module": "Regional",
+  "name": "UAE VAT 201",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "GL Entry",
+  "reference_report": null,
+  "report_name": "UAE VAT 201",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": "{}",
+  "letter_head": null,
+  "modified": "2020-09-10 19:25:15.851331",
+  "module": "Accounts",
+  "name": "POS Register",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "POS Invoice",
+  "reference_report": null,
+  "report_name": "POS Register",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "POS Register",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   },
+   {
+    "parent": "POS Register",
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Accounts User"
@@ -8454,6 +8276,38 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Auditor"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 1,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2020-10-11 19:43:19.358625",
+  "module": "Support",
+  "name": "Issue Analytics",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Issue",
+  "reference_report": null,
+  "report_name": "Issue Analytics",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Issue Analytics",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Support Team"
    }
   ],
   "timeout": 0
@@ -8520,6 +8374,38 @@
   "javascript": null,
   "json": null,
   "letter_head": null,
+  "modified": "2020-10-12 14:54:55.655920",
+  "module": "Support",
+  "name": "Issue Summary",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Issue",
+  "reference_report": null,
+  "report_name": "Issue Summary",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Issue Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Support Team"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
   "modified": "2018-02-13 04:58:29.780472",
   "module": "Manufacturing",
   "name": "Open Work Orders",
@@ -8542,6 +8428,38 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Stock User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2020-12-27 11:43:42.677584",
+  "module": "Manufacturing",
+  "name": "Production Plan Summary",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Production Plan",
+  "reference_report": null,
+  "report_name": "Production Plan Summary",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Production Plan Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing User"
    }
   ],
   "timeout": 0
@@ -8594,6 +8512,50 @@
   "filters": [],
   "is_standard": "Yes",
   "javascript": null,
+  "json": "{}",
+  "letter_head": null,
+  "modified": "2021-01-11 11:11:03.594242",
+  "module": "Manufacturing",
+  "name": "Cost of Poor Quality Report",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Job Card",
+  "reference_report": null,
+  "report_name": "Cost of Poor Quality Report",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Cost of Poor Quality Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
+   },
+   {
+    "parent": "Cost of Poor Quality Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing User"
+   },
+   {
+    "parent": "Cost of Poor Quality Report",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Manufacturing Manager"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
   "json": null,
   "letter_head": null,
   "modified": "2024-02-21 14:35:14.301848",
@@ -8618,6 +8580,44 @@
     "parentfield": "roles",
     "parenttype": "Report",
     "role": "Stock User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2021-04-15 15:49:35.432486",
+  "module": "Projects",
+  "name": "Delayed Tasks Summary",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Task",
+  "reference_report": null,
+  "report_name": "Delayed Tasks Summary",
+  "report_script": null,
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Delayed Tasks Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Projects User"
+   },
+   {
+    "parent": "Delayed Tasks Summary",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Projects Manager"
    }
   ],
   "timeout": 0
