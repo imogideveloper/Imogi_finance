@@ -304,7 +304,7 @@ doc_events = {
     },
 
     "Budget": {
-        "validate": "imogi_finance.events.budget.set_budget_display_fields",
+        "validate": "imogi_finance.events.budget.prevent_duplicate_cost_center_budget",
         "before_save": "imogi_finance.events.budget.set_budget_display_fields",
     },
 

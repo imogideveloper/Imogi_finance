@@ -122,3 +122,34 @@ def before_delete(doc, method=None):
         ).format(budget=budget_name, detail=detail),
         title=_("Budget Masih Digunakan"),
     )
+import frappe
+
+def prevent_duplicate_cost_center_budget(doc, method=None):
+    # Jalankan hanya kalau budget against = Cost Center
+    if getattr(doc, "budget_against", None) != "Cost Center":
+        return
+
+    cost_center = getattr(doc, "cost_center", None)
+    fiscal_year = getattr(doc, "fiscal_year", None)
+
+    if not cost_center or not fiscal_year:
+        return
+
+    existing_budget = frappe.db.get_value(
+        "Budget",
+        {
+            "name": ["!=", doc.name],
+            "docstatus": ["<", 2],
+            "budget_against": "Cost Center",
+            "cost_center": cost_center,
+            "fiscal_year": fiscal_year,
+        },
+        "name"
+    )
+
+    if existing_budget:
+        frappe.throw(
+            f"Budget untuk Cost Center <b>{cost_center}</b> pada Fiscal Year "
+            f"<b>{fiscal_year}</b> sudah ada di Budget <b>{existing_budget}</b>. "
+            f"Tidak boleh membuat budget ganda dengan Cost Center yang sama."
+        )
