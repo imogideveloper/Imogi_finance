@@ -296,6 +296,10 @@ doc_events = {
     },
     "Budget": {
         "before_delete": "imogi_finance.events.budget.before_delete",
+        "on_trash": "imogi_finance.events.budget.before_delete",
+        "before_cancel": "imogi_finance.events.budget.before_cancel",
+        "validate": "imogi_finance.events.budget.prevent_duplicate_cost_center_budget",
+        "before_save": "imogi_finance.events.budget.set_budget_display_fields",
     },
     "Budget Control Entry": {
         "validate": ["imogi_finance.events.metadata_fields.set_created_by"],
@@ -307,10 +311,7 @@ doc_events = {
         "on_submit": ["imogi_finance.events.metadata_fields.set_submit_on"],
     },
 
-    "Budget": {
-        "validate": "imogi_finance.events.budget.prevent_duplicate_cost_center_budget",
-        "before_save": "imogi_finance.events.budget.set_budget_display_fields",
-    },
+
 
     "Cash Bank Daily Report": {
         "validate": ["imogi_finance.events.metadata_fields.set_created_by"],
@@ -364,6 +365,9 @@ doc_events = {
     },
 
     "Payment Entry": {
+        "on_submit": "imogi_finance.events.payment_entry.set_payment_status",
+        "on_cancel": "imogi_finance.events.payment_entry.set_payment_status",
+        "on_update_after_submit": "imogi_finance.events.payment_entry.set_payment_status",
         "validate": [
             "imogi_finance.receipt_control.payment_entry_hooks.validate_customer_receipt_link",
             "imogi_finance.transfer_application.payment_entry_hooks.validate_transfer_application_link",
@@ -461,6 +465,8 @@ after_migrate = [
 # ------------------------------
 
 override_whitelisted_methods = {
+    "erpnext.accounts.doctype.budget.budget.validate_budget_records":
+        "imogi_finance.overrides.budget_validation.validate_budget_records",
     "erpnext.accounts.doctype.payment_entry.payment_entry.get_payment_entry":
         "imogi_finance.overrides.payment_entry.get_payment_entry",
 

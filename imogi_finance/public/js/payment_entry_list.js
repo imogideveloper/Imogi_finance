@@ -7,7 +7,6 @@ frappe.listview_settings['Payment Entry'] = {
         if (doc.docstatus == 0) {
             return [__("Draft"), "grey", "docstatus,=,0"];
         }
-        // docstatus == 1 (submitted)
         const unalloc = parseFloat(doc.unallocated_amount || 0);
         if (unalloc > 0) {
             return [__("Unallocated"), "orange", "unallocated_amount,>,0"];
@@ -31,9 +30,7 @@ frappe.listview_settings['Payment Entry'] = {
             if (doc.docstatus !== 1) return "";
             const unalloc = parseFloat(value || 0);
             if (unalloc > 0) {
-                return `<span style="color: orange; font-weight: bold;">
-                    ⚠ ${format_currency(unalloc)}
-                </span>`;
+                return `<span style="color: orange; font-weight: bold;">⚠ ${frappe.format(unalloc, {fieldtype: "Currency"})}</span>`;
             }
             return `<span style="color: green;">✓ Allocated</span>`;
         }
