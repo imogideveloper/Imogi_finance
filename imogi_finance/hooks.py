@@ -179,14 +179,14 @@ override_doctype_class = {
 # ---------------
 
 doc_events = {
-"Tax Invoice OCR Upload": {
-    "validate": [
-        "imogi_finance.events.metadata_fields.set_created_by",
-    ],
-    "on_submit": [
-        "imogi_finance.events.metadata_fields.set_submit_on",
-    ],
-},
+    "Tax Invoice OCR Upload": {
+        "validate": [
+            "imogi_finance.events.metadata_fields.set_created_by",
+        ],
+        "on_submit": [
+            "imogi_finance.events.metadata_fields.set_submit_on",
+        ],
+    },
     "Bank Statement Import": {
         "before_insert": "imogi_finance.imogi_finance.events.bank_statement_import_handler.bank_statement_import_on_before_insert",
         "before_submit": "imogi_finance.imogi_finance.events.bank_statement_import_handler.bank_statement_import_before_submit",
@@ -273,6 +273,35 @@ doc_events = {
         "on_update": [
             "imogi_finance.events.internal_charge_request.sync_status_with_workflow",
         ],
+    },
+    "Additional Budget Request": {
+        "on_workflow_action": "imogi_finance.events.additional_budget_request.on_workflow_action",
+        "validate": ["imogi_finance.events.metadata_fields.set_created_by"],
+        "on_submit": [
+            "imogi_finance.events.metadata_fields.set_submit_on",
+            "imogi_finance.events.additional_budget_request.on_submit",
+        ],
+    },
+    "Administrative Payment Voucher": {
+        "validate": ["imogi_finance.events.metadata_fields.set_created_by"],
+        "on_submit": ["imogi_finance.events.metadata_fields.set_submit_on"],
+    },
+    "Budget": {
+        "before_delete": "imogi_finance.events.budget.before_delete",
+        "on_trash": "imogi_finance.events.budget.before_delete",
+        "before_cancel": "imogi_finance.events.budget.before_cancel",
+        "validate": "imogi_finance.events.budget.prevent_duplicate_cost_center_budget",
+        "before_save": "imogi_finance.events.budget.set_budget_display_fields",
+    },
+    "Budget Control Entry": {
+        "validate": ["imogi_finance.events.metadata_fields.set_created_by"],
+        "on_submit": ["imogi_finance.events.metadata_fields.set_submit_on"],
+    },
+    "Budget Reclass Request": {
+        "validate": ["imogi_finance.events.metadata_fields.set_created_by"],
+        "on_submit": ["imogi_finance.events.metadata_fields.set_submit_on"],
+    },
+    "Internal Charge Request": {
         "on_update_after_submit": [
             "imogi_finance.events.internal_charge_request.sync_status_with_workflow",
         ],
@@ -294,9 +323,6 @@ doc_events = {
         "validate": ["imogi_finance.events.metadata_fields.set_created_by"],
         "on_submit": ["imogi_finance.events.metadata_fields.set_submit_on"],
     },
-    "Budget": {
-        "before_delete": "imogi_finance.events.budget.before_delete",
-    },
     "Budget Control Entry": {
         "validate": ["imogi_finance.events.metadata_fields.set_created_by"],
         "on_submit": ["imogi_finance.events.metadata_fields.set_submit_on"],
@@ -305,11 +331,6 @@ doc_events = {
     "Budget Reclass Request": {
         "validate": ["imogi_finance.events.metadata_fields.set_created_by"],
         "on_submit": ["imogi_finance.events.metadata_fields.set_submit_on"],
-    },
-
-    "Budget": {
-        "validate": "imogi_finance.events.budget.prevent_duplicate_cost_center_budget",
-        "before_save": "imogi_finance.events.budget.set_budget_display_fields",
     },
 
     "Cash Bank Daily Report": {

@@ -153,3 +153,8 @@ def prevent_duplicate_cost_center_budget(doc, method=None):
             f"<b>{fiscal_year}</b> sudah ada di Budget <b>{existing_budget}</b>. "
             f"Tidak boleh membuat budget ganda dengan Cost Center yang sama."
         )
+
+
+def before_cancel(doc, method=None):
+    """Prevent cancellation of Budget if linked transactions exist."""
+    before_delete(doc, method)

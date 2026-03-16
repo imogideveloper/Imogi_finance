@@ -105,7 +105,8 @@ class VATOUTBatch(Document):
 				"docstatus": 1,
 				"company": self.company,
 				"posting_date": ["between", [self.date_from, self.date_to]],
-				"out_fp_status": "Verified"
+				"out_fp_status": "Verified",
+				"out_fp_tax_invoice_upload": ["is", "set"]
 			},
 			or_filters=[
 				["out_fp_batch", "is", "not set"],
