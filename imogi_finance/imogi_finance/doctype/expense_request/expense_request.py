@@ -132,6 +132,7 @@ class ExpenseRequest(Document):
         self.validate_deferred_expense()
         validate_tax_invoice_upload_link(self, "Expense Request")
         self._ensure_final_state_immutability()
+        self.validate_tax_invoice_ocr_before_submit()
 
     def before_submit(self):
         """Prepare for submission - resolve approval route and initialize state."""
@@ -528,19 +529,27 @@ class ExpenseRequest(Document):
 
         # ========== NPWP VALIDATION (BLOCKING) ==========
         supplier_npwp = getattr(self, "supplier_tax_id", None)
-        if supplier_npwp:
-            supplier_npwp_normalized = normalize_npwp(supplier_npwp)
-            ocr_npwp = normalize_npwp(getattr(self, "ti_fp_npwp", None))
+        ocr_npwp = normalize_npwp(getattr(self, "ti_fp_npwp", None))
 
-            if ocr_npwp and supplier_npwp_normalized and ocr_npwp != supplier_npwp_normalized:
-                frappe.throw(
-                    _("NPWP dari OCR ({0}) tidak sesuai dengan NPWP Supplier ({1})").format(
-                        getattr(self, "ti_fp_npwp", ""), supplier_npwp
-                    ),
-                    title=_("NPWP Tidak Cocok")
-                )
-            elif ocr_npwp and supplier_npwp_normalized:
-                self.ti_npwp_match = 1
+        # Block jika NPWP Supplier kosong
+        if not supplier_npwp:
+            frappe.throw(
+                _("NPWP Supplier tidak ditemukan. Harap lengkapi NPWP Supplier sebelum melanjutkan transaksi."),
+                title=_("NPWP Supplier Tidak Ada")
+            )
+
+        supplier_npwp_normalized = normalize_npwp(supplier_npwp)
+
+        # Block jika NPWP dari OCR tidak sesuai dengan NPWP Supplier
+        if ocr_npwp and supplier_npwp_normalized and ocr_npwp != supplier_npwp_normalized:
+            frappe.throw(
+                _("NPWP dari OCR ({0}) tidak sesuai dengan NPWP Supplier ({1})").format(
+                    getattr(self, "ti_fp_npwp", ""), supplier_npwp
+                ),
+                title=_("NPWP Tidak Cocok")
+            )
+        elif ocr_npwp and supplier_npwp_normalized:
+            self.ti_npwp_match = 1
 
     def validate_deferred_expense(self):
         """Validate deferred expense configuration."""
