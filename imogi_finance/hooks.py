@@ -432,6 +432,8 @@ after_migrate = [
 # ------------------------------
 #
 override_whitelisted_methods = {
+    "erpnext.accounts.doctype.budget.budget.validate_budget_records":
+        "imogi_finance.overrides.budget_validation.validate_budget_records",
     "erpnext.accounts.doctype.payment_entry.payment_entry.get_payment_entry": "imogi_finance.overrides.payment_entry.get_payment_entry",
     # Suppress TableMissingError (DocType belum migrate) — log ke Error Log, return 0, no HTTP 500
     "frappe.desk.reportview.get_count": "imogi_finance.api.reportview_patch.get_count",
