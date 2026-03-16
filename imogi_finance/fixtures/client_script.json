@@ -2,6 +2,17 @@
  {
   "docstatus": 0,
   "doctype": "Client Script",
+  "dt": "Expense Request",
+  "enabled": 1,
+  "modified": "2026-03-16 09:47:41.689239",
+  "module": null,
+  "name": "Auto Close",
+  "script": "frappe.ui.form.on('Expense Request', {\r\n    refresh: function(frm) {\r\n        if (!frm._pi_dialog_patched) {\r\n            frm._pi_dialog_patched = true;\r\n\r\n            // Patch frappe.call\r\n            const _orig_call = frappe.call.bind(frappe);\r\n            frappe.call = function(opts) {\r\n                const method = (typeof opts === 'object') ? (opts.method || '') : (opts || '');\r\n                const is_pi = typeof method === 'string' &&\r\n                    method.includes('create_purchase_invoice_from_request');\r\n\r\n                if (is_pi && typeof opts === 'object') {\r\n                    const _cb = opts.callback;\r\n                    const _err = opts.error;\r\n\r\n                    opts.callback = function(r) {\r\n                        close_all_dialogs();\r\n                        if (_cb) _cb(r);\r\n                    };\r\n                    opts.error = function(r) {\r\n                        close_all_dialogs();\r\n                        if (_err) _err(r);\r\n                    };\r\n                    opts.always = function() {\r\n                        close_all_dialogs();\r\n                    };\r\n                }\r\n                return _orig_call(opts);\r\n            };\r\n\r\n            // Patch frappe.xcall (promise-based)\r\n            if (frappe.xcall) {\r\n                const _orig_xcall = frappe.xcall.bind(frappe);\r\n                frappe.xcall = function(method, params) {\r\n                    const is_pi = typeof method === 'string' &&\r\n                        method.includes('create_purchase_invoice_from_request');\r\n                    const result = _orig_xcall(method, params);\r\n                    if (is_pi && result && typeof result.then === 'function') {\r\n                        return result.then(function(r) {\r\n                            close_all_dialogs();\r\n                            return r;\r\n                        }).catch(function(e) {\r\n                            close_all_dialogs();\r\n                            throw e;\r\n                        });\r\n                    }\r\n                    return result;\r\n                };\r\n            }\r\n        }\r\n\r\n        function close_all_dialogs() {\r\n            try { frappe.dom.unfreeze(); } catch(e) {}\r\n            try { if (cur_dialog) cur_dialog.hide(); } catch(e) {}\r\n            try {\r\n                frappe.ui.Dialog.instances && Object.values(frappe.ui.Dialog.instances).forEach(d => {\r\n                    try { d.hide(); } catch(e) {}\r\n                });\r\n            } catch(e) {}\r\n            $('.modal.show, .modal.fade.in').each(function() {\r\n                $(this).modal('hide').remove();\r\n            });\r\n            $('.modal-backdrop').remove();\r\n            $('body').removeClass('modal-open').css('padding-right', '');\r\n            $('.freeze-message-container, #freeze-message').remove();\r\n        }\r\n    }\r\n});",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
   "dt": "Purchase Invoice",
   "enabled": 0,
   "modified": "2026-03-11 10:34:08.312228",
@@ -70,10 +81,10 @@
   "doctype": "Client Script",
   "dt": "Expense Request",
   "enabled": 1,
-  "modified": "2026-03-10 12:12:45.054636",
+  "modified": "2026-03-16 10:34:30.625187",
   "module": null,
   "name": "Expense Request",
-  "script": "frappe.listview_settings['Expense Request'] = {\r\n\r\n    formatters: {\r\n        custom_expense_account_display(value) {\r\n\r\n            if (!value) return \"\";\r\n\r\n            return `<span style=\"color:#2563eb;font-weight:600\">\r\n                ${value}\r\n            </span>`;\r\n        }\r\n    }\r\n\r\n};",
+  "script": "frappe.listview_settings['Expense Request'] = {\r\n\r\n    add_fields: ['status'],\r\n\r\n    get_indicator: function(doc) {\r\n        const status_map = {\r\n            'Draft':      ['Draft',      'grey'],\r\n            'Pending':    ['Pending',    'orange'],\r\n            'Submitted':  ['Submitted',  'blue'],\r\n            'Approved':   ['Approved',   'green'],\r\n            'Rejected':   ['Rejected',   'red'],\r\n            'PI Created': ['PI Created', 'blue'],\r\n            'Paid':       ['Paid',       'green'],\r\n            'Cancelled':  ['Cancelled',  'red'],\r\n        };\r\n        const status = doc.status || (doc.docstatus == 2 ? 'Cancelled' : doc.docstatus == 1 ? 'Submitted' : 'Draft');\r\n        return status_map[status] || [status, 'grey'];\r\n    },\r\n\r\n    formatters: {\r\n        custom_expense_account_display(value) {\r\n            if (!value) return '';\r\n            return `<span style=\"color:#2563eb;font-weight:600\">${value}</span>`;\r\n        },\r\n        status(value, df, doc) {\r\n            const color_map = {\r\n                'Draft':      'grey',\r\n                'Pending':    'orange',\r\n                'Submitted':  'blue',\r\n                'Approved':   'green',\r\n                'Rejected':   'red',\r\n                'PI Created': 'blue',\r\n                'Paid':       'green',\r\n                'Cancelled':  'red',\r\n            };\r\n            const real_status = doc.status || value;\r\n            const color = color_map[real_status] || 'grey';\r\n            return `<span class=\"indicator-pill ${color}\">${real_status || ''}</span>`;\r\n        }\r\n    }\r\n\r\n};",
   "view": "List"
  },
  {
@@ -92,10 +103,10 @@
   "doctype": "Client Script",
   "dt": "Expense Request",
   "enabled": 1,
-  "modified": "2026-03-10 14:11:00.013955",
+  "modified": "2026-03-16 10:40:43.873839",
   "module": null,
   "name": "Expense Number Label",
-  "script": "frappe.listview_settings[\"Expense Request\"] = {\r\n    refresh(listview) {\r\n\r\n        function change_label() {\r\n            const header = document.querySelector('[data-sort-by=\"name\"]');\r\n            if (header) {\r\n                header.textContent = \"Expense Number\";\r\n            }\r\n        }\r\n\r\n        change_label();\r\n\r\n        // jalankan lagi setelah table render ulang\r\n        setTimeout(change_label, 300);\r\n        setTimeout(change_label, 800);\r\n    }\r\n};",
+  "script": "frappe.listview_settings['Expense Request'] = {\r\n\r\n    add_fields: ['status'],\r\n\r\n    get_indicator: function(doc) {\r\n        const status_map = {\r\n            'Draft':      ['Draft',      'grey'],\r\n            'Pending':    ['Pending',    'orange'],\r\n            'Submitted':  ['Submitted',  'blue'],\r\n            'Approved':   ['Approved',   'green'],\r\n            'Rejected':   ['Rejected',   'red'],\r\n            'PI Created': ['PI Created', 'blue'],\r\n            'Paid':       ['Paid',       'green'],\r\n            'Cancelled':  ['Cancelled',  'red'],\r\n        };\r\n        const status = doc.status || (doc.docstatus == 2 ? 'Cancelled' : doc.docstatus == 1 ? 'Submitted' : 'Draft');\r\n        return status_map[status] || [status, 'grey'];\r\n    },\r\n\r\n    formatters: {\r\n        custom_expense_account_display(value) {\r\n            if (!value) return '';\r\n            return `<span style=\"color:#2563eb;font-weight:600\">${value}</span>`;\r\n        },\r\n        status(value, df, doc) {\r\n            const color_map = {\r\n                'Draft':      'grey',\r\n                'Pending':    'orange',\r\n                'Submitted':  'blue',\r\n                'Approved':   'green',\r\n                'Rejected':   'red',\r\n                'PI Created': 'blue',\r\n                'Paid':       'green',\r\n                'Cancelled':  'red',\r\n            };\r\n            const real_status = doc.status || value;\r\n            const color = color_map[real_status] || 'grey';\r\n            return `<span class=\"indicator-pill ${color}\">${real_status || ''}</span>`;\r\n        }\r\n    },\r\n\r\n    refresh: function(listview) {\r\n        function change_label() {\r\n            const header = document.querySelector('[data-sort-by=\"name\"]');\r\n            if (header) {\r\n                header.textContent = \"Expense Number\";\r\n            }\r\n        }\r\n        change_label();\r\n        setTimeout(change_label, 300);\r\n        setTimeout(change_label, 800);\r\n    }\r\n};",
   "view": "List"
  }
 ]
