@@ -1052,16 +1052,10 @@ async function proceedCreatePI(frm) {
     __('Are you sure you want to create a Purchase Invoice from this Expense Request?'),
     async () => {
       try {
-        frappe.show_progress(__('Creating...'), 0, 100);
-
         const { message } = await frappe.call({
           method: 'imogi_finance.accounting.create_purchase_invoice_from_request',
           args: { expense_request_name: frm.doc.name },
-          freeze: true,
-          freeze_message: __('Creating Purchase Invoice...'),
         });
-
-        frappe.hide_progress();
 
         if (message) {
           frappe.show_alert({
@@ -1071,7 +1065,6 @@ async function proceedCreatePI(frm) {
           frm.reload_doc();
         }
       } catch (error) {
-        frappe.hide_progress();
         frappe.msgprint({
           title: __('Error'),
           message: error?.message || __('Failed to create Purchase Invoice'),
@@ -1081,6 +1074,7 @@ async function proceedCreatePI(frm) {
     }
   );
 }
+
 frappe.ui.form.on('Expense Request Item', {
   amount(frm, cdt, cdn) {
     const row = locals[cdt][cdn];
@@ -1116,3 +1110,48 @@ frappe.ui.form.on('Expense Request Item', {
     updateTotalsSummary(frm);
   },
 });
+
+frappe.listview_settings['Expense Request'] = {
+
+    add_fields: ['status'],
+
+    get_indicator: function(doc) {
+        const status_map = {
+            'Draft':      ['Draft',      'grey'],
+            'Pending':    ['Pending',    'orange'],
+            'Submitted':  ['Submitted',  'blue'],
+            'Approved':   ['Approved',   'green'],
+            'Rejected':   ['Rejected',   'red'],
+            'PI Created': ['PI Created', 'blue'],
+            'Paid':       ['Paid',       'green'],
+            'Cancelled':  ['Cancelled',  'red'],
+        };
+        // Gunakan field status custom, bukan docstatus
+        const status = doc.status || (doc.docstatus == 2 ? 'Cancelled' : doc.docstatus == 1 ? 'Submitted' : 'Draft');
+        return status_map[status] || [status, 'grey'];
+    },
+
+    formatters: {
+        custom_expense_account_display(value) {
+            if (!value) return '';
+            return `<span style="color:#2563eb;font-weight:600">${value}</span>`;
+        },
+        status(value, df, doc) {
+            // Override tampilan kolom status dengan nilai dari field status custom
+            const color_map = {
+                'Draft':      'grey',
+                'Pending':    'orange',
+                'Submitted':  'blue',
+                'Approved':   'green',
+                'Rejected':   'red',
+                'PI Created': 'blue',
+                'Paid':       'green',
+                'Cancelled':  'red',
+            };
+            // Pakai doc.status (custom field) bukan value default dari docstatus
+            const real_status = doc.status || value;
+            const color = color_map[real_status] || 'grey';
+            return `<span class="indicator-pill ${color}">${real_status || ''}</span>`;
+        }
+    }
+};
