@@ -970,6 +970,73 @@ def reverse_consumption_for_purchase_invoice(purchase_invoice, expense_request=N
             reason=_("Budget consumption reversed from Purchase Invoice {0}.").format(getattr(purchase_invoice, "name", None)),
         )
 
+def release_budget_on_pi_submit(expense_request, pi_doc):
+    """
+    Release reservation secara partial saat PI di-submit.
+    Hanya release sebesar nilai PI, bukan seluruh reservation ER.
+    """
+    settings = utils.get_settings()
+    if not settings.get("enable_budget_lock"):
+        return
+
+    _er_ref_doctype = getattr(expense_request, "doctype", "Expense Request")
+    er_name = getattr(expense_request, "name", None)
+
+    # Cek apakah ada RESERVATION OUT yang bisa di-release
+    reservations = _get_entries_for_ref(_er_ref_doctype, er_name, "RESERVATION")
+    reservations_out = [r for r in reservations if r.get("direction") == "OUT"]
+
+    if not reservations_out:
+        frappe.logger().info(
+            f"release_budget_on_pi_submit: No RESERVATION OUT entries for {er_name}"
+        )
+        return
+
+    # Ambil row pertama sebagai referensi dimensi
+    row = reservations_out[0]
+
+    # Hitung total reserved
+    total_reserved = sum(r.get("amount", 0) for r in reservations_out)
+
+    # Hitung total yang sudah di-release sebelumnya (RESERVATION IN)
+    reservations_in = [r for r in reservations if r.get("direction") == "IN"]
+    total_released = sum(r.get("amount", 0) for r in reservations_in)
+
+    # Sisa reservation aktif
+    remaining_reserved = total_reserved - total_released
+
+    # Release sebesar nilai PI, tidak boleh melebihi sisa
+    release_amount = min(pi_doc.grand_total, remaining_reserved)
+
+    if release_amount <= 0:
+        frappe.logger().info(
+            f"release_budget_on_pi_submit: Nothing to release for {er_name}, "
+            f"reserved={remaining_reserved}, pi_amount={pi_doc.grand_total}"
+        )
+        return
+
+    dims = utils.Dimensions(
+        company=row.get("company"),
+        fiscal_year=row.get("fiscal_year"),
+        cost_center=row.get("cost_center"),
+        account=row.get("account"),
+    )
+
+    # ← PAKAI ledger.post_entry BUKAN _create_entry
+    entry_name = ledger.post_entry(
+        "RESERVATION",
+        dims,
+        float(release_amount),
+        "IN",                    # IN = mengurangi reservation
+        ref_doctype="Purchase Invoice",
+        ref_name=pi_doc.name,
+        remarks=f"Reservation released on PI submit from ER {er_name}",
+    )
+
+    frappe.logger().info(
+        f"release_budget_on_pi_submit: Released {release_amount} "
+        f"for ER {er_name} via PI {pi_doc.name}, entry={entry_name}"
+    )
 
 def maybe_post_internal_charge_je(purchase_invoice, expense_request=None):
     settings = utils.get_settings()

@@ -717,6 +717,25 @@ def on_submit(doc, method=None):
 
     if expense_request:
         _handle_expense_request_submit(doc, expense_request)
+        # _release_budget_reservation_on_pi_submit(doc, expense_request) 
+
+def _release_budget_reservation_on_pi_submit(pi_doc, expense_request_name):
+    try:
+        from imogi_finance.budget_control import workflow as budget_workflow
+
+        er_doc = frappe.get_doc("Expense Request", expense_request_name)
+
+        budget_workflow.release_budget_on_pi_submit(er_doc, pi_doc)
+
+    except Exception as e:
+        frappe.log_error(
+            message=frappe.get_traceback(),
+            title=f"Budget Reservation Release Failed - PI {pi_doc.name}"
+        )
+        frappe.throw(
+            f"Gagal melepas reservation budget dari ER {expense_request_name}: {str(e)}",
+            title="Budget Release Error"
+        )
 
 
 def _handle_expense_request_submit(doc, request_name):
