@@ -395,8 +395,41 @@ def validate_before_submit(doc, method=None):
     # Validate 1 ER = 1 PI (only submitted PI, cancelled are ignored)
     _validate_one_pi_per_request(doc)
 
+    # Validate tax period not closed
+    _validate_tax_period_not_closed(doc)
     # Option A: Budget check for direct PI (without ER)
     _validate_budget_for_direct_pi(doc)
+
+
+def _validate_tax_period_not_closed(doc):
+    """Validate that PI posting_date is not in a closed tax period.
+    
+    If the period is closed, automatically move posting_date to the
+    first day of the next month and warn the user.
+    """
+    from imogi_finance.imogi_finance.doctype.tax_period_closing.tax_period_closing import is_period_locked
+    from frappe.utils import getdate, add_months, get_first_day
+
+    if not doc.posting_date:
+        return
+
+    company = doc.company or frappe.defaults.get_user_default("Company")
+    if not company:
+        return
+
+    if is_period_locked(company, doc.posting_date):
+        # Auto-move to first day of next month
+        next_month_date = get_first_day(add_months(doc.posting_date, 1))
+        old_date = doc.posting_date
+        doc.posting_date = next_month_date
+
+        frappe.msgprint(
+            _("Tax period for {0} is already closed. Posting date has been automatically moved from {1} to {2}.").format(
+                old_date, old_date, next_month_date
+            ),
+            title=_("Tax Period Closed - Date Adjusted"),
+            indicator="orange"
+        )
 
 
 def _validate_one_pi_per_request(doc):
