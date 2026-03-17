@@ -411,6 +411,7 @@ doc_events = {
         ],
         "before_cancel": [
             "imogi_finance.events.payment_entry.before_cancel",
+            "imogi_finance.events.payment_entry.clean_payment_ledger",
         ],
         "on_cancel": [
             "imogi_finance.events.payment_entry.on_cancel",
@@ -423,16 +424,7 @@ doc_events = {
         "on_trash": [
             "imogi_finance.events.payment_entry.on_trash",
         ],
-    },
-
-    "Bank Transaction": {
-        "before_cancel": "imogi_finance.events.bank_transaction.before_cancel",
-        "on_submit": "imogi_finance.transfer_application.matching.handle_bank_transaction",
-        "on_update_after_submit": [
-            "imogi_finance.transfer_application.matching.handle_bank_transaction",
-            "imogi_finance.events.bank_transaction.on_update_after_submit",
-        ],
-    },
+    },    
 
     "Payroll Entry": {},
 }
@@ -493,6 +485,8 @@ override_whitelisted_methods = {
     "frappe.desk.desktop.get_desktop_page": "imogi_finance.overrides.desktop.get_desktop_page",
 
 }
+
+ignore_links_on_delete = ["Payment Ledger Entry", "GL Entry"]
 
 # override_doctype_dashboards = {
 #     "Task": "imogi_finance.task.get_dashboard_data"
