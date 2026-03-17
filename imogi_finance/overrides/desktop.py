@@ -1,5 +1,5 @@
 import frappe
-from frappe.json import loads
+from json import loads  # ← ganti ini
 from frappe.desk.desktop import Workspace
 from frappe.exceptions import DoesNotExistError
 
