@@ -489,6 +489,9 @@ override_whitelisted_methods = {
     # Suppress TableMissingError (DocType belum migrate) — log ke Error Log, return 0, no HTTP 500
     "frappe.desk.reportview.get_count":
         "imogi_finance.api.reportview_patch.get_count",
+    "frappe.desk.listview.get_list_settings": "imogi_finance.overrides.listview.get_list_settings",
+    "frappe.desk.desktop.get_desktop_page": "imogi_finance.overrides.desktop.get_desktop_page",
+
 }
 
 # override_doctype_dashboards = {

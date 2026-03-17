@@ -591,7 +591,7 @@ def reverse_payment_entry(payment_entry_name: str, reversal_date: str | None = N
 
 def on_trash(doc, method=None):
     """Clear links from Expense Request before deleting PE to avoid LinkExistsError."""
-    expense_request, branch_request = _resolve_expense_request(doc)
+    expense_request = _resolve_expense_request(doc)
 
     # Handle Expense Request - clear link and update workflow state and status
     if expense_request:
