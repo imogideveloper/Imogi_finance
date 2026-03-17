@@ -489,6 +489,8 @@ override_whitelisted_methods = {
     "frappe.desk.reportview.get_count":
         "imogi_finance.api.reportview_patch.get_count",
     "frappe.desk.listview.get_list_settings": "imogi_finance.overrides.listview.get_list_settings",
+    "frappe.desk.desktop.get_desktop_page": "imogi_finance.overrides.desktop.get_desktop_page",
+
 }
 
 # override_doctype_dashboards = {
