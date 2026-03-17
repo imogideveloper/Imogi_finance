@@ -86,6 +86,12 @@ def get_columns():
 			"width": 140
 		},
 		{
+			"label": _("Sales Invoices"),
+			"fieldname": "sales_invoices",
+			"fieldtype": "Data",
+			"width": 300
+		},
+		{
 			"label": _("Template Version"),
 			"fieldname": "template_version",
 			"fieldtype": "Data",
@@ -133,6 +139,7 @@ def get_data(filters):
 			COUNT(DISTINCT si.name) as invoice_count,
 			COALESCE(SUM(si.out_fp_dpp), 0) as total_dpp,
 			COALESCE(SUM(si.out_fp_ppn), 0) as total_ppn,
+			GROUP_CONCAT(DISTINCT si.name ORDER BY si.name SEPARATOR ', ') as sales_invoices,
 			b.template_version,
 			b.exported_on,
 			b.owner as submitted_by,
