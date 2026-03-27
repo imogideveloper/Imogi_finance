@@ -86,6 +86,10 @@ frappe.query_reports["VAT Output Register Verified"] = {
 			check_configuration(report);
 		}, __("Tools"));
 		
+		report.page.add_inner_button(__("Export CoreTax"), function() {
+			export_coretax(report);
+		}, __("Tools"));
+
 		report.page.add_inner_button(__("Export to Excel"), function() {
 			export_to_excel(report);
 		}, __("Tools"));
@@ -141,6 +145,41 @@ function export_to_excel(report) {
 				link.download = r.message.file_name;
 				link.click();
 			}
+		}
+	});
+}
+
+function export_coretax(report) {
+	const company = frappe.query_report.get_filter_value("company");
+	const from_date = frappe.query_report.get_filter_value("from_date");
+	const to_date = frappe.query_report.get_filter_value("to_date");
+	const verification_status = frappe.query_report.get_filter_value("verification_status") || "Verified";
+
+	if (!company || !from_date || !to_date) {
+		frappe.msgprint(__("Please set Company, From Date, and To Date filters first."));
+		return;
+	}
+
+	frappe.show_alert({message: __("Generating CoreTax Excel..."), indicator: "blue"});
+
+	frappe.call({
+		method: "imogi_finance.imogi_finance.report.vat_output_register_verified.vat_output_register_verified.export_coretax",
+		args: { company, from_date, to_date, verification_status },
+		callback: function(r) {
+			// hide_progress removed
+			if (r.message && r.message.file_url) {
+				const link = document.createElement("a");
+				link.href = r.message.file_url;
+				link.download = r.message.file_name;
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+				frappe.show_alert({ message: __("CoreTax Excel downloaded!"), indicator: "green" });
+			}
+		},
+		error: function() {
+			// hide_progress removed
+			frappe.msgprint(__("Failed to generate CoreTax Excel. Check error logs."));
 		}
 	});
 }

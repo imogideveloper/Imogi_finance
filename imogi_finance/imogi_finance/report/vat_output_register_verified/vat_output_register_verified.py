@@ -206,3 +206,119 @@ def get_data(filters: Dict[str, Any], ppn_output_account: str) -> List[Dict[str,
 		})
 
 	return data
+
+
+@frappe.whitelist()
+def export_coretax(company: str, from_date: str, to_date: str, verification_status: str = "Verified") -> dict:
+	"""Generate CoreTax VAT Output Excel file sesuai template CoreTax."""
+	import io
+	from openpyxl import Workbook
+	from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+	from openpyxl.utils import get_column_letter
+
+	company_npwp = frappe.db.get_value("Company", company, "tax_id") or "0000000000000000"
+	company_npwp = company_npwp.replace(".", "").replace("-", "")
+
+	from_dt = getdate(from_date)
+	masa_pajak = from_dt.month
+	tahun_pajak = from_dt.year
+
+	filters = {
+		"company": company,
+		"from_date": from_date,
+		"to_date": to_date,
+		"verification_status": verification_status,
+	}
+	validation = validate_vat_output_configuration(company)
+	ppn_output_account = validation.get("account", "")
+	invoices = get_data(filters, ppn_output_account)
+
+	def get_trx_code(inv):
+		ppn = flt(inv.get("out_fp_ppn") or 0)
+		return "NoVAT" if ppn == 0 else "Normal"
+
+	wb = Workbook()
+	ws = wb.active
+	ws.title = "DATA"
+
+	header_fill = PatternFill("solid", start_color="1F4E79", end_color="1F4E79")
+	header_font = Font(name="Arial", bold=True, color="FFFFFF", size=10)
+	data_font = Font(name="Arial", size=10)
+	bold_font = Font(name="Arial", bold=True, size=10)
+	center = Alignment(horizontal="center", vertical="center")
+	thin = Side(style="thin", color="BFBFBF")
+	border = Border(left=thin, right=thin, top=thin, bottom=thin)
+
+	ws.cell(row=1, column=1, value="NPWP").font = bold_font
+	ws.cell(row=1, column=2, value=company_npwp).font = data_font
+	ws.cell(row=2, column=1, value="Masa Pajak").font = bold_font
+	ws.cell(row=2, column=2, value=masa_pajak).font = data_font
+	ws.cell(row=3, column=1, value="Tahun Pajak").font = bold_font
+	ws.cell(row=3, column=2, value=tahun_pajak).font = data_font
+
+	col_headers = [
+		"TrxCode", "BuyerName", "BuyerIdOpt", "BuyerIdNumber",
+		"GoodServiceOpt", "SerialNo", "TransactionDate",
+		"TaxBaseSellingPrice", "OtherTaxBaseSellingPrice", "VAT", "STLG", "Info"
+	]
+	for col_idx, header in enumerate(col_headers, start=2):
+		cell = ws.cell(row=4, column=col_idx, value=header)
+		cell.font = header_font
+		cell.fill = header_fill
+		cell.alignment = center
+		cell.border = border
+
+	for row_idx, inv in enumerate(invoices, start=5):
+		buyer_id = inv.get("out_fp_customer_npwp") or "0000000000000000"
+		serial_no = inv.get("out_fp_no") or inv.get("name")
+		trans_date = inv.get("posting_date")
+		trans_date_str = trans_date.strftime("%Y-%m-%d") if hasattr(trans_date, "strftime") else str(trans_date or "")
+
+		values = [
+			get_trx_code(inv), inv.get("customer") or "-", "TIN", buyer_id,
+			"A", serial_no, trans_date_str,
+			int(flt(inv.get("out_fp_dpp") or 0)), 0,
+			int(flt(inv.get("out_fp_ppn") or 0)), 0, "ok",
+		]
+		for col_idx, value in enumerate(values, start=2):
+			cell = ws.cell(row=row_idx, column=col_idx, value=value)
+			cell.font = data_font
+			cell.border = border
+			cell.alignment = center
+
+	widths = {2:12, 3:30, 4:12, 5:20, 6:16, 7:25, 8:16, 9:22, 10:22, 11:14, 12:8, 13:8}
+	for col, width in widths.items():
+		ws.column_dimensions[get_column_letter(col)].width = width
+
+	ws2 = wb.create_sheet("TrxCode")
+	ws2.append(["Kode", "DESCRIPTION"])
+	for row in [["Normal","Untuk Lampiran I.A.5"],["07","Untuk Lampiran I.A.9"],["08","Untuk Lampiran I.A.9"],["NoVAT","Untuk Lampiran I.B"]]:
+		ws2.append(row)
+	for cell in ws2[1]: cell.font = bold_font
+
+	ws3 = wb.create_sheet("GoodsService")
+	ws3.append(["Code", "Name"])
+	ws3.append(["A", "Barang"])
+	ws3.append(["B", "Jasa"])
+	for cell in ws3[1]: cell.font = bold_font
+
+	ws4 = wb.create_sheet("Buyer ID")
+	ws4.append(["Code", "Name"])
+	ws4.append(["TIN", "NPWP"])
+	ws4.append(["NIK", "NIK"])
+	for cell in ws4[1]: cell.font = bold_font
+
+	buffer = io.BytesIO()
+	wb.save(buffer)
+	buffer.seek(0)
+
+	filename = f"CoreTax_VAT_Out_{company.replace(' ', '_')}_{masa_pajak:02d}_{tahun_pajak}.xlsx"
+	file_doc = frappe.get_doc({
+		"doctype": "File",
+		"file_name": filename,
+		"content": buffer.read(),
+		"is_private": 1,
+	})
+	file_doc.save(ignore_permissions=True)
+
+	return {"file_url": file_doc.file_url, "file_name": filename}
