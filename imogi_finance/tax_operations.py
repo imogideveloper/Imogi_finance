@@ -330,12 +330,22 @@ def validate_tax_period_lock(doc: Document, posting_date_field: str = "posting_d
 
     previous = _get_previous_doc(doc)
     if not previous:
+        # Jika mau di-submit, blokir dengan hard throw
+        if getattr(doc, "docstatus", 0) == 0:
+            frappe.throw(
+                f"Tidak dapat submit <b>{doc.name}</b>.<br>"
+                f"Tax Period Closing <b>{locked_name}</b> sudah <b>Closed</b>.<br>"
+                f"Hubungi Finance Controller untuk membuka kembali periode.",
+                title="Period Sudah Ditutup"
+            )
+        # Jika bukan submit (hanya save/validate), pakai safe throw
         _safe_throw(
             _(
                 "Tax period is closed for the selected date range (Closing {0}). Please reopen the period or contact a Tax Reviewer."
             ).format(locked_name),
             title=_("Tax Period Locked"),
         )
+        return
 
     fields_to_guard = _get_tax_invoice_fields(doc.doctype)
     changed = []
