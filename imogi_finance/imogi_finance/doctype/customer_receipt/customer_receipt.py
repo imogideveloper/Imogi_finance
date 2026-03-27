@@ -395,7 +395,10 @@ class CustomerReceipt(Document):
             )
             remaining -= allocation
 
-        return pe.insert(ignore_permissions=True)
+        pe.insert(ignore_permissions=True)
+        pe.submit()
+        frappe.db.commit()
+        return pe
 
     def track_creation(self):
         """Track creation timestamp and user"""
