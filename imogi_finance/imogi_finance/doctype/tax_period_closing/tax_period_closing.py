@@ -636,3 +636,20 @@ def is_period_locked(company: str, check_date: str) -> bool:
     )
 
     return bool(locked)
+
+@frappe.whitelist()
+def check_period_is_closed(doc, method=None):
+    closed = frappe.db.exists("Tax Period Closing", {
+        "company": doc.company,
+        "status": "Closed",
+        "date_from": ("<=", doc.posting_date),
+        "date_to": (">=", doc.posting_date),
+        "docstatus": 1
+    })
+    if closed:
+        frappe.throw(
+            f"Tidak dapat submit Sales Invoice <b>{doc.name}</b>.<br>"
+            f"Tax Period Closing <b>{closed}</b> sudah <b>Closed</b>.<br>"
+            f"Hubungi Finance Controller untuk membuka kembali periode.",
+            title="Period Sudah Ditutup"
+        )

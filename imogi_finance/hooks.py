@@ -202,7 +202,7 @@ doc_events = {
             "imogi_finance.events.purchase_invoice.manage_ppn_variance_validate",
             "imogi_finance.events.purchase_invoice.manage_direct_pi_ppn_variance",
         ],
-        "before_submit": "imogi_finance.events.purchase_invoice.validate_before_submit",
+        "before_submit":["imogi_finance.events.purchase_invoice.validate_before_submit", "imogi_finance.imogi_finance.doctype.tax_period_closing.tax_period_closing.check_period_is_closed",],
         "on_submit": "imogi_finance.events.purchase_invoice.on_submit",
         "on_update_after_submit": "imogi_finance.events.purchase_invoice.sync_expense_request_status_from_pi",
         "before_cancel": "imogi_finance.events.purchase_invoice.before_cancel",
@@ -218,6 +218,9 @@ doc_events = {
             "imogi_finance.validators.finance_validator.validate_document_tax_fields",
         ],
         "on_update_after_submit": "imogi_finance.events.sales_invoice.on_update_after_submit",
+        "before_submit": [
+            "imogi_finance.imogi_finance.doctype.tax_period_closing.tax_period_closing.check_period_is_closed",
+        ],
     },
 
     "Sales Order": {
