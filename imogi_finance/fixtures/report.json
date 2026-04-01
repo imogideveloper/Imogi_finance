@@ -9367,5 +9367,49 @@
    }
   ],
   "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "No",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2026-03-31 16:43:03.475747",
+  "module": "Assets",
+  "name": "Asset Movement Monitor",
+  "prepared_report": 0,
+  "query": "SELECT\n  am.name AS \"Movement ID\",\n  am.purpose AS \"Purpose\",\n  am.transaction_date AS \"Transaction Date\",\n  ami.asset AS \"Asset ID\",\n  ami.asset_name AS \"Asset Name\",\n  ami.source_location AS \"From Location\",\n  ami.target_location AS \"To Location\",\n  emp_from.employee_name AS \"From Employee\",\n  emp_to.employee_name AS \"To Employee\",\n  am.company AS \"Company\"\nFROM\n  `tabAsset Movement` am\n  LEFT JOIN `tabAsset Movement Item` ami ON ami.parent = am.name\n  LEFT JOIN `tabEmployee` emp_from ON emp_from.name = ami.from_employee\n  LEFT JOIN `tabEmployee` emp_to ON emp_to.name = ami.to_employee\nWHERE\n  am.docstatus = 1\nORDER BY\n  am.transaction_date DESC",
+  "ref_doctype": "Asset Movement",
+  "reference_report": null,
+  "report_name": "Asset Movement Monitor",
+  "report_script": null,
+  "report_type": "Query Report",
+  "roles": [
+   {
+    "parent": "Asset Movement Monitor",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
+   },
+   {
+    "parent": "Asset Movement Monitor",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   },
+   {
+    "parent": "Asset Movement Monitor",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock Manager"
+   }
+  ],
+  "timeout": 0
  }
 ]
