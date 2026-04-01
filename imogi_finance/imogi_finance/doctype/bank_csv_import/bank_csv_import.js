@@ -1,4 +1,4 @@
-frappe.ui.form.on('BCA Bank Statement Import', {
+frappe.ui.form.on('Bank CSV Import', {
     refresh(frm) {
         if (frm.doc.status !== 'Processing') {
             frm.add_custom_button(__('Import CSV'), function() {
@@ -10,7 +10,7 @@ frappe.ui.form.on('BCA Bank Statement Import', {
                 frappe.confirm(__('Mulai import CSV dari bank {0}?', [frm.doc.bank]), function() {
                     frappe.show_alert({ message: __('Memproses import...'), indicator: 'blue' });
                     frappe.call({
-                        method: 'imogi_finance.imogi_finance.doctype.bca_bank_statement_import.bca_bank_statement_import_api.run_import',
+                        method: 'imogi_finance.imogi_finance.doctype.bank_csv_import.bank_csv_import_api.run_import',
                         args: { docname: frm.doc.name },
                         freeze: true,
                         freeze_message: __('Sedang mengimport data bank...'),

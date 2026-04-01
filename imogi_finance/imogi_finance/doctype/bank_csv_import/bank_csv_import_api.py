@@ -1,5 +1,5 @@
 """
-API untuk BCA Bank Statement Import
+API untuk Bank CSV Import
 Mendukung semua bank via konfigurasi Bank Statement Bank List
 """
 
@@ -13,19 +13,19 @@ from frappe import _
 @frappe.whitelist()
 def run_import(docname):
     """Jalankan import CSV dan buat Bank Transactions."""
-    doc = frappe.get_doc("BCA Bank Statement Import", docname)
+    doc = frappe.get_doc("Bank CSV Import", docname)
 
     if doc.status == "Processing":
         frappe.throw(_("Import sudah berjalan."))
 
     # Update status
-    frappe.db.set_value("BCA Bank Statement Import", docname, "status", "Processing")
+    frappe.db.set_value("Bank CSV Import", docname, "status", "Processing")
     frappe.db.commit()
 
     try:
         result = _process_import(doc)
 
-        frappe.db.set_value("BCA Bank Statement Import", docname, {
+        frappe.db.set_value("Bank CSV Import", docname, {
             "status": "Completed",
             "total_rows": result["total"],
             "created_rows": result["created"],
@@ -38,7 +38,7 @@ def run_import(docname):
         return result
 
     except Exception as e:
-        frappe.db.set_value("BCA Bank Statement Import", docname, {
+        frappe.db.set_value("Bank CSV Import", docname, {
             "status": "Failed",
             "import_log": str(e),
         })

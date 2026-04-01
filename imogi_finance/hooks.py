@@ -74,7 +74,7 @@ doctype_js = {
 }
 
 doctype_list_js = {
-    "BCA Bank Statement Import": "imogi_finance/doctype/bca_bank_statement_import/bca_bank_statement_import_list.js",
+    "Bank CSV Import": "imogi_finance/imogi_finance/doctype/bank_csv_import/bank_csv_import_list.js",
     "Administrative Payment Voucher": "imogi_finance/doctype/administrative_payment_voucher/administrative_payment_voucher_list.js",
     "Expense Request": "imogi_finance/doctype/expense_request/expense_request_list.js",
     "Advanced Expense Request": "imogi_finance/doctype/advanced_expense_request/advanced_expense_request_list.js",
@@ -277,6 +277,7 @@ doc_events = {
         "on_update": [
             "imogi_finance.events.internal_charge_request.sync_status_with_workflow",
         ],
+        "on_workflow_action": "imogi_finance.events.internal_charge_request.on_workflow_action",
     },
     "Additional Budget Request": {
         "on_workflow_action": "imogi_finance.events.additional_budget_request.on_workflow_action",
@@ -312,6 +313,7 @@ doc_events = {
         "on_submit": [
             "imogi_finance.events.metadata_fields.set_submit_on",
         ],
+        "on_workflow_action": "imogi_finance.events.internal_charge_request.on_workflow_action",
     },
 
     "Additional Budget Request": {
