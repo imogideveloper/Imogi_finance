@@ -5,7 +5,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": "",
     "hide_custom": 0,
     "icon": "getting-started",
     "indicator_color": null,
@@ -400,7 +399,6 @@
     "quick_lists": [],
     "restrict_to_domain": "",
     "roles": [],
-    "sequence_id": 1.0,
     "shortcuts": [
       {
         "color": null,
@@ -504,7 +502,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": "",
     "hide_custom": 0,
     "icon": "crm",
     "indicator_color": null,
@@ -1223,7 +1220,6 @@
     "quick_lists": [],
     "restrict_to_domain": "",
     "roles": [],
-    "sequence_id": 17.0,
     "shortcuts": [
       {
         "color": "Blue",
@@ -1327,7 +1323,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": "",
     "hide_custom": 0,
     "icon": "sell",
     "indicator_color": null,
@@ -2370,7 +2365,6 @@
     "quick_lists": [],
     "restrict_to_domain": "",
     "roles": [],
-    "sequence_id": 6.0,
     "shortcuts": [
       {
         "color": "Grey",
@@ -2491,7 +2485,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": "",
     "hide_custom": 0,
     "icon": "buying",
     "indicator_color": null,
@@ -3354,7 +3347,6 @@
     "quick_lists": [],
     "restrict_to_domain": "",
     "roles": [],
-    "sequence_id": 5.0,
     "shortcuts": [
       {
         "color": "Green",
@@ -3484,7 +3476,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": "",
     "hide_custom": 0,
     "icon": "website",
     "indicator_color": null,
@@ -3879,7 +3870,6 @@
     "quick_lists": [],
     "restrict_to_domain": "",
     "roles": [],
-    "sequence_id": 14.0,
     "shortcuts": [
       {
         "color": "Green",
@@ -3975,7 +3965,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": "",
     "hide_custom": 0,
     "icon": "tool",
     "indicator_color": null,
@@ -4550,7 +4539,6 @@
     "quick_lists": [],
     "restrict_to_domain": "",
     "roles": [],
-    "sequence_id": 17.0,
     "shortcuts": [
       {
         "color": "Grey",
@@ -4629,7 +4617,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": "",
     "hide_custom": 0,
     "icon": "users",
     "indicator_color": null,
@@ -4898,7 +4885,6 @@
     "quick_lists": [],
     "restrict_to_domain": "",
     "roles": [],
-    "sequence_id": 13.0,
     "shortcuts": [
       {
         "color": null,
@@ -4994,7 +4980,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": "",
     "hide_custom": 0,
     "icon": "integration",
     "indicator_color": null,
@@ -5371,7 +5356,6 @@
     "quick_lists": [],
     "restrict_to_domain": "",
     "roles": [],
-    "sequence_id": 20.0,
     "shortcuts": [],
     "title": "Integrations"
   },
@@ -5389,7 +5373,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": "",
     "hide_custom": 0,
     "icon": "accounting",
     "indicator_color": "",
@@ -6407,7 +6390,6 @@
     "quick_lists": [],
     "restrict_to_domain": "",
     "roles": [],
-    "sequence_id": 2.0,
     "shortcuts": [
       {
         "color": "Grey",
@@ -6596,7 +6578,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": "",
     "hide_custom": 0,
     "icon": "stock",
     "indicator_color": null,
@@ -7895,7 +7876,6 @@
     "quick_lists": [],
     "restrict_to_domain": "",
     "roles": [],
-    "sequence_id": 7.3,
     "shortcuts": [
       {
         "color": "Green",
@@ -8067,7 +8047,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": "",
     "hide_custom": 0,
     "icon": "assets",
     "indicator_color": null,
@@ -8390,7 +8369,6 @@
     "quick_lists": [],
     "restrict_to_domain": "",
     "roles": [],
-    "sequence_id": 7.2,
     "shortcuts": [
       {
         "color": null,
@@ -8477,7 +8455,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": "",
     "hide_custom": 0,
     "icon": "project",
     "indicator_color": null,
@@ -8800,7 +8777,6 @@
     "quick_lists": [],
     "restrict_to_domain": "",
     "roles": [],
-    "sequence_id": 11.0,
     "shortcuts": [
       {
         "color": "Grey",
@@ -8913,7 +8889,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": "",
     "hide_custom": 0,
     "icon": "support",
     "indicator_color": null,
@@ -9218,7 +9193,6 @@
     "quick_lists": [],
     "restrict_to_domain": "",
     "roles": [],
-    "sequence_id": 12.0,
     "shortcuts": [
       {
         "color": "Yellow",
@@ -9280,7 +9254,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": "",
     "hide_custom": 0,
     "icon": "quality",
     "indicator_color": null,
@@ -9531,7 +9504,6 @@
     "quick_lists": [],
     "restrict_to_domain": "",
     "roles": [],
-    "sequence_id": 9.0,
     "shortcuts": [
       {
         "color": "Grey",
@@ -9644,7 +9616,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": "",
     "hide_custom": 0,
     "icon": "organization",
     "indicator_color": null,
@@ -10183,7 +10154,6 @@
     "quick_lists": [],
     "restrict_to_domain": "",
     "roles": [],
-    "sequence_id": 8.0,
     "shortcuts": [
       {
         "color": "Grey",
@@ -10364,7 +10334,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": "",
     "hide_custom": 0,
     "icon": "integration",
     "indicator_color": null,
@@ -10741,7 +10710,6 @@
     "quick_lists": [],
     "restrict_to_domain": "",
     "roles": [],
-    "sequence_id": 21.0,
     "shortcuts": [
       {
         "color": "Grey",
@@ -10769,7 +10737,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": "",
     "hide_custom": 0,
     "icon": "setting",
     "indicator_color": null,
@@ -11524,7 +11491,6 @@
     "quick_lists": [],
     "restrict_to_domain": "",
     "roles": [],
-    "sequence_id": 19.0,
     "shortcuts": [
       {
         "color": "Grey",
@@ -11654,7 +11620,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": "",
     "hide_custom": 0,
     "icon": "arrow-left",
     "indicator_color": "",
@@ -11941,7 +11906,6 @@
     "quick_lists": [],
     "restrict_to_domain": "",
     "roles": [],
-    "sequence_id": 3.0,
     "shortcuts": [
       {
         "color": null,
@@ -12020,7 +11984,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": "",
     "hide_custom": 0,
     "icon": "arrow-right",
     "indicator_color": "",
@@ -12361,7 +12324,6 @@
     "quick_lists": [],
     "restrict_to_domain": "",
     "roles": [],
-    "sequence_id": 4.0,
     "shortcuts": [
       {
         "color": "Grey",
@@ -12474,7 +12436,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": "",
     "hide_custom": 0,
     "icon": "file",
     "indicator_color": "",
@@ -12905,7 +12866,6 @@
     "quick_lists": [],
     "restrict_to_domain": "",
     "roles": [],
-    "sequence_id": 5.0,
     "shortcuts": [],
     "title": "Financial Reports"
   },
@@ -12915,7 +12875,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": null,
     "hide_custom": 0,
     "icon": "briefcase",
     "indicator_color": null,
@@ -12931,7 +12890,6 @@
     "quick_lists": [],
     "restrict_to_domain": null,
     "roles": [],
-    "sequence_id": 0.0,
     "shortcuts": [
       {
         "color": null,
@@ -13741,7 +13699,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": "",
     "hide_custom": 0,
     "icon": "tool",
     "indicator_color": null,
@@ -14298,7 +14255,6 @@
     "quick_lists": [],
     "restrict_to_domain": "",
     "roles": [],
-    "sequence_id": 27.0,
     "shortcuts": [
       {
         "color": "Grey",
@@ -14428,7 +14384,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": "",
     "hide_custom": 0,
     "icon": "image-view",
     "indicator_color": null,
@@ -14444,7 +14399,6 @@
     "quick_lists": [],
     "restrict_to_domain": null,
     "roles": [],
-    "sequence_id": 22.0,
     "shortcuts": [],
     "title": "Welcome Workspace"
   },
@@ -14454,7 +14408,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": null,
     "hide_custom": 0,
     "icon": "book",
     "indicator_color": null,
@@ -14470,7 +14423,6 @@
     "quick_lists": [],
     "restrict_to_domain": null,
     "roles": [],
-    "sequence_id": 0.8,
     "shortcuts": [
       {
         "color": null,
@@ -14872,7 +14824,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": null,
     "hide_custom": 0,
     "icon": "building",
     "indicator_color": null,
@@ -14888,7 +14839,6 @@
     "quick_lists": [],
     "restrict_to_domain": null,
     "roles": [],
-    "sequence_id": 0.0,
     "shortcuts": [
       {
         "color": null,
@@ -15035,7 +14985,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": null,
     "hide_custom": 0,
     "icon": "chart-pie",
     "indicator_color": null,
@@ -15051,7 +15000,6 @@
     "quick_lists": [],
     "restrict_to_domain": null,
     "roles": [],
-    "sequence_id": 0.0,
     "shortcuts": [
       {
         "color": null,
@@ -15266,7 +15214,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": null,
     "hide_custom": 0,
     "icon": "money-bill-wave",
     "indicator_color": null,
@@ -15282,7 +15229,6 @@
     "quick_lists": [],
     "restrict_to_domain": null,
     "roles": [],
-    "sequence_id": 0.0,
     "shortcuts": [
       {
         "color": null,
@@ -15633,7 +15579,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": null,
     "hide_custom": 0,
     "icon": "file-invoice-dollar",
     "indicator_color": null,
@@ -15649,7 +15594,6 @@
     "quick_lists": [],
     "restrict_to_domain": null,
     "roles": [],
-    "sequence_id": 0.0,
     "shortcuts": [
       {
         "color": null,
@@ -16017,7 +15961,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": null,
     "hide_custom": 0,
     "icon": "piggy-bank",
     "indicator_color": null,
@@ -16033,7 +15976,6 @@
     "quick_lists": [],
     "restrict_to_domain": null,
     "roles": [],
-    "sequence_id": 0.0,
     "shortcuts": [
       {
         "color": null,
@@ -16435,7 +16377,6 @@
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
-    "for_user": null,
     "hide_custom": 0,
     "icon": "briefcase",
     "indicator_color": null,
@@ -16451,7 +16392,6 @@
     "quick_lists": [],
     "restrict_to_domain": null,
     "roles": [],
-    "sequence_id": 0.9,
     "shortcuts": [
       {
         "color": null,
