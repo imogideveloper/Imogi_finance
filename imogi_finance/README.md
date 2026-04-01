@@ -12,7 +12,7 @@ App for managing expenses at IMOGI with comprehensive expense request workflows,
 - Frappe v14+
 - Python 3.10+
 
----
+--
 
 ### Key Features
 
