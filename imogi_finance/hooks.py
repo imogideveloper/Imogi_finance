@@ -50,6 +50,7 @@ from imogi_finance.api.payroll_sync import is_payroll_installed
 # include js in doctype views
 doctype_js = {
     "Tax Invoice OCR Upload": "public/js/tax_invoice_ocr_upload_form.js",
+    "VAT OUT Batch": "public/js/vat_out_batch_form.js",
     "Bank Transaction": "public/js/bank_transaction.js",
     "Bank Reconciliation Tool": "public/js/bank_reconciliation_tool.js",
     "Payment Entry": [
@@ -188,6 +189,9 @@ doc_events = {
         ],
         "on_submit": [
             "imogi_finance.events.metadata_fields.set_submit_on",
+        ],
+        "after_save": [
+            "imogi_finance.events.tax_invoice_ocr_upload.auto_link_to_sales_invoice",
         ],
     },
     "Bank Statement Import": {

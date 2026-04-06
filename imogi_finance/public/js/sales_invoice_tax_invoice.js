@@ -80,9 +80,13 @@ async function syncSiUpload(frm) {
 }
 
 function lockSiTaxInvoiceFields(frm) {
+  // Lock semua field Output Tax Invoice — hanya sistem yang boleh mengisi
   Object.values(SI_TAX_INVOICE_FIELDS).forEach((field) => {
     frm.set_df_property(field, 'read_only', true);
   });
+  // Lock field link utama dan status — tidak boleh diisi manual
+  frm.set_df_property('out_fp_tax_invoice_upload', 'read_only', true);
+  frm.set_df_property('synch_status', 'read_only', true);
 }
 
 function setSiUploadQuery(frm) {

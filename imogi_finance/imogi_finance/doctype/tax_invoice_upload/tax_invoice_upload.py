@@ -62,7 +62,9 @@ class TaxInvoiceUpload(Document):
         _validate_tax_invoice_no(self.tax_invoice_no)
         _validate_npwp(self.customer_npwp)
         _ensure_unique_tax_invoice_no(self)
-        _ensure_file_exists(self.invoice_pdf)
+        # PDF tidak wajib saat input manual — akan diisi otomatis dari ZIP upload
+        if self.invoice_pdf:
+            _ensure_file_exists(self.invoice_pdf)
 
     def _should_attempt_sync(self) -> bool:
         return bool(self.linked_sales_invoice) and (self.status or "Draft") != "Synced"

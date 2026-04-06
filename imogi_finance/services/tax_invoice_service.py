@@ -84,6 +84,8 @@ def _prepare_sales_invoice_updates(upload) -> dict[str, object]:
         "out_fp_dpp": upload.dpp,
         "out_fp_ppn": upload.ppn,
         "out_fp_tax_invoice_pdf": upload.invoice_pdf,
+        "out_fp_tax_invoice_upload": upload.name,
+        "out_fp_status": "Verified",
     }
 
 

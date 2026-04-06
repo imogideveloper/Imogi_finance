@@ -110,7 +110,7 @@ def _process_bulk_creation(
 		dict: Operation summary
 	"""
 	# Phase 1: Validate CSV
-	csv_data, csv_errors = _validate_and_parse_csv(csv_url)
+	csv_data, csv_errors = _validate_and_parse_file(csv_url)
 	if csv_errors:
 		return {
 			'status': 'error',
@@ -195,6 +195,95 @@ def _process_bulk_creation(
 		'created_docs': created_docs
 	}
 
+
+
+def _validate_and_parse_file(file_url: str) -> tuple[list[dict], list[dict]]:
+        """Validate and parse CSV or Excel (.xlsx/.xls) file.
+
+        Returns:
+                tuple: (csv_data, errors)
+        """
+        required_headers = ['fp_number', 'sales_invoice', 'dpp', 'ppn', 'fp_date', 'customer_npwp']
+        csv_data = []
+        errors = []
+
+        try:
+                file_path = get_file_path(file_url)
+                ext = os.path.splitext(file_path)[1].lower()
+                rows = []
+                fieldnames = []
+
+                if ext in ('.xlsx', '.xls'):
+                        try:
+                                import openpyxl
+                                wb = openpyxl.load_workbook(file_path, read_only=True, data_only=True)
+                                ws = wb.active
+                                all_rows = list(ws.iter_rows(values_only=True))
+                                wb.close()
+                                if not all_rows:
+                                        errors.append({'row': 1, 'fp_number': '', 'reason': 'Excel file is empty'})
+                                        return [], errors
+                                fieldnames = [str(h).strip() if h is not None else '' for h in all_rows[0]]
+                                for row_values in all_rows[1:]:
+                                        rows.append(dict(zip(fieldnames, [str(v).strip() if v is not None else '' for v in row_values])))
+                        except ImportError:
+                                errors.append({'row': 0, 'fp_number': '', 'reason': 'openpyxl not installed. Run: pip install openpyxl --break-system-packages'})
+                                return [], errors
+                else:
+                        with open(file_path, 'r', encoding='utf-8-sig') as f:
+                                reader = csv.DictReader(f)
+                                if not reader.fieldnames:
+                                        errors.append({'row': 1, 'fp_number': '', 'reason': 'CSV file is empty or has no headers'})
+                                        return [], errors
+                                fieldnames = list(reader.fieldnames)
+                                rows = list(reader)
+
+                missing_headers = [h for h in required_headers if h not in fieldnames]
+                if missing_headers:
+                        errors.append({'row': 1, 'fp_number': '', 'reason': f'Missing required headers: {", ".join(missing_headers)}'})
+                        return [], errors
+
+                for row_idx, row in enumerate(rows, start=2):
+                        try:
+                                fp_number = (row.get('fp_number') or '').strip()
+                                fp16 = normalize_fp_number(fp_number)
+
+                                if not fp16:
+                                        errors.append({'row': row_idx, 'fp_number': fp_number, 'reason': 'FP number is empty'})
+                                        continue
+                                if len(fp16) != 16:
+                                        errors.append({'row': row_idx, 'fp_number': fp_number, 'reason': f'FP number must be 16 digits, got {len(fp16)}'})
+                                        continue
+
+                                sales_invoice = (row.get('sales_invoice') or '').strip()
+                                if not sales_invoice:
+                                        errors.append({'row': row_idx, 'fp_number': fp_number, 'reason': 'Sales invoice is required'})
+                                        continue
+
+                                try:
+                                        dpp = float(row.get('dpp') or 0)
+                                        ppn = float(row.get('ppn') or 0)
+                                except ValueError as e:
+                                        errors.append({'row': row_idx, 'fp_number': fp_number, 'reason': f'Invalid amount: {str(e)}'})
+                                        continue
+
+                                csv_data.append({
+                                        'fp_number': fp_number,
+                                        'fp16': fp16,
+                                        'sales_invoice': sales_invoice,
+                                        'dpp': dpp,
+                                        'ppn': ppn,
+                                        'fp_date': (row.get('fp_date') or '').strip(),
+                                        'customer_npwp': (row.get('customer_npwp') or '').strip()
+                                })
+
+                        except Exception as e:
+                                errors.append({'row': row_idx, 'fp_number': row.get('fp_number', 'unknown'), 'reason': f'Error parsing row: {str(e)}'})
+
+        except Exception as e:
+                errors.append({'row': 0, 'fp_number': '', 'reason': f'Error reading file: {str(e)}'})
+
+        return csv_data, errors
 
 def _validate_and_parse_csv(csv_url: str) -> tuple[list[dict], list[dict]]:
 	"""Validate CSV structure and parse rows.
