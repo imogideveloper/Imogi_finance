@@ -1,0 +1,431 @@
+{%- set company_logo   = frappe.db.get_value("Company", doc.company, "company_logo") -%}
+{%- set company_phone  = frappe.db.get_value("Company", doc.company, "phone_no") -%}
+{%- set company_email  = frappe.db.get_value("Company", doc.company, "email") -%}
+{%- set company_tax_id = frappe.db.get_value("Company", doc.company, "tax_id") -%}
+
+{%- set status = doc.status or 'Draft' -%}
+{%- set status_classes = {
+    'Paid':           'badge-paid',
+    'Submitted':      'badge-submitted',
+    'Draft':          'badge-draft',
+    'Cancelled':      'badge-cancelled',
+    'Return':         'badge-cancelled',
+    'Unpaid':         'badge-unpaid',
+    'Overdue':        'badge-overdue',
+    'Partly Paid':    'badge-unpaid'
+} -%}
+{%- set badge_cls = status_classes.get(status, 'badge-draft') -%}
+{%- set outstanding_color = '#991b1b' if (doc.outstanding_amount and doc.outstanding_amount > 0) else '#166534' -%}
+
+<style>
+  :root {
+    --primary:     #1a1a2e;
+    --accent:      #16213e;
+    --border:      #e2e8f0;
+    --border-dark: #cbd5e0;
+    --bg-light:    #f8fafc;
+    --text:        #1e293b;
+    --text-muted:  #64748b;
+    --text-light:  #94a3b8;
+    --green:       #166534;
+    --green-bg:    #dcfce7;
+    --amber:       #92400e;
+    --amber-bg:    #fef3c7;
+    --red:         #991b1b;
+    --red-bg:      #fee2e2;
+    --blue:        #1e40af;
+    --blue-bg:     #dbeafe;
+  }
+
+  * {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body { font-size: 10.5pt; color: var(--text); line-height: 1.45; }
+
+  /* WRAPPER */
+  .si-wrap { width: 100%; background: white; }
+
+  /* HEADER */
+  .si-header {
+    display: table; width: 100%;
+    border-bottom: 2.5pt solid var(--primary);
+    padding-bottom: 10pt; margin-bottom: 14pt;
+  }
+  .si-header-left  { display: table-cell; vertical-align: top; width: 60%; }
+  .si-header-right { display: table-cell; vertical-align: top; text-align: right; width: 40%; }
+
+  .si-company-name { font-size: 14pt; font-weight: 700; color: var(--primary); margin-bottom: 2pt; }
+  .si-company-meta { font-size: 8.5pt; color: var(--text-muted); line-height: 1.6; }
+
+  .si-logo { max-height: 60pt; max-width: 160pt; width: auto; height: auto; object-fit: contain; display: block; margin: 0 0 8pt auto; }
+  .si-title { font-size: 17pt; font-weight: 700; color: var(--primary); letter-spacing: -0.3pt; margin-bottom: 4pt; }
+  .si-docid { font-size: 9pt; color: var(--text-muted); }
+
+  /* BADGE */
+  .badge { display: inline-block; padding: 4pt 12pt; font-size: 8pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6pt; border-radius: 3pt; }
+  .badge-paid       { background: var(--primary); color: white; }
+  .badge-submitted  { background: var(--green-bg); color: var(--green); border: 1pt solid #86efac; }
+  .badge-draft      { background: var(--bg-light); color: var(--text-muted); border: 1pt solid var(--border); }
+  .badge-cancelled  { background: var(--red-bg);   color: var(--red);   border: 1pt solid #fecaca; }
+  .badge-unpaid     { background: var(--amber-bg); color: var(--amber); border: 1pt solid #fde68a; }
+  .badge-overdue    { background: var(--red-bg);   color: var(--red);   border: 1pt solid #fecaca; }
+
+  /* INFO SECTION */
+  .si-info { display: table; width: 100%; margin-bottom: 14pt; }
+  .si-info-left  { display: table-cell; width: 50%; vertical-align: top; padding-right: 6pt; }
+  .si-info-right { display: table-cell; width: 50%; vertical-align: top; padding-left:  6pt; }
+
+  .section-label {
+    font-size: 7.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8pt;
+    color: var(--text-muted); margin-bottom: 6pt; padding-bottom: 4pt; border-bottom: 1pt solid var(--border);
+  }
+  .card { background: white; border: 1pt solid var(--border); border-radius: 5pt; padding: 10pt 12pt; }
+  .card-header-accent { border-top: 3pt solid var(--primary); }
+
+  .info-row   { display: table; width: 100%; padding: 2.5pt 0; font-size: 9.5pt; }
+  .info-label { display: table-cell; width: 45%; color: var(--text-muted); vertical-align: top; }
+  .info-value { display: table-cell; font-weight: 600; color: var(--text); text-align: right; vertical-align: top; }
+  .info-divider { border: none; border-top: 1pt solid var(--border); margin: 6pt 0; }
+
+  /* ITEMS TABLE */
+  .items-section-label {
+    font-size: 9pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5pt;
+    color: var(--primary); margin-bottom: 6pt; padding-bottom: 4pt; border-bottom: 2pt solid var(--primary);
+  }
+  .items-table { width: 100%; border-collapse: collapse; font-size: 9.5pt; margin-bottom: 0; }
+  .items-table thead tr { background: var(--primary); }
+  .items-table thead th { padding: 7pt 9pt; font-size: 8pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3pt; color: white; text-align: left; }
+  .items-table thead th.num   { text-align: center; width: 30pt; }
+  .items-table thead th.right { text-align: right; }
+  .items-table tbody td { padding: 7pt 9pt; border-bottom: 1pt solid var(--border); color: var(--text); vertical-align: top; }
+  .items-table tbody td.num   { text-align: center; color: var(--text-muted); }
+  .items-table tbody td.right { text-align: right; font-weight: 500; }
+  .items-table tbody td.meta  { font-size: 8.5pt; color: var(--text-muted); margin-top: 2pt; }
+  .items-table tbody tr:nth-child(even) { background: var(--bg-light); }
+
+  /* FINANCIAL SUMMARY */
+  .fin-wrap { display: table; width: 100%; margin-top: 10pt; margin-bottom: 12pt; }
+  .fin-notes { display: table-cell; width: 50%; vertical-align: top; padding-right: 10pt; }
+  .fin-summary { display: table-cell; width: 50%; vertical-align: top; }
+  .fin-table { width: 100%; border: 1pt solid var(--border); border-radius: 5pt; overflow: hidden; border-collapse: collapse; }
+  .fin-row-tr td { padding: 5pt 11pt; font-size: 9.5pt; border-top: 1pt solid var(--border); }
+  .fin-row-tr:first-child td { border-top: none; }
+  .fin-td-label { color: var(--text-muted); width: 55%; }
+  .fin-td-value { font-weight: 600; text-align: right; color: var(--text); }
+  .fin-total td { background: var(--primary); color: white; font-size: 11pt; font-weight: 700; padding: 8pt 11pt; border-top: none !important; }
+  .fin-total .fin-td-label { color: white; }
+  .fin-total .fin-td-value { color: white; }
+  .fin-deduction .fin-td-value { color: var(--red); }
+  .outstanding-unpaid { color: #991b1b; font-weight: 700; }
+  .outstanding-paid   { color: #166534; font-weight: 700; }
+
+  /* PAYMENT STATUS */
+  .payment-status { margin-bottom: 12pt; }
+  .amount-in-words { background: var(--bg-light); border-left: 3pt solid var(--primary); padding: 7pt 11pt; border-radius: 0 4pt 4pt 0; font-size: 9pt; margin-bottom: 12pt; }
+  .amount-in-words .aow-label { font-size: 7.5pt; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 3pt; }
+  .amount-in-words .aow-text  { font-weight: 600; color: var(--primary); }
+
+  /* TERMS */
+  .terms-section { margin-top: 12pt; margin-bottom: 12pt; }
+  .terms-text { font-size: 9pt; color: var(--text-muted); line-height: 1.6; }
+
+  /* SIGNATURE */
+  .sig-section { margin-top: 22pt; page-break-inside: avoid; }
+  .sig-section-label {
+    font-size: 9pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5pt;
+    color: var(--primary); margin-bottom: 12pt; padding-bottom: 4pt; border-bottom: 2pt solid var(--primary);
+  }
+  .sig-table { width: 100%; border-collapse: separate; border-spacing: 8pt 0; }
+  .sig-table td { width: 33%; vertical-align: top; padding: 0; }
+  .sig-box { border: 1pt solid var(--border); border-radius: 5pt; padding: 9pt 8pt; background: white; text-align: center; }
+  .sig-role  { font-size: 7.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4pt; color: var(--text-muted); margin-bottom: 5pt; }
+  .sig-area  { height: 42pt; margin: 0 4pt; border-bottom: 1pt solid var(--primary); }
+  .sig-name  { font-size: 8.5pt; font-weight: 600; color: var(--primary); margin-top: 5pt; min-height: 11pt; }
+  .sig-date  { font-size: 7.5pt; color: var(--text-muted); margin-top: 2pt; }
+
+  /* FOOTER */
+  .si-footer { margin-top: 24pt; padding-top: 8pt; border-top: 1pt solid var(--border); text-align: center; }
+  .si-footer p { font-size: 7.5pt; color: var(--text-light); line-height: 1.7; font-style: italic; }
+
+  /* PRINT */
+  @media print {
+    @page { size: A4 portrait; margin: 14mm 12mm; }
+    body { font-size: 10pt; }
+    .items-table thead tr,
+    .fin-total td,
+    .badge-paid {
+      background: var(--primary) !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .badge-submitted  { background: var(--green-bg) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .badge-unpaid     { background: var(--amber-bg) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .badge-cancelled,
+    .badge-overdue    { background: var(--red-bg)   !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .amount-in-words  { background: var(--bg-light) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .sig-section      { page-break-inside: avoid; }
+    .fin-wrap         { page-break-inside: avoid; }
+    .si-logo          { max-height: 60pt !important; max-width: 160pt !important; display: block !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+
+<div class="si-wrap">
+
+  <!-- HEADER -->
+  <div class="si-header">
+    <div class="si-header-left">
+      <div class="si-company-name">{{ doc.company }}</div>
+      <div class="si-company-meta">
+        {%- if company_phone -%}{{ _("Telp") }}: {{ company_phone }}<br>{%- endif -%}
+        {%- if company_email -%}{{ company_email }}<br>{%- endif -%}
+        {%- if company_tax_id -%}NPWP: {{ company_tax_id }}{%- endif -%}
+      </div>
+    </div>
+    <div class="si-header-right">
+      {%- if company_logo %}
+      <img src="{{ company_logo }}" alt="{{ doc.company }}" class="si-logo">
+      {%- endif %}
+      <div class="si-title">{{ _("Sales Invoice") }}</div>
+      <div class="si-docid">{{ doc.name }}</div>
+      <div style="margin-top: 6pt;">
+        <span class="badge {{ badge_cls }}">{{ status }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- INFO: CUSTOMER & INVOICE DETAILS -->
+  <div class="si-info">
+    <div class="si-info-left">
+      <div class="card card-header-accent">
+        <div class="section-label">{{ _("Informasi Customer") }}</div>
+        <div class="info-row">
+          <span class="info-label">{{ _("Customer") }}</span>
+          <span class="info-value">{{ doc.customer }}</span>
+        </div>
+        {%- if doc.customer_name and doc.customer_name != doc.customer %}
+        <div class="info-row">
+          <span class="info-label">{{ _("Nama") }}</span>
+          <span class="info-value">{{ doc.customer_name }}</span>
+        </div>
+        {%- endif %}
+        {%- if doc.tax_id %}
+        <div class="info-row">
+          <span class="info-label">{{ _("NPWP") }}</span>
+          <span class="info-value" style="font-family: monospace; font-size: 9pt;">{{ doc.tax_id }}</span>
+        </div>
+        {%- endif %}
+        {%- if doc.contact_display %}
+        <div class="info-row">
+          <span class="info-label">{{ _("Kontak") }}</span>
+          <span class="info-value">{{ doc.contact_display }}</span>
+        </div>
+        {%- endif %}
+        {%- if doc.shipping_address %}
+        <hr class="info-divider">
+        <div class="info-row">
+          <span class="info-label">{{ _("Alamat Pengiriman") }}</span>
+          <span class="info-value" style="white-space: pre-line;">{{ doc.shipping_address }}</span>
+        </div>
+        {%- endif %}
+      </div>
+    </div>
+
+    <div class="si-info-right">
+      <div class="card card-header-accent">
+        <div class="section-label">{{ _("Detail Invoice") }}</div>
+        <div class="info-row">
+          <span class="info-label">{{ _("No. Invoice") }}</span>
+          <span class="info-value">{{ doc.name }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">{{ _("Tanggal") }}</span>
+          <span class="info-value">{{ frappe.utils.formatdate(doc.posting_date, "dd MMM yyyy") }}</span>
+        </div>
+        {%- if doc.due_date %}
+        <div class="info-row">
+          <span class="info-label">{{ _("Jatuh Tempo") }}</span>
+          <span class="info-value">{{ frappe.utils.formatdate(doc.due_date, "dd MMM yyyy") }}</span>
+        </div>
+        {%- endif %}
+        {%- if doc.po_no %}
+        <div class="info-row">
+          <span class="info-label">{{ _("No. PO Customer") }}</span>
+          <span class="info-value">{{ doc.po_no }}</span>
+        </div>
+        {%- endif %}
+        <hr class="info-divider">
+        <div class="info-row">
+          <span class="info-label">{{ _("Mata Uang") }}</span>
+          <span class="info-value">{{ doc.currency }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">{{ _("Metode Bayar") }}</span>
+          <span class="info-value">{{ doc.payment_terms_template or doc.mode_of_payment or "—" }}</span>
+        </div>
+        {%- if doc.cost_center %}
+        <div class="info-row">
+          <span class="info-label">{{ _("Cost Center") }}</span>
+          <span class="info-value">{{ doc.cost_center }}</span>
+        </div>
+        {%- endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ITEMS TABLE -->
+  <div class="items-section-label">{{ _("Rincian Item") }}</div>
+  <table class="items-table">
+    <thead>
+      <tr>
+        <th class="num">#</th>
+        <th>{{ _("Item / Keterangan") }}</th>
+        <th class="right">{{ _("Qty") }}</th>
+        <th class="right">{{ _("Satuan") }}</th>
+        <th class="right">{{ _("Harga Satuan") }}</th>
+        {%- if doc.taxes %}
+        <th class="right">{{ _("Diskon") }}</th>
+        {%- endif %}
+        <th class="right">{{ _("Total") }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {%- for item in doc.items %}
+      <tr>
+        <td class="num">{{ loop.index }}</td>
+        <td>
+          <strong>{{ item.item_name or item.item_code }}</strong>
+          {%- if item.description and item.description != item.item_name %}
+          <div class="meta">{{ item.description }}</div>
+          {%- endif %}
+          {%- if item.item_code and item.item_code != item.item_name %}
+          <div class="meta">{{ item.item_code }}</div>
+          {%- endif %}
+        </td>
+        <td class="right">{{ item.qty | int if item.qty == (item.qty | int) else item.qty }}</td>
+        <td class="right">{{ item.uom }}</td>
+        <td class="right">{{ frappe.utils.fmt_money(item.rate, currency=doc.currency) }}</td>
+        {%- if doc.taxes %}
+        <td class="right">
+          {%- if item.discount_percentage %}{{ item.discount_percentage }}%
+          {%- elif item.discount_amount %}{{ frappe.utils.fmt_money(item.discount_amount, currency=doc.currency) }}
+          {%- else %}—{%- endif %}
+        </td>
+        {%- endif %}
+        <td class="right">{{ frappe.utils.fmt_money(item.amount, currency=doc.currency) }}</td>
+      </tr>
+      {%- endfor %}
+    </tbody>
+  </table>
+
+  <!-- FINANCIAL SUMMARY -->
+  <div class="fin-wrap">
+    <div class="fin-notes">
+      {%- if doc.base_in_words %}
+      <div class="amount-in-words">
+        <div class="aow-label">{{ _("Terbilang") }}</div>
+        <div class="aow-text">{{ doc.base_in_words }}</div>
+      </div>
+      {%- endif %}
+      {%- if doc.terms %}
+      <div class="terms-section">
+        <div class="section-label">{{ _("Syarat & Ketentuan") }}</div>
+        <div class="terms-text">{{ doc.terms }}</div>
+      </div>
+      {%- endif %}
+    </div>
+
+    <div class="fin-summary">
+      <table class="fin-table">
+        <tbody>
+          <tr class="fin-row-tr">
+            <td class="fin-td-label">{{ _("Subtotal") }}</td>
+            <td class="fin-td-value">{{ frappe.utils.fmt_money(doc.total, currency=doc.currency) }}</td>
+          </tr>
+          {%- for tax in doc.taxes %}
+          {%- if tax.tax_amount %}
+          <tr class="fin-row-tr">
+            <td class="fin-td-label">{{ tax.description or tax.account_head }}</td>
+            <td class="fin-td-value">{{ frappe.utils.fmt_money(tax.tax_amount, currency=doc.currency) }}</td>
+          </tr>
+          {%- endif %}
+          {%- endfor %}
+          {%- if doc.discount_amount %}
+          <tr class="fin-row-tr fin-deduction">
+            <td class="fin-td-label">{{ _("Diskon") }}</td>
+            <td class="fin-td-value">- {{ frappe.utils.fmt_money(doc.discount_amount, currency=doc.currency) }}</td>
+          </tr>
+          {%- endif %}
+          {%- if doc.rounded_total %}
+          <tr class="fin-row-tr">
+            <td class="fin-td-label">{{ _("Pembulatan") }}</td>
+            <td class="fin-td-value">{{ frappe.utils.fmt_money(doc.rounding_adjustment, currency=doc.currency) }}</td>
+          </tr>
+          {%- endif %}
+          <tr class="fin-row-tr fin-total">
+            <td class="fin-td-label">{{ _("TOTAL") }}</td>
+            <td class="fin-td-value">{{ frappe.utils.fmt_money(doc.rounded_total or doc.grand_total, currency=doc.currency) }}</td>
+          </tr>
+          {%- if doc.outstanding_amount != None %}
+          <tr class="fin-row-tr">
+            <td class="fin-td-label">{{ _("Sudah Dibayar") }}</td>
+            <td class="fin-td-value">{{ frappe.utils.fmt_money((doc.rounded_total or doc.grand_total) - doc.outstanding_amount, currency=doc.currency) }}</td>
+          </tr>
+          <tr class="fin-row-tr">
+            <td class="fin-td-label" style="font-weight: 600;">{{ _("Sisa Tagihan") }}</td>
+            <td class="fin-td-value {{ 'outstanding-unpaid' if (doc.outstanding_amount and doc.outstanding_amount > 0) else 'outstanding-paid' }}">
+              {{ frappe.utils.fmt_money(doc.outstanding_amount, currency=doc.currency) }}
+            </td>
+          </tr>
+          {%- endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SIGNATURE -->
+  <div class="sig-section">
+    <div class="sig-section-label">{{ _("Tanda Tangan") }}</div>
+    <table class="sig-table">
+      <tr>
+        <td>
+          <div class="sig-box">
+            <div class="sig-role">{{ _("Dibuat Oleh") }}</div>
+            <div class="sig-area"></div>
+            <div class="sig-name">{{ doc.owner }}</div>
+            <div class="sig-date">{{ frappe.utils.formatdate(doc.creation, "dd MMM yyyy") }}</div>
+          </div>
+        </td>
+        <td>
+          <div class="sig-box">
+            <div class="sig-role">{{ _("Diperiksa Oleh") }}</div>
+            <div class="sig-area"></div>
+            <div class="sig-name">&nbsp;</div>
+            <div class="sig-date">&nbsp;</div>
+          </div>
+        </td>
+        <td>
+          <div class="sig-box">
+            <div class="sig-role">{{ _("Customer / Penerima") }}</div>
+            <div class="sig-area"></div>
+            <div class="sig-name">&nbsp;</div>
+            <div class="sig-date">&nbsp;</div>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="si-footer">
+    <p>{{ doc.company }}
+      {%- if company_phone %} &nbsp;&middot;&nbsp; {{ company_phone }}{%- endif -%}
+      {%- if company_email %} &nbsp;&middot;&nbsp; {{ company_email }}{%- endif -%}
+    </p>
+    <p>{{ _("Dokumen ini dicetak secara elektronik dan sah tanpa tanda tangan basah.") }}</p>
+  </div>
+
+</div>
