@@ -345,7 +345,7 @@ class ExpenseRequest(Document):
             except frappe.ValidationError as e:
                 frappe.throw(str(e))
             ppn_rate = self._get_ppn_rate()
-            total_ppn = total_expense * ppn_rate / 100
+            total_ppn = flt(total_expense) * flt(ppn_rate) / 100
 
         # ========== IDEMPOTENT PPN VARIANCE MANAGEMENT ==========
         # Calculate expected PPN and variance from OCR
@@ -356,8 +356,14 @@ class ExpenseRequest(Document):
         # This allows tracking sub-rupiah variances like Rp 0.11
 
         # Calculate variance with decimal precision
-        variance_raw = ocr_ppn - expected_ppn
-        variance = round(variance_raw, 2)
+       # FIX: Skip variance calculation jika tidak ada OCR upload
+        has_ocr = getattr(self, "ti_tax_invoice_upload", None)
+        if not has_ocr:
+            variance_raw = 0
+            variance = 0
+        else:
+            variance_raw = ocr_ppn - expected_ppn
+            variance = round(variance_raw, 2)
 
 # Ignore tiny rounding differences below Rp 1
         if abs(variance) < 1:
@@ -484,31 +490,34 @@ class ExpenseRequest(Document):
 
     def _get_ppn_rate(self):
         """Get PPN rate from template or infer from date."""
-        ppn_rate = 0
         ppn_template = getattr(self, "ppn_template", None)
+        if not ppn_template:
+            return 0.0
 
-        if ppn_template:
+        for doctype in ("Purchase Taxes and Charges Template", "Sales Taxes and Charges Template"):
             try:
-                # Use cached doc for performance (ERPNext v15+ best practice)
-                template = frappe.get_cached_doc("Purchase Taxes and Charges Template", ppn_template)
+                template = frappe.get_cached_doc(doctype, ppn_template)
                 for tax in template.get("taxes", []):
-                    if tax.rate:
-                        ppn_rate = flt(tax.rate)
-                        break
+                    rate = flt(tax.rate)
+                    if rate > 0:  # ← ganti kondisi dari "if tax.rate" ke "if rate > 0"
+                        return rate  # ← langsung return, tidak perlu break
+            except frappe.DoesNotExistError:
+                continue
             except Exception:
-                pass
+                continue
 
         # Fallback: date-based inference
-        if not ppn_rate:
-            try:
-                from imogi_finance.tax_invoice_ocr import infer_tax_rate
-                fp_date = getattr(self, "ti_fp_date", None) or getattr(self, "request_date", None)
-                ppn_rate = infer_tax_rate(dpp=flt(self.amount), ppn=None, fp_date=fp_date) * 100
-            except Exception:
-                pass
+        try:
+            from imogi_finance.tax_invoice_ocr import infer_tax_rate
+            fp_date = getattr(self, "ti_fp_date", None) or getattr(self, "request_date", None)
+            rate = flt(infer_tax_rate(dpp=flt(self.amount), ppn=None, fp_date=fp_date)) * 100
+            if rate > 0:
+                return rate
+        except Exception:
+            pass
 
-        return ppn_rate
-
+        return 0.0
+    
     def validate_tax_fields(self):
         """Validate tax configuration."""
         FinanceValidator.validate_tax_fields(self)
