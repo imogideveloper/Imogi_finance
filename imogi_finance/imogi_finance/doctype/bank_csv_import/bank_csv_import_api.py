@@ -461,6 +461,51 @@ def _extract_balances_from_rows(data_rows, headers, field_map, config):
         if not opening_balance and len(valid_entries) > 1:
             opening_balance = valid_entries[0][1]
 
+    # Fallback: jika balance tidak ada di file, hitung dari debit/kredit
+    if not closing_balance and ("debit" in field_map or "credit" in field_map or "amount" in field_map):
+        total_debit = 0.0
+        total_credit = 0.0
+        dates = []
+        for row in data_rows:
+            if not row or all(not str(v).strip() for v in row):
+                continue
+            row_dict = {}
+            for i, header in enumerate(headers):
+                row_dict[header] = row[i] if i < len(row) else ""
+
+            date_str = _clean(row_dict.get(field_map.get("posting_date", ""), ""))
+            date = _parse_date(date_str, config.date_format) if date_str else None
+
+            debit_str = _clean(row_dict.get(field_map.get("debit", ""), "")) if "debit" in field_map else ""
+            credit_str = _clean(row_dict.get(field_map.get("credit", ""), "")) if "credit" in field_map else ""
+            amount_str = _clean(row_dict.get(field_map.get("amount", ""), "")) if "amount" in field_map else ""
+
+            debit = _parse_amount(debit_str)
+            credit = _parse_amount(credit_str)
+
+            # Handle format BCA: kolom Jumlah tunggal dengan suffix DB/CR
+            if debit == 0 and credit == 0 and amount_str:
+                amount_val = _parse_amount(amount_str)
+                amount_lower = amount_str.lower()
+                if "db" in amount_lower or "dr" in amount_lower:
+                    debit = amount_val
+                elif "cr" in amount_lower:
+                    credit = amount_val
+
+            if (debit or credit) and date:
+                total_debit += debit
+                total_credit += credit
+                dates.append(date)
+
+        if dates:
+            dates.sort()
+            if not statement_from_date:
+                statement_from_date = dates[0]
+            if not statement_to_date:
+                statement_to_date = dates[-1]
+            # Closing = opening + kredit - debit
+            closing_balance = opening_balance + total_credit - total_debit
+
     return opening_balance, closing_balance, statement_from_date, statement_to_date
 
 

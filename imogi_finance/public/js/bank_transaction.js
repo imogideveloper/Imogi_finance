@@ -16,29 +16,50 @@ frappe.ui.form.on('Bank Transaction', {
 
     frm.add_custom_button(__('🏦 Buka Bank Reconciliation Tool'), function() {
       // Cari closing balance dari Bank CSV Import terakhir untuk bank account ini
+      // Cari import yang periodenya mencakup tanggal transaksi ini
+      const trx_date = frm.doc.date;
       frappe.db.get_list('Bank CSV Import', {
-        filters: {bank_account: frm.doc.bank_account, status: 'Completed'},
+        filters: {
+          bank_account: frm.doc.bank_account,
+          status: 'Completed',
+          statement_from_date: ['<=', trx_date],
+          statement_to_date: ['>=', trx_date],
+        },
         fields: ['name', 'closing_balance', 'opening_balance', 'statement_from_date', 'statement_to_date'],
-        order_by: 'creation desc',
+        order_by: 'statement_to_date desc',
         limit: 1
       }).then(results => {
-        if (results && results.length > 0) {
-          const last_import = results[0];
-          // Simpan ke localStorage agar Bank Reconciliation Tool bisa baca
-          localStorage.setItem('bci_prefill', JSON.stringify({
-            company: frm.doc.company,
-            bank_account: frm.doc.bank_account,
-            from_date: last_import.statement_from_date,
-            to_date: last_import.statement_to_date,
-            closing_balance: last_import.closing_balance,
-          }));
-          frappe.show_alert({
-            message: __('Closing Balance dari import terakhir: Rp {0}', 
-              [(last_import.closing_balance || 0).toLocaleString('id-ID')]),
-            indicator: 'blue'
-          }, 5);
-        }
-        frappe.set_route('Form', 'Bank Reconciliation Tool', 'Bank Reconciliation Tool');
+        // Fallback: kalau tidak ada yang cocok periodenya, ambil yang terdekat
+        const get_import = results && results.length > 0
+          ? Promise.resolve(results)
+          : frappe.db.get_list('Bank CSV Import', {
+              filters: {bank_account: frm.doc.bank_account, status: 'Completed'},
+              fields: ['name', 'closing_balance', 'opening_balance', 'statement_from_date', 'statement_to_date'],
+              order_by: 'statement_to_date desc',
+              limit: 1
+            });
+
+        get_import.then(imports => {
+          if (imports && imports.length > 0) {
+            const matched = imports[0];
+            localStorage.setItem('bci_prefill', JSON.stringify({
+              company: frm.doc.company,
+              bank_account: frm.doc.bank_account,
+              from_date: matched.statement_from_date,
+              to_date: matched.statement_to_date,
+              closing_balance: matched.closing_balance,
+            }));
+            frappe.show_alert({
+              message: __('Closing Balance dari import periode {0} s/d {1}: Rp {2}', [
+                matched.statement_from_date,
+                matched.statement_to_date,
+                (matched.closing_balance || 0).toLocaleString('id-ID')
+              ]),
+              indicator: 'blue'
+            }, 5);
+          }
+          frappe.set_route('Form', 'Bank Reconciliation Tool', 'Bank Reconciliation Tool');
+        });
       });
     }, __('Actions'));
 
