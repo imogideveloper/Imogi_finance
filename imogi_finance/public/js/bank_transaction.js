@@ -14,6 +14,34 @@ frappe.ui.form.on('Bank Transaction', {
       frappe.set_route('Form', 'Bank Reconciliation Tool', 'Bank Reconciliation Tool');
     }, __('Actions')).addClass('btn-primary');
 
+    frm.add_custom_button(__('🏦 Buka Bank Reconciliation Tool'), function() {
+      // Cari closing balance dari Bank CSV Import terakhir untuk bank account ini
+      frappe.db.get_list('Bank CSV Import', {
+        filters: {bank_account: frm.doc.bank_account, status: 'Completed'},
+        fields: ['name', 'closing_balance', 'opening_balance', 'statement_from_date', 'statement_to_date'],
+        order_by: 'creation desc',
+        limit: 1
+      }).then(results => {
+        if (results && results.length > 0) {
+          const last_import = results[0];
+          // Simpan ke localStorage agar Bank Reconciliation Tool bisa baca
+          localStorage.setItem('bci_prefill', JSON.stringify({
+            company: frm.doc.company,
+            bank_account: frm.doc.bank_account,
+            from_date: last_import.statement_from_date,
+            to_date: last_import.statement_to_date,
+            closing_balance: last_import.closing_balance,
+          }));
+          frappe.show_alert({
+            message: __('Closing Balance dari import terakhir: Rp {0}', 
+              [(last_import.closing_balance || 0).toLocaleString('id-ID')]),
+            indicator: 'blue'
+          }, 5);
+        }
+        frappe.set_route('Form', 'Bank Reconciliation Tool', 'Bank Reconciliation Tool');
+      });
+    }, __('Actions'));
+
     frm.add_custom_button(__('Create Journal Entry'), function() {
       frappe.model.with_doctype('Journal Entry', function() {
         var jv = frappe.model.get_new_doc('Journal Entry');

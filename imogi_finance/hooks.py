@@ -52,7 +52,7 @@ doctype_js = {
     "Tax Invoice OCR Upload": "public/js/tax_invoice_ocr_upload_form.js",
     "VAT OUT Batch": "public/js/vat_out_batch_form.js",
     "Bank Transaction": "public/js/bank_transaction.js",
-    "Bank Reconciliation Tool": "public/js/bank_reconciliation_tool.js",
+    "Bank Reconciliation Tool": ["public/js/bank_reconciliation_tool.js", "public/js/bank_reconciliation_tool_prefill.js"],
     "Payment Entry": [
         "public/js/payment_entry.js",
         "public/js/payment_entry_djp.js",

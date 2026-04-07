@@ -81,6 +81,34 @@
    "label": "Results"
   },
   {
+   "fieldname": "opening_balance",
+   "label": "Opening Balance (dari CSV)",
+   "fieldtype": "Currency",
+   "read_only": 1,
+   "insert_after": "section_break_result"
+  },
+  {
+   "fieldname": "closing_balance",
+   "label": "Closing Balance (dari CSV)",
+   "fieldtype": "Currency",
+   "read_only": 1,
+   "insert_after": "opening_balance"
+  },
+  {
+   "fieldname": "statement_from_date",
+   "label": "Periode Dari",
+   "fieldtype": "Date",
+   "read_only": 1,
+   "insert_after": "closing_balance"
+  },
+  {
+   "fieldname": "statement_to_date",
+   "label": "Periode Sampai",
+   "fieldtype": "Date",
+   "read_only": 1,
+   "insert_after": "statement_from_date"
+  },
+  {
    "fieldname": "total_rows",
    "fieldtype": "Int",
    "label": "Total Rows",

@@ -32,6 +32,10 @@ def run_import(docname):
             "skipped_rows": result["skipped"],
             "error_rows": result["errors"],
             "import_log": result["log"],
+            "opening_balance": result.get("opening_balance", 0),
+            "closing_balance": result.get("closing_balance", 0),
+            "statement_from_date": result.get("statement_from_date"),
+            "statement_to_date": result.get("statement_to_date"),
         })
         frappe.db.commit()
 
@@ -68,27 +72,55 @@ def _process_import(doc):
         if m.strip()
     ) if config.skip_markers else ()
 
-    # Baca CSV
+    # Baca file (support CSV dan Excel .xlsx/.xls)
     file_path = get_file_path(doc.import_file)
-    with open(file_path, "rb") as f:
-        raw = f.read().decode("utf-8-sig")
+    import os
+    ext = os.path.splitext(file_path)[1].lower()
 
-    # Tentukan delimiter
-    dialect_map = {
-        "excel": ",",
-        "excel-tab": "\t",
-        "unix": ",",
-    }
-    delimiter = dialect_map.get(config.csv_dialect, ",")
-    if config.csv_dialect == "semicolon":
-        delimiter = ";"
+    if ext in (".xlsx", ".xls"):
+        # Baca Excel
+        try:
+            import openpyxl
+            wb = openpyxl.load_workbook(file_path, read_only=True, data_only=True)
+            ws = wb.active
+            rows = []
+            for row in ws.iter_rows(values_only=True):
+                rows.append([str(v).strip() if v is not None else "" for v in row])
+            wb.close()
+        except ImportError:
+            frappe.throw(_("openpyxl tidak terinstall. Hubungi administrator."))
+    else:
+        # Baca CSV dengan auto-detect encoding
+        with open(file_path, "rb") as f:
+            raw_bytes = f.read()
 
-    # Parse CSV
-    reader = csv.reader(io.StringIO(raw), delimiter=delimiter)
-    rows = list(reader)
+        # Coba decode dengan berbagai encoding
+        decoded = None
+        for encoding in ("utf-8-sig", "utf-8", "latin-1", "cp1252", "iso-8859-1"):
+            try:
+                decoded = raw_bytes.decode(encoding)
+                break
+            except Exception:
+                continue
+
+        if decoded is None:
+            frappe.throw(_("Tidak dapat membaca file. Encoding tidak dikenali."))
+
+        # Tentukan delimiter
+        dialect_map = {
+            "excel": ",",
+            "excel-tab": "\t",
+            "unix": ",",
+        }
+        delimiter = dialect_map.get(config.csv_dialect, ",")
+        if config.csv_dialect == "semicolon":
+            delimiter = ";"
+
+        reader = csv.reader(io.StringIO(decoded), delimiter=delimiter)
+        rows = list(reader)
 
     if not rows:
-        frappe.throw(_("File CSV kosong."))
+        frappe.throw(_("File kosong."))
 
     # Cari baris header (skip baris info rekening di atas)
     header_row_idx = _find_header_row(rows, header_map)
@@ -248,6 +280,28 @@ def _process_import(doc):
             log_lines.append(f"Row {row_idx}: ERROR - {str(e)}")
             frappe.log_error(f"BCA Import Row {row_idx}: {str(e)}")
 
+    # Extract saldo awal & akhir dari data
+    opening_balance, closing_balance, statement_from_date, statement_to_date = \
+        _extract_balances_from_rows(data_rows, headers, field_map, config)
+
+    # Buat Opening Balance Journal Entry jika belum ada GL Entry
+    account = frappe.db.get_value("Bank Account", doc.bank_account, "account")
+    je_name = None
+    if opening_balance and account and statement_from_date:
+        try:
+            je_name = _ensure_opening_balance_je(
+                doc.bank_account,
+                account,
+                doc.company,
+                opening_balance,
+                statement_from_date,
+            )
+            if je_name:
+                log_lines.append(f"Opening Balance Journal Entry: {je_name}")
+        except Exception as e:
+            frappe.log_error(f"Opening Balance JE error: {str(e)}")
+            log_lines.append(f"Warning: Gagal buat Opening Balance JE - {str(e)}")
+
     log = "\n".join(log_lines)
     return {
         "total": total,
@@ -255,6 +309,11 @@ def _process_import(doc):
         "skipped": skipped,
         "errors": errors,
         "log": log,
+        "opening_balance": opening_balance,
+        "closing_balance": closing_balance,
+        "statement_from_date": statement_from_date,
+        "statement_to_date": statement_to_date,
+        "opening_balance_je": je_name,
     }
 
 
@@ -344,3 +403,130 @@ def _parse_amount(value):
         return abs(float(cleaned)) if cleaned else 0.0
     except Exception:
         return 0.0
+
+
+def _extract_balances_from_rows(data_rows, headers, field_map, config):
+    """Extract saldo awal dan akhir dari baris data CSV/Excel."""
+    opening_balance = 0.0
+    closing_balance = 0.0
+    statement_from_date = None
+    statement_to_date = None
+
+    if "balance" not in field_map:
+        return opening_balance, closing_balance, statement_from_date, statement_to_date
+
+    valid_entries = []
+    for row in data_rows:
+        if not row or all(not str(v).strip() for v in row):
+            continue
+        row_dict = {}
+        for i, header in enumerate(headers):
+            row_dict[header] = row[i] if i < len(row) else ""
+
+        bal_str = _clean(row_dict.get(field_map.get("balance", ""), ""))
+        date_str = _clean(row_dict.get(field_map.get("posting_date", ""), ""))
+
+        bal = _parse_amount(bal_str)
+        date = _parse_date(date_str, config.date_format) if date_str else None
+
+        if bal and date:
+            valid_entries.append((date, bal))
+
+    # Cari juga dari baris ringkasan "Saldo Awal" dan "Saldo Akhir"
+    for row in data_rows:
+        if not row:
+            continue
+        row_dict = {}
+        for i, header in enumerate(headers):
+            row_dict[header] = row[i] if i < len(row) else ""
+
+        # Cek semua cell untuk pattern Saldo Awal/Akhir
+        for cell_val in row_dict.values():
+            cell_normalized = _normalize(str(cell_val))
+            if "saldoawal" in cell_normalized or "openingbalance" in cell_normalized:
+                amount = _parse_amount(str(cell_val))
+                if amount:
+                    opening_balance = amount
+            elif "saldoakhir" in cell_normalized or "closingbalance" in cell_normalized:
+                amount = _parse_amount(str(cell_val))
+                if amount:
+                    closing_balance = amount
+
+    if valid_entries:
+        valid_entries.sort(key=lambda x: x[0])
+        statement_from_date = valid_entries[0][0]
+        statement_to_date = valid_entries[-1][0]
+        if not closing_balance:
+            closing_balance = valid_entries[-1][1]
+        if not opening_balance and len(valid_entries) > 1:
+            opening_balance = valid_entries[0][1]
+
+    return opening_balance, closing_balance, statement_from_date, statement_to_date
+
+
+def _ensure_opening_balance_je(bank_account_name, account, company, opening_balance, as_of_date):
+    """Buat Opening Balance Journal Entry jika belum ada dan opening_balance > 0."""
+    if not opening_balance or not account or not as_of_date:
+        return None
+
+    # Cek apakah sudah ada GL Entry untuk akun ini sebelum tanggal tersebut
+    existing_gl = frappe.db.exists("GL Entry", {
+        "account": account,
+        "is_cancelled": 0,
+    })
+
+    if existing_gl:
+        # Sudah ada GL Entry — skip, tidak perlu buat opening balance
+        return None
+
+    # Cek apakah sudah ada Opening Balance JE yang kita buat sebelumnya
+    existing_je = frappe.db.exists("Journal Entry", {
+        "user_remark": f"Opening Balance - {bank_account_name}",
+        "docstatus": 1,
+    })
+    if existing_je:
+        return existing_je
+
+    # Cari temporary/opening account
+    temp_account = frappe.db.get_value("Account", {
+        "account_type": "Temporary",
+        "company": company,
+    }, "name")
+
+    if not temp_account:
+        # Pakai Retained Earnings atau equity account
+        temp_account = frappe.db.get_value("Account", {
+            "root_type": "Equity",
+            "is_group": 0,
+            "company": company,
+        }, "name")
+
+    if not temp_account:
+        frappe.log_error("Opening Balance JE: Tidak ada temporary/equity account")
+        return None
+
+    # Buat Journal Entry
+    je = frappe.get_doc({
+        "doctype": "Journal Entry",
+        "voucher_type": "Opening Entry",
+        "company": company,
+        "posting_date": as_of_date,
+        "user_remark": f"Opening Balance - {bank_account_name}",
+        "accounts": [
+            {
+                "account": account,
+                "debit_in_account_currency": opening_balance,
+                "credit_in_account_currency": 0,
+            },
+            {
+                "account": temp_account,
+                "debit_in_account_currency": 0,
+                "credit_in_account_currency": opening_balance,
+            },
+        ],
+    })
+    je.insert(ignore_permissions=True)
+    je.submit()
+    frappe.db.commit()
+
+    return je.name
