@@ -141,6 +141,7 @@ fixtures = [
     {"doctype": "Workflow State"},
     {"doctype": "Workspace"},
     {"doctype": "Report"},
+    {"doctype": "Print Format", "filters": [["module", "=", "Imogi Finance"]]},
 ]
 
 # Uninstallation

@@ -42,7 +42,8 @@
     padding-bottom: 10pt; margin-bottom: 14pt;
   }
   .er-header-left  { display: table-cell; vertical-align: middle; }
-  .er-header-right { display: table-cell; vertical-align: middle; text-align: right; }
+  .er-header-right { display: table-cell; vertical-align: top; text-align: right; width: 160pt; }
+  .er-logo { max-height: 60pt; max-width: 160pt; width: auto; height: auto; object-fit: contain; display: block; margin: 0 0 8pt auto; }
   .er-title  { font-size: 17pt; font-weight: 700; color: var(--primary); letter-spacing: -0.3pt; margin-bottom: 2pt; }
   .er-docid  { font-size: 9pt; color: var(--text-muted); letter-spacing: 0.3pt; }
 
@@ -155,6 +156,7 @@
     .tax-notice           { background: var(--blue-bg) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .sig-section          { page-break-inside: avoid; }
     .fin-summary          { page-break-inside: avoid; }
+    .er-logo              { max-height: 60pt !important; max-width: 160pt !important; width: auto !important; height: auto !important; display: block !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
 </style>
 
@@ -180,6 +182,10 @@
       <div class="er-docid">{{ doc.name }} &nbsp;&middot;&nbsp; {{ frappe.utils.formatdate(doc.request_date, "dd MMMM yyyy") }}</div>
     </div>
     <div class="er-header-right">
+      {%- set company_logo = frappe.db.get_value("Company", doc.company, "company_logo") -%}
+      {%- if company_logo %}
+      <img src="{{ company_logo }}" alt="{{ doc.company }}" class="er-logo">
+      {%- endif %}
       <span class="badge {{ badge_cls }}">{{ status }}</span>
     </div>
   </div>
