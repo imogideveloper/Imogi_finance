@@ -284,23 +284,23 @@ def _process_import(doc):
     opening_balance, closing_balance, statement_from_date, statement_to_date = \
         _extract_balances_from_rows(data_rows, headers, field_map, config)
 
-    # Buat Opening Balance Journal Entry jika belum ada GL Entry
+    # Notifikasi Opening Balance — tidak auto-create JE
+    # User perlu buat Journal Entry manual via Accounting → Journal Entry
     account = frappe.db.get_value("Bank Account", doc.bank_account, "account")
     je_name = None
     if opening_balance and account and statement_from_date:
-        try:
-            je_name = _ensure_opening_balance_je(
-                doc.bank_account,
-                account,
-                doc.company,
-                opening_balance,
-                statement_from_date,
+        # Cek apakah sudah ada GL Entry untuk akun ini
+        existing_gl = frappe.db.exists("GL Entry", {
+            "account": account,
+            "is_cancelled": 0,
+        })
+        if not existing_gl:
+            log_lines.append(
+                f"⚠️ Opening Balance terdeteksi: Rp {opening_balance:,.2f}. "
+                f"Silakan buat Opening Entry manual di Accounting → Journal Entry "
+                f"dengan tanggal sebelum {statement_from_date} "
+                f"untuk akun {account}."
             )
-            if je_name:
-                log_lines.append(f"Opening Balance Journal Entry: {je_name}")
-        except Exception as e:
-            frappe.log_error(f"Opening Balance JE error: {str(e)}")
-            log_lines.append(f"Warning: Gagal buat Opening Balance JE - {str(e)}")
 
     log = "\n".join(log_lines)
     return {
@@ -458,8 +458,47 @@ def _extract_balances_from_rows(data_rows, headers, field_map, config):
         statement_to_date = valid_entries[-1][0]
         if not closing_balance:
             closing_balance = valid_entries[-1][1]
-        if not opening_balance and len(valid_entries) > 1:
-            opening_balance = valid_entries[0][1]
+
+        # Hitung Opening Balance yang benar:
+        # Jika tidak ada baris "Saldo Awal" eksplisit di CSV,
+        # hitung dari Close Balance baris pertama - Credit + Debit baris pertama
+        if not opening_balance:
+            first_balance = valid_entries[0][1]
+            # Cari debit dan credit baris pertama
+            first_row = None
+            for row in data_rows:
+                if not row or all(not str(v).strip() for v in row):
+                    continue
+                row_dict = {}
+                for i, header in enumerate(headers):
+                    row_dict[header] = row[i] if i < len(row) else ""
+                date_str = _clean(row_dict.get(field_map.get("posting_date", ""), ""))
+                date = _parse_date(date_str, config.date_format) if date_str else None
+                if date == statement_from_date:
+                    first_row = row_dict
+                    break
+
+            if first_row:
+                first_debit_str = _clean(first_row.get(field_map.get("debit", ""), "")) if "debit" in field_map else ""
+                first_credit_str = _clean(first_row.get(field_map.get("credit", ""), "")) if "credit" in field_map else ""
+                first_amount_str = _clean(first_row.get(field_map.get("amount", ""), "")) if "amount" in field_map else ""
+
+                first_debit = _parse_amount(first_debit_str)
+                first_credit = _parse_amount(first_credit_str)
+
+                # Handle format BCA: kolom Jumlah tunggal dengan suffix DB/CR
+                if first_debit == 0 and first_credit == 0 and first_amount_str:
+                    amount_val = _parse_amount(first_amount_str)
+                    amount_lower = first_amount_str.lower()
+                    if "db" in amount_lower or "dr" in amount_lower:
+                        first_debit = amount_val
+                    elif "cr" in amount_lower:
+                        first_credit = amount_val
+
+                # Opening = Close Balance baris pertama - Credit + Debit
+                opening_balance = first_balance - first_credit + first_debit
+            else:
+                opening_balance = first_balance
 
     # Fallback: jika balance tidak ada di file, hitung dari debit/kredit
     if not closing_balance and ("debit" in field_map or "credit" in field_map or "amount" in field_map):
@@ -550,12 +589,20 @@ def _ensure_opening_balance_je(bank_account_name, account, company, opening_bala
         frappe.log_error("Opening Balance JE: Tidak ada temporary/equity account")
         return None
 
-    # Buat Journal Entry
+    # Buat Journal Entry — tanggal SEHARI SEBELUM transaksi pertama
+    # agar Account Opening Balance terbaca di Bank Reconciliation Tool
+    import datetime as _datetime
+    if isinstance(as_of_date, str):
+        as_of_date_obj = _datetime.date.fromisoformat(as_of_date)
+    else:
+        as_of_date_obj = as_of_date
+    je_date = (as_of_date_obj - _datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+
     je = frappe.get_doc({
         "doctype": "Journal Entry",
         "voucher_type": "Opening Entry",
         "company": company,
-        "posting_date": as_of_date,
+        "posting_date": je_date,
         "user_remark": f"Opening Balance - {bank_account_name}",
         "accounts": [
             {

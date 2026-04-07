@@ -21,6 +21,22 @@ frappe.ui.form.on('Bank CSV Import', {
                                     message: __('Import selesai: {0} dibuat, {1} duplikat, {2} error', [res.created, res.skipped, res.errors]),
                                     indicator: res.errors > 0 ? 'orange' : 'green'
                                 }, 10);
+
+                                // Notifikasi Opening Balance jika terdeteksi dan belum ada GL Entry
+                                if (res.opening_balance && res.opening_balance > 0) {
+                                    frappe.msgprint({
+                                        title: __('⚠️ Opening Balance Terdeteksi'),
+                                        message: `
+                                            <b>Opening Balance dari CSV:</b> Rp ${res.opening_balance.toLocaleString('id-ID')}<br><br>
+                                            Silakan buat <b>Opening Entry</b> manual di:<br>
+                                            <b>Accounting → Journal Entry → New</b><br><br>
+                                            Gunakan tanggal sebelum <b>${res.statement_from_date || '-'}</b><br>
+                                            dan akun bank <b>${frm.doc.bank_account}</b>.
+                                        `,
+                                        indicator: 'orange',
+                                    });
+                                }
+
                                 frm.reload_doc();
                             }
                         },
