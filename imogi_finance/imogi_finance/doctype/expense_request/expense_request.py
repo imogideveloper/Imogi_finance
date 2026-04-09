@@ -108,6 +108,40 @@ class ExpenseRequest(Document):
     - hooks (on_submit, etc): Standard Frappe patterns
     """
 
+    def set_expense_account_display(self):
+        items = self.get("items") or []
+        accounts = list(dict.fromkeys(  # preserve order, deduplicate
+            getattr(item, "expense_account", None)
+            for item in items
+            if getattr(item, "expense_account", None)
+            and not getattr(item, "is_variance_item", 0)  # skip variance rows
+        ))
+        self.custom_expense_account_display = ", ".join(accounts) if accounts else ""
+
+    def _get_expense_account_display(self) -> str:
+        """Human-readable expense account display."""
+        accounts = self._get_expense_accounts()
+        return ", ".join(accounts) if accounts else ""
+
+    def _normalize_expense_accounts(self, accounts) -> tuple[str, ...]:
+        """Normalize expense accounts to unique, ordered tuple."""
+        if not accounts:
+            return tuple()
+
+        normalized = []
+        seen = set()
+
+        for acc in accounts:
+            if not acc:
+                continue
+            acc = str(acc).strip()
+            if not acc or acc in seen:
+                continue
+            seen.add(acc)
+            normalized.append(acc)
+
+        return tuple(normalized)
+
     def before_validate(self):
         self.validate_amounts()
 
@@ -133,6 +167,7 @@ class ExpenseRequest(Document):
         validate_tax_invoice_upload_link(self, "Expense Request")
         self._ensure_final_state_immutability()
         self.validate_tax_invoice_ocr_before_submit()
+        self.set_expense_account_display()
 
     def before_submit(self):
         """Prepare for submission - resolve approval route and initialize state."""
@@ -317,11 +352,24 @@ class ExpenseRequest(Document):
     # ===================== Business Logic =====================
 
     def validate_amounts(self):
-        """Sum item amounts and set total."""
+        """Sum item amounts and set total.
+
+        Multi-account aware:
+        - expense_accounts = primary source
+        - expense_account = backward-compatible fallback ke account pertama
+        """
         total, expense_accounts = FinanceValidator.validate_amounts(self.get("items"))
+
+        normalized_accounts = self._normalize_expense_accounts(expense_accounts)
+
         self.amount = total
-        self.expense_accounts = expense_accounts
-        self.expense_account = expense_accounts[0] if len(expense_accounts) == 1 else None
+        self.expense_accounts = normalized_accounts
+
+        # Backward compatibility:
+        # legacy code mungkin masih baca field single-value ini.
+        # Isi account pertama, jangan None, supaya tidak pecah saat multi account.
+        self.expense_account = normalized_accounts[0] if normalized_accounts else None
+
         self._set_totals()
 
     def _set_totals(self):
@@ -783,13 +831,18 @@ class ExpenseRequest(Document):
         return None
 
     def _get_expense_accounts(self) -> tuple[str, ...]:
-        """Get expense accounts from items."""
         accounts = getattr(self, "expense_accounts", None)
-        if accounts:
-            return accounts
+        
+        # FIX: Parse newline-separated string dari Small Text field
+        if isinstance(accounts, str) and accounts:
+            accounts = [a.strip() for a in accounts.split("\n") if a.strip()]
+        
+        normalized = self._normalize_expense_accounts(accounts)
+        if normalized:
+            return normalized
 
         _, accounts = accounting.summarize_request_items(self.get("items"))
-        return accounts
+        return self._normalize_expense_accounts(accounts)
 
     @staticmethod
     def _get_value(source, field):
