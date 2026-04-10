@@ -139,16 +139,13 @@ after_install = "imogi_finance.utils.ensure_coretax_export_doctypes"
 fixtures = [
     {"doctype": "Custom Field"},
     {"doctype": "Property Setter"},
-    {"doctype": "Client Script"},
+    {"doctype": "Client Script", "filters": [["dt", "=", "Sales Order"], ["enabled", "=", 1]]},
+    {"doctype": "List View Settings", "filters": [["name", "=", "Sales Order"]]},
     {"doctype": "Workflow"},
     {"doctype": "Workflow State"},
     {"doctype": "Workspace"},
     {"doctype": "Report"},
     {"doctype": "Print Format", "filters": [["module", "=", "Imogi Finance"]]},
-    {
-        "doctype": "List View Settings",
-        "filters": [["name", "=", "Sales Order"]]
-    }
 ]
 
 # Uninstallation
