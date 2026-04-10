@@ -50,6 +50,28 @@ def run_import(docname):
         frappe.throw(str(e))
 
 
+def _get_previous_closing_balance(bank_account, current_docname):
+    """
+    Ambil closing_balance dari BCI sebelumnya untuk bank account yang sama.
+    Urut berdasarkan statement_to_date descending, ambil yang pertama.
+    """
+    prev = frappe.db.sql("""
+        SELECT closing_balance, statement_to_date
+        FROM `tabBank CSV Import`
+        WHERE bank_account = %s
+          AND status = 'Completed'
+          AND name != %s
+          AND closing_balance IS NOT NULL
+          AND closing_balance != 0
+        ORDER BY statement_to_date DESC, creation DESC
+        LIMIT 1
+    """, (bank_account, current_docname), as_dict=True)
+
+    if prev:
+        return prev[0].get("closing_balance", 0)
+    return None
+
+
 def _process_import(doc):
     """Parse CSV dan buat Bank Transactions."""
     # Load konfigurasi bank
@@ -65,7 +87,7 @@ def _process_import(doc):
         if aliases:
             header_map[alias_row.fieldname] = aliases
 
-    # Skip markers - normalize juga supaya cocok dengan normalized text
+    # Skip markers
     skip_markers = tuple(
         _normalize(m)
         for m in (config.skip_markers or "").split(",")
@@ -78,7 +100,6 @@ def _process_import(doc):
     ext = os.path.splitext(file_path)[1].lower()
 
     if ext in (".xlsx", ".xls"):
-        # Baca Excel
         try:
             import openpyxl
             wb = openpyxl.load_workbook(file_path, read_only=True, data_only=True)
@@ -90,11 +111,9 @@ def _process_import(doc):
         except ImportError:
             frappe.throw(_("openpyxl tidak terinstall. Hubungi administrator."))
     else:
-        # Baca CSV dengan auto-detect encoding
         with open(file_path, "rb") as f:
             raw_bytes = f.read()
 
-        # Coba decode dengan berbagai encoding
         decoded = None
         for encoding in ("utf-8-sig", "utf-8", "latin-1", "cp1252", "iso-8859-1"):
             try:
@@ -106,7 +125,6 @@ def _process_import(doc):
         if decoded is None:
             frappe.throw(_("Tidak dapat membaca file. Encoding tidak dikenali."))
 
-        # Tentukan delimiter
         dialect_map = {
             "excel": ",",
             "excel-tab": "\t",
@@ -122,10 +140,10 @@ def _process_import(doc):
     if not rows:
         frappe.throw(_("File kosong."))
 
-    # Cari baris header (skip baris info rekening di atas)
+    # Cari baris header
     header_row_idx = _find_header_row(rows, header_map)
     if header_row_idx is None:
-        frappe.throw(_("Tidak dapat menemukan baris header di CSV. Pastikan konfigurasi Bank Statement Bank List sudah benar."))
+        frappe.throw(_("Tidak dapat menemukan baris header di CSV."))
 
     headers = rows[header_row_idx]
     data_rows = rows[header_row_idx + 1:]
@@ -145,17 +163,19 @@ def _process_import(doc):
     required = ["posting_date", "description"]
     missing = [f for f in required if f not in field_map]
     if missing:
-        frappe.throw(_(f"Field wajib tidak ditemukan di CSV: {', '.join(missing)}. Cek konfigurasi header_aliases di Bank Statement Bank List."))
+        frappe.throw(_(f"Field wajib tidak ditemukan di CSV: {', '.join(missing)}."))
 
     # Proses setiap row
     log_lines = []
     total = created = skipped = errors = 0
+    all_dates = []
+    total_debit = 0.0
+    total_credit = 0.0
 
     for row_idx, row in enumerate(data_rows, start=1):
         if not row or all(not (v or "").strip() for v in row):
             continue
 
-        # Buat dict dari row
         row_dict = {}
         for i, header in enumerate(headers):
             if i < len(row):
@@ -163,16 +183,14 @@ def _process_import(doc):
             else:
                 row_dict[header] = ""
 
-        # Cek skip markers - cek semua cell di row
+        # Cek skip markers
         should_skip = False
-        # Cek di field posting_date dan description
         for check_field in ["posting_date", "description"]:
             if check_field in field_map:
                 val = _normalize(row_dict.get(field_map[check_field], ""))
                 if any(val.startswith(m) or m in val for m in skip_markers):
                     should_skip = True
                     break
-        # Cek juga di semua cell jika skip_markers ditemukan
         if not should_skip and skip_markers:
             for cell_val in row_dict.values():
                 normalized_cell = _normalize(cell_val)
@@ -186,44 +204,33 @@ def _process_import(doc):
         total += 1
 
         try:
-            # Ambil nilai
             posting_date_str = _clean(row_dict.get(field_map.get("posting_date"), ""))
             description = _clean(row_dict.get(field_map.get("description"), ""))
             reference_number = _clean(row_dict.get(field_map.get("reference_number"), "")) if "reference_number" in field_map else ""
             debit_str = _clean(row_dict.get(field_map.get("debit"), "")) if "debit" in field_map else ""
             credit_str = _clean(row_dict.get(field_map.get("credit"), "")) if "credit" in field_map else ""
-            balance_str = _clean(row_dict.get(field_map.get("balance"), "")) if "balance" in field_map else ""
 
             if not posting_date_str:
                 continue
 
-            # Cek apakah baris ini adalah baris ringkasan (skip markers)
             if skip_markers and any(
                 _normalize(posting_date_str).startswith(m) or m in _normalize(posting_date_str)
                 for m in skip_markers
             ):
                 continue
 
-            # Parse tanggal
             posting_date = _parse_date(posting_date_str, config.date_format)
             if not posting_date:
-                # Cek apakah baris ini adalah ringkasan - skip tanpa error
                 row_text = _normalize(' '.join(str(v) for v in row_dict.values()))
                 if skip_markers and any(m in row_text for m in skip_markers):
-                    continue
-                # Cek juga di posting_date_str sendiri
-                if skip_markers and any(m in _normalize(posting_date_str) for m in skip_markers):
                     continue
                 log_lines.append(f"Row {row_idx}: Tanggal tidak valid: '{posting_date_str}'")
                 errors += 1
                 continue
 
-            # Parse amounts
             debit = _parse_amount(debit_str)
             credit = _parse_amount(credit_str)
-            balance = _parse_amount(balance_str)
 
-            # Handle format BCA: kolom "Jumlah" tunggal dengan suffix DB/CR
             if debit == 0 and credit == 0 and "amount" in field_map:
                 amount_str = _clean(row_dict.get(field_map.get("amount"), ""))
                 if amount_str:
@@ -238,7 +245,12 @@ def _process_import(doc):
                 skipped += 1
                 continue
 
-            # Cek duplikat berdasarkan tanggal + deskripsi + amount
+            # Akumulasi untuk kalkulasi balance
+            all_dates.append(posting_date)
+            total_debit += debit
+            total_credit += credit
+
+            # Cek duplikat
             duplicate = frappe.db.exists("Bank Transaction", {
                 "date": posting_date,
                 "bank_account": doc.bank_account,
@@ -263,10 +275,10 @@ def _process_import(doc):
                 "deposit": credit,
                 "withdrawal": debit,
                 "currency": (
-                        frappe.db.get_value("Account",
-                            frappe.db.get_value("Bank Account", doc.bank_account, "account"),
-                            "account_currency"
-                        ) or "IDR"
+                    frappe.db.get_value("Account",
+                        frappe.db.get_value("Bank Account", doc.bank_account, "account"),
+                        "account_currency"
+                    ) or "IDR"
                 ),
             })
             bt.insert(ignore_permissions=True)
@@ -280,26 +292,61 @@ def _process_import(doc):
             log_lines.append(f"Row {row_idx}: ERROR - {str(e)}")
             frappe.log_error(f"BCA Import Row {row_idx}: {str(e)}")
 
-    # Extract saldo awal & akhir dari data
-    opening_balance, closing_balance, statement_from_date, statement_to_date = \
-        _extract_balances_from_rows(data_rows, headers, field_map, config)
+    # ── Kalkulasi From/To Date dari transaksi ──────────────────
+    statement_from_date = None
+    statement_to_date = None
+    if all_dates:
+        all_dates.sort()
+        statement_from_date = all_dates[0]
+        statement_to_date = all_dates[-1]
 
-    # Notifikasi Opening Balance — tidak auto-create JE
-    # User perlu buat Journal Entry manual via Accounting → Journal Entry
+    # ── Kalkulasi Opening Balance ──────────────────────────────
+    # 1. Coba dari CSV (balance column atau saldo awal eksplisit)
+    csv_opening, csv_closing, _, _ = _extract_balances_from_rows(
+        data_rows, headers, field_map, config
+    )
+
+    # 2. Coba dari closing balance BCI sebelumnya (history)
+    prev_closing = _get_previous_closing_balance(doc.bank_account, doc.name)
+
+    # 3. Tentukan opening balance
+    # Prioritas: CSV eksplisit (Saldo Awal) > history > 0
+    if csv_opening:
+        opening_balance = csv_opening
+        log_lines.append(f"✅ Opening Balance dari CSV (Saldo Awal): Rp {opening_balance:,.2f}")
+    elif prev_closing is not None:
+        opening_balance = prev_closing
+        log_lines.append(f"✅ Opening Balance dari history BCI sebelumnya: Rp {opening_balance:,.2f}")
+    else:
+        opening_balance = 0.0
+        log_lines.append("ℹ️ Opening Balance: 0 (tidak ada history sebelumnya)")
+
+    # ── Kalkulasi Closing Balance ──────────────────────────
+    # Prioritas: CSV eksplisit (Saldo Akhir) > kalkulasi dari transaksi
+    if csv_closing:
+        closing_balance = csv_closing
+        log_lines.append(f"✅ Closing Balance dari CSV (Saldo Akhir): Rp {closing_balance:,.2f}")
+    else:
+        closing_balance = opening_balance + total_credit - total_debit
+
+    log_lines.append(
+        f"📊 Summary: Opening={opening_balance:,.2f} | "
+        f"+Credit={total_credit:,.2f} | -Debit={total_debit:,.2f} | "
+        f"Closing={closing_balance:,.2f}"
+    )
+
+    # Notifikasi Opening Balance untuk import pertama
     account = frappe.db.get_value("Bank Account", doc.bank_account, "account")
-    je_name = None
-    if opening_balance and account and statement_from_date:
-        # Cek apakah sudah ada GL Entry untuk akun ini
+    if opening_balance == 0 and account:
         existing_gl = frappe.db.exists("GL Entry", {
             "account": account,
             "is_cancelled": 0,
         })
         if not existing_gl:
             log_lines.append(
-                f"⚠️ Opening Balance terdeteksi: Rp {opening_balance:,.2f}. "
-                f"Silakan buat Opening Entry manual di Accounting → Journal Entry "
-                f"dengan tanggal sebelum {statement_from_date} "
-                f"untuk akun {account}."
+                f"⚠️ Ini adalah import pertama. Opening Balance = 0. "
+                f"Jika perlu penyesuaian, buat Opening Entry manual di "
+                f"Accounting → Journal Entry."
             )
 
     log = "\n".join(log_lines)
@@ -313,12 +360,10 @@ def _process_import(doc):
         "closing_balance": closing_balance,
         "statement_from_date": statement_from_date,
         "statement_to_date": statement_to_date,
-        "opening_balance_je": je_name,
     }
 
 
 def _find_header_row(rows, header_map):
-    """Cari baris header di CSV (skip baris info rekening di atas)."""
     all_aliases = set()
     for aliases in header_map.values():
         for alias in aliases:
@@ -327,7 +372,7 @@ def _find_header_row(rows, header_map):
     for idx, row in enumerate(rows):
         normalized_row = [_normalize(cell) for cell in row]
         matches = sum(1 for cell in normalized_row if cell in all_aliases)
-        if matches >= 2:  # minimal 2 kolom cocok = baris header
+        if matches >= 2:
             return idx
 
     return None
@@ -342,7 +387,6 @@ def _clean(text):
 
 
 def _parse_date(date_str, date_format=None):
-    """Parse tanggal dari berbagai format."""
     import re
     date_str = date_str.strip()
 
@@ -350,7 +394,7 @@ def _parse_date(date_str, date_format=None):
         "%d/%m/%Y", "%Y-%m-%d", "%d-%m-%Y",
         "%d/%m/%y", "%Y/%m/%d", "%d %b %Y",
         "%d-%b-%Y", "%d %B %Y",
-        "%d %B %Y %H:%M:%S",  # Mandiri: 29 March 2026 04:13:47
+        "%d %B %Y %H:%M:%S",
         "%d %b %Y %H:%M:%S",
     ]
 
@@ -375,13 +419,11 @@ def _parse_date(date_str, date_format=None):
 
 
 def _parse_amount(value):
-    """Parse amount dari string dengan format Indonesia."""
     if not value:
         return 0.0
 
     cleaned = value.strip()
 
-    # Handle format Indonesia: 1.234.567,89
     if "," in cleaned and "." in cleaned:
         if cleaned.rfind(",") > cleaned.rfind("."):
             cleaned = cleaned.replace(".", "").replace(",", ".")
@@ -390,12 +432,10 @@ def _parse_amount(value):
     elif "," in cleaned:
         cleaned = cleaned.replace(",", ".")
     elif "." in cleaned:
-        # Cek apakah titik sebagai ribuan atau desimal
         parts = cleaned.split(".")
         if len(parts[-1]) == 3:
             cleaned = cleaned.replace(".", "")
 
-    # Hapus karakter non-numerik selain titik dan minus
     import re
     cleaned = re.sub(r"[^\d.\-]", "", cleaned)
 
@@ -406,33 +446,32 @@ def _parse_amount(value):
 
 
 def _extract_balances_from_rows(data_rows, headers, field_map, config):
-    """Extract saldo awal dan akhir dari baris data CSV/Excel."""
+    """Extract saldo dari CSV jika ada kolom balance atau label eksplisit."""
     opening_balance = 0.0
     closing_balance = 0.0
     statement_from_date = None
     statement_to_date = None
 
-    if "balance" not in field_map:
-        return opening_balance, closing_balance, statement_from_date, statement_to_date
-
     valid_entries = []
-    for row in data_rows:
-        if not row or all(not str(v).strip() for v in row):
-            continue
-        row_dict = {}
-        for i, header in enumerate(headers):
-            row_dict[header] = row[i] if i < len(row) else ""
 
-        bal_str = _clean(row_dict.get(field_map.get("balance", ""), ""))
-        date_str = _clean(row_dict.get(field_map.get("posting_date", ""), ""))
+    if "balance" in field_map:
+        for row in data_rows:
+            if not row or all(not str(v).strip() for v in row):
+                continue
+            row_dict = {}
+            for i, header in enumerate(headers):
+                row_dict[header] = row[i] if i < len(row) else ""
 
-        bal = _parse_amount(bal_str)
-        date = _parse_date(date_str, config.date_format) if date_str else None
+            bal_str = _clean(row_dict.get(field_map.get("balance", ""), ""))
+            date_str = _clean(row_dict.get(field_map.get("posting_date", ""), ""))
 
-        if bal and date:
-            valid_entries.append((date, bal))
+            bal = _parse_amount(bal_str)
+            date = _parse_date(date_str, config.date_format) if date_str else None
 
-    # Cari juga dari baris ringkasan "Saldo Awal" dan "Saldo Akhir"
+            if bal and date:
+                valid_entries.append((date, bal))
+
+    # Cek baris ringkasan Saldo Awal/Akhir
     for row in data_rows:
         if not row:
             continue
@@ -440,7 +479,6 @@ def _extract_balances_from_rows(data_rows, headers, field_map, config):
         for i, header in enumerate(headers):
             row_dict[header] = row[i] if i < len(row) else ""
 
-        # Cek semua cell untuk pattern Saldo Awal/Akhir
         for cell_val in row_dict.values():
             cell_normalized = _normalize(str(cell_val))
             if "saldoawal" in cell_normalized or "openingbalance" in cell_normalized:
@@ -459,111 +497,21 @@ def _extract_balances_from_rows(data_rows, headers, field_map, config):
         if not closing_balance:
             closing_balance = valid_entries[-1][1]
 
-        # Hitung Opening Balance yang benar:
-        # Jika tidak ada baris "Saldo Awal" eksplisit di CSV,
-        # hitung dari Close Balance baris pertama - Credit + Debit baris pertama
-        if not opening_balance:
-            first_balance = valid_entries[0][1]
-            # Cari debit dan credit baris pertama
-            first_row = None
-            for row in data_rows:
-                if not row or all(not str(v).strip() for v in row):
-                    continue
-                row_dict = {}
-                for i, header in enumerate(headers):
-                    row_dict[header] = row[i] if i < len(row) else ""
-                date_str = _clean(row_dict.get(field_map.get("posting_date", ""), ""))
-                date = _parse_date(date_str, config.date_format) if date_str else None
-                if date == statement_from_date:
-                    first_row = row_dict
-                    break
-
-            if first_row:
-                first_debit_str = _clean(first_row.get(field_map.get("debit", ""), "")) if "debit" in field_map else ""
-                first_credit_str = _clean(first_row.get(field_map.get("credit", ""), "")) if "credit" in field_map else ""
-                first_amount_str = _clean(first_row.get(field_map.get("amount", ""), "")) if "amount" in field_map else ""
-
-                first_debit = _parse_amount(first_debit_str)
-                first_credit = _parse_amount(first_credit_str)
-
-                # Handle format BCA: kolom Jumlah tunggal dengan suffix DB/CR
-                if first_debit == 0 and first_credit == 0 and first_amount_str:
-                    amount_val = _parse_amount(first_amount_str)
-                    amount_lower = first_amount_str.lower()
-                    if "db" in amount_lower or "dr" in amount_lower:
-                        first_debit = amount_val
-                    elif "cr" in amount_lower:
-                        first_credit = amount_val
-
-                # Opening = Close Balance baris pertama - Credit + Debit
-                opening_balance = first_balance - first_credit + first_debit
-            else:
-                opening_balance = first_balance
-
-    # Fallback: jika balance tidak ada di file, hitung dari debit/kredit
-    if not closing_balance and ("debit" in field_map or "credit" in field_map or "amount" in field_map):
-        total_debit = 0.0
-        total_credit = 0.0
-        dates = []
-        for row in data_rows:
-            if not row or all(not str(v).strip() for v in row):
-                continue
-            row_dict = {}
-            for i, header in enumerate(headers):
-                row_dict[header] = row[i] if i < len(row) else ""
-
-            date_str = _clean(row_dict.get(field_map.get("posting_date", ""), ""))
-            date = _parse_date(date_str, config.date_format) if date_str else None
-
-            debit_str = _clean(row_dict.get(field_map.get("debit", ""), "")) if "debit" in field_map else ""
-            credit_str = _clean(row_dict.get(field_map.get("credit", ""), "")) if "credit" in field_map else ""
-            amount_str = _clean(row_dict.get(field_map.get("amount", ""), "")) if "amount" in field_map else ""
-
-            debit = _parse_amount(debit_str)
-            credit = _parse_amount(credit_str)
-
-            # Handle format BCA: kolom Jumlah tunggal dengan suffix DB/CR
-            if debit == 0 and credit == 0 and amount_str:
-                amount_val = _parse_amount(amount_str)
-                amount_lower = amount_str.lower()
-                if "db" in amount_lower or "dr" in amount_lower:
-                    debit = amount_val
-                elif "cr" in amount_lower:
-                    credit = amount_val
-
-            if (debit or credit) and date:
-                total_debit += debit
-                total_credit += credit
-                dates.append(date)
-
-        if dates:
-            dates.sort()
-            if not statement_from_date:
-                statement_from_date = dates[0]
-            if not statement_to_date:
-                statement_to_date = dates[-1]
-            # Closing = opening + kredit - debit
-            closing_balance = opening_balance + total_credit - total_debit
-
     return opening_balance, closing_balance, statement_from_date, statement_to_date
 
 
 def _ensure_opening_balance_je(bank_account_name, account, company, opening_balance, as_of_date):
-    """Buat Opening Balance Journal Entry jika belum ada dan opening_balance > 0."""
     if not opening_balance or not account or not as_of_date:
         return None
 
-    # Cek apakah sudah ada GL Entry untuk akun ini sebelum tanggal tersebut
     existing_gl = frappe.db.exists("GL Entry", {
         "account": account,
         "is_cancelled": 0,
     })
 
     if existing_gl:
-        # Sudah ada GL Entry — skip, tidak perlu buat opening balance
         return None
 
-    # Cek apakah sudah ada Opening Balance JE yang kita buat sebelumnya
     existing_je = frappe.db.exists("Journal Entry", {
         "user_remark": f"Opening Balance - {bank_account_name}",
         "docstatus": 1,
@@ -571,14 +519,12 @@ def _ensure_opening_balance_je(bank_account_name, account, company, opening_bala
     if existing_je:
         return existing_je
 
-    # Cari temporary/opening account
     temp_account = frappe.db.get_value("Account", {
         "account_type": "Temporary",
         "company": company,
     }, "name")
 
     if not temp_account:
-        # Pakai Retained Earnings atau equity account
         temp_account = frappe.db.get_value("Account", {
             "root_type": "Equity",
             "is_group": 0,
@@ -589,8 +535,6 @@ def _ensure_opening_balance_je(bank_account_name, account, company, opening_bala
         frappe.log_error("Opening Balance JE: Tidak ada temporary/equity account")
         return None
 
-    # Buat Journal Entry — tanggal SEHARI SEBELUM transaksi pertama
-    # agar Account Opening Balance terbaca di Bank Reconciliation Tool
     import datetime as _datetime
     if isinstance(as_of_date, str):
         as_of_date_obj = _datetime.date.fromisoformat(as_of_date)
