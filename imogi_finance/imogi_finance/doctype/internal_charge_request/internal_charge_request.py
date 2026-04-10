@@ -26,6 +26,17 @@ class InternalChargeRequest(Document):
     def before_validate(self):
         """Auto-populate company and fiscal_year before validation."""
         self._auto_populate_company_and_fiscal_year()
+        self._auto_populate_total_amount()
+
+    def _auto_populate_total_amount(self):
+        """Auto-set total_amount from Expense Request DPP (amount field)."""
+        if getattr(self, "expense_request", None):
+            try:
+                er_dpp = frappe.db.get_value("Expense Request", self.expense_request, "amount")
+                if er_dpp is not None:
+                    self.total_amount = float(er_dpp)
+            except Exception:
+                pass
 
     def validate(self):
         settings = utils.get_settings()
@@ -106,16 +117,24 @@ class InternalChargeRequest(Document):
                 account=expense_account,
             )
 
-            # Cek apakah budget EXISTS untuk cost center ini (strict)
-            budget_exists = frappe.db.exists("Budget", {
+            # Cek apakah budget EXISTS via Budget Control Entry (custom Imogi system)
+            budget_exists = frappe.db.exists("Budget Control Entry", {
                 "company": company,
                 "fiscal_year": fiscal_year,
                 "cost_center": cost_center,
                 "docstatus": 1,
             })
+            # Fallback: cek juga di ERPNext native Budget
+            if not budget_exists:
+                budget_exists = frappe.db.exists("Budget", {
+                    "company": company,
+                    "fiscal_year": fiscal_year,
+                    "cost_center": cost_center,
+                    "docstatus": 1,
+                })
             if not budget_exists:
                 frappe.throw(
-                    _("Tidak ada budget untuk Cost Center {0}. Buat Budget terlebih dahulu.").format(cost_center),
+                    _("Tidak ada budget untuk Cost Center {0}. Buat Budget Control Entry terlebih dahulu.").format(cost_center),
                     title=_("Budget Belum Dikonfigurasi")
                 )
             result = service.check_budget_available(dims, amount)
@@ -151,6 +170,7 @@ class InternalChargeRequest(Document):
         # These syncs should only happen after workflow actions (Approve/Reject)
 
     def before_workflow_action(self, action, **kwargs):
+        self.flags.ignore_validate_update_after_submit = True
         """Gate workflow transitions by cost-centre-based approval routes.
 
         Each internal_charge_line targets a different cost_center with its own approval route.
@@ -235,9 +255,16 @@ class InternalChargeRequest(Document):
             else:
                 frappe.throw(_("Please add at least one Internal Charge Line before submitting."))
 
-        # Validate total amount matches
+        # Validate total amount matches (compare against ER DPP amount, not grand total)
         total = sum(float(getattr(line, "amount", 0) or 0) for line in lines)
-        if getattr(self, "total_amount", 0) and abs(total - float(self.total_amount)) > 0.0001:
+        if getattr(self, "expense_request", None):
+            try:
+                er_dpp = frappe.db.get_value("Expense Request", self.expense_request, "amount") or 0
+                if abs(total - float(er_dpp)) > 0.0001:
+                    frappe.throw(_("Sum of line amounts ({0}) must equal Expense Request DPP amount ({1}).").format(total, er_dpp))
+            except frappe.DoesNotExistError:
+                pass
+        elif getattr(self, "total_amount", 0) and abs(total - float(self.total_amount)) > 0.0001:
             frappe.throw(_("Sum of line amounts ({0}) must equal Total Amount ({1}).").format(total, self.total_amount))
 
         # Validate individual line amounts and target cost center

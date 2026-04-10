@@ -80,6 +80,7 @@ doctype_js = {
 }
 
 doctype_list_js = {
+    "Sales Order": "public/js/sales_order_list.js",
     "Bank CSV Import": "imogi_finance/imogi_finance/doctype/bank_csv_import/bank_csv_import_list.js",
     "Administrative Payment Voucher": "imogi_finance/doctype/administrative_payment_voucher/administrative_payment_voucher_list.js",
     "Expense Request": "imogi_finance/doctype/expense_request/expense_request_list.js",
