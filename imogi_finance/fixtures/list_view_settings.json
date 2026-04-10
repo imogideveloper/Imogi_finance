@@ -1,0 +1,16 @@
+[
+ {
+  "allow_edit": 0,
+  "disable_auto_refresh": 0,
+  "disable_automatic_recency_filters": 0,
+  "disable_comment_count": 1,
+  "disable_count": 0,
+  "disable_sidebar_stats": 0,
+  "docstatus": 0,
+  "doctype": "List View Settings",
+  "fields": "[{\"fieldname\":\"customer_name\",\"label\":\"Customer Name\"},{\"fieldname\":\"status_field\",\"label\":\"Status\"},{\"fieldname\":\"custom_payment_status\",\"label\":\"Payment Status\"},{\"fieldname\":\"delivery_date\",\"label\":\"Delivery Date\"},{\"fieldname\":\"grand_total\",\"label\":\"Grand Total\"}]",
+  "modified": "2026-04-10 13:45:33.089567",
+  "name": "Sales Order",
+  "total_fields": "9"
+ }
+]
