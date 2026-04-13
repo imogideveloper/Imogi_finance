@@ -433,6 +433,10 @@ override_whitelisted_methods = {
         "imogi_finance.overrides.listview.get_list_settings",
     "frappe.desk.desktop.get_desktop_page":
         "imogi_finance.overrides.desktop.get_desktop_page",
+    "erpnext.accounts.doctype.bank_reconciliation_tool.bank_reconciliation_tool.create_journal_entry_bts":
+        "imogi_finance.overrides.bank_reconciliation_tool.create_journal_entry_bts",
+    "erpnext.accounts.doctype.bank_reconciliation_tool.bank_reconciliation_tool.create_journal_entry_bts":
+        "imogi_finance.overrides.bank_reconciliation_tool.create_journal_entry_bts",
 }
 
 ignore_links_on_delete = ["Payment Ledger Entry", "GL Entry"]
