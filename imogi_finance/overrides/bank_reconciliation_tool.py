@@ -53,6 +53,13 @@ def create_journal_entry_bts(
 		else False
 	)
 
+	if not company_account:
+		frappe.throw(f"Bank Account '{bank_transaction.bank_account}' tidak memiliki akun GL yang terhubung. Silakan setup di Bank Account.")
+
+	# Validasi company_account tidak None
+	if not company_account:
+		frappe.throw(_(f"Bank Account '{bank_transaction.bank_account}' belum memiliki akun GL. Silakan setup di master Bank Account."))
+
 	accounts = []
 	second_account_dict = {
 		"account": second_account,
