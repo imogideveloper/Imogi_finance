@@ -3,7 +3,7 @@ import frappe
 from frappe import _
 from frappe.utils import flt
 from erpnext.accounts.general_ledger import get_round_off_account_and_cost_center
-from erpnext.accounts.utils import get_exchange_rate
+from erpnext.setup.utils import get_exchange_rate
 from erpnext.accounts.doctype.bank_reconciliation_tool.bank_reconciliation_tool import (
 	get_amounts_not_reflected_in_system,
 	reconcile_vouchers,
