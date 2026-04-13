@@ -79,8 +79,8 @@ def create_journal_entry_bts(
 		withdrawal_in_company_currency = flt(exc_rate * abs(bank_transaction.withdrawal or 0))
 		deposit_in_company_currency = flt(exc_rate * abs(bank_transaction.deposit or 0))
 	else:
-		withdrawal_in_company_currency = bank_transaction.withdrawal
-		deposit_in_company_currency = bank_transaction.deposit
+		withdrawal_in_company_currency = bank_transaction.withdrawal or 0
+		deposit_in_company_currency = bank_transaction.deposit or 0
 
 	if second_account_currency != company_default_currency:
 		exc_rate = get_exchange_rate(second_account_currency, company_default_currency, posting_date) or 1.0
