@@ -250,19 +250,22 @@ def _process_import(doc):
             total_debit += debit
             total_credit += credit
 
-            # Cek duplikat
-            duplicate = frappe.db.exists("Bank Transaction", {
-                "date": posting_date,
-                "bank_account": doc.bank_account,
-                "description": description,
-                "deposit": credit,
-                "withdrawal": debit,
+            # Cek duplikat — cek date + amount saja, description diabaikan
+            existing_count = frappe.db.count('Bank Transaction', {
+                'date': posting_date,
+                'bank_account': doc.bank_account,
+                'deposit': credit,
+                'withdrawal': debit,
             })
-
-            if duplicate:
-                log_lines.append(f"Row {row_idx}: Duplikat - {posting_date} {description[:30]}")
+            current_session_key = f'{posting_date}|{credit}|{debit}'
+            if not hasattr(doc, '_import_session_counts'):
+                doc._import_session_counts = {}
+            session_count = doc._import_session_counts.get(current_session_key, 0)
+            if existing_count > session_count:
+                log_lines.append(f'Row {row_idx}: Duplikat - {posting_date} {description[:30]}')
                 skipped += 1
                 continue
+            doc._import_session_counts[current_session_key] = session_count + 1
 
             # Buat Bank Transaction
             bt = frappe.get_doc({
