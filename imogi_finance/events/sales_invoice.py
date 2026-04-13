@@ -5,8 +5,10 @@
 
 from __future__ import annotations
 
+
 import frappe
 from frappe import _
+from frappe.utils import flt
 
 
 def on_update_after_submit(doc, method=None):
@@ -52,3 +54,19 @@ def on_update_after_submit(doc, method=None):
 				),
 				title=_("VAT OUT Batch Locked")
 			)
+
+def fix_rounding_status(doc, method=None):
+    from frappe.utils import flt
+    tolerance = 1.0
+    outstanding = flt(doc.outstanding_amount)
+    grand_total = flt(doc.grand_total)
+    paid_amount = grand_total - outstanding
+
+    print(f"🔥 fix_rounding_status: outstanding={outstanding}, grand_total={grand_total}, paid={paid_amount}")
+
+    if 0 < paid_amount <= tolerance:
+        frappe.db.set_value("Sales Invoice", doc.name, {
+            "outstanding_amount": grand_total,
+            "status": "Unpaid"
+        })
+        print(f"🔥 Fixed {doc.name} → Unpaid")

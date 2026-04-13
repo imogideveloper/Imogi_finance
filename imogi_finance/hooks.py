@@ -141,6 +141,7 @@ doc_events = {
         ],
         "on_submit": [
             "imogi_finance.sales_order_payment_status.update_from_sales_invoice",
+            "imogi_finance.events.sales_invoice.fix_rounding_status",
         ],
         "on_cancel": [
             "imogi_finance.sales_order_payment_status.update_from_sales_invoice",

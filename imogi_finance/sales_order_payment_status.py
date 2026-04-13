@@ -54,8 +54,13 @@ def update_sales_order_payment_status(sales_order_name: str):
             total_grand += flt(inv.grand_total)
             total_outstanding += flt(inv.outstanding_amount)
 
+        paid_amount = total_grand - total_outstanding
+        tolerance = 1.0
+
         if total_grand > 0 and total_outstanding <= 0:
             payment_status = "Paid"
+        elif paid_amount <= tolerance:
+            payment_status = "SI Created"
         elif total_outstanding < total_grand:
             payment_status = "Partial Paid"
         else:
