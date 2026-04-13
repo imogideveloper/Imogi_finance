@@ -43,6 +43,9 @@ doctype_js = {
     ],
 }
 
+app_include_js = "/assets/imogi_finance/js/imogi_finance.js"
+
+
 doctype_list_js = {
     "Sales Order": "public/js/sales_order_list.js",  # ← duplikat dihapus
     "Bank CSV Import": "imogi_finance/imogi_finance/doctype/bank_csv_import/bank_csv_import_list.js",
