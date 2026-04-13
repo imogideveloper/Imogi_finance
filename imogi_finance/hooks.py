@@ -135,9 +135,11 @@ doc_events = {
         "validate": [
             "imogi_finance.tax_operations.validate_tax_period_lock",
             "imogi_finance.validators.finance_validator.validate_document_tax_fields",
+            "imogi_finance.events.sales_invoice.fix_rounding_status",  # ← tambah ini
         ],
         "before_submit": [
             "imogi_finance.imogi_finance.doctype.tax_period_closing.tax_period_closing.check_period_is_closed",
+            "imogi_finance.events.sales_invoice.fix_rounding_status",  # ← tambah ini
         ],
         "on_submit": [
             "imogi_finance.sales_order_payment_status.update_from_sales_invoice",
