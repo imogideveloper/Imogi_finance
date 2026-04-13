@@ -57,8 +57,8 @@ def create_journal_entry_bts(
 	second_account_dict = {
 		"account": second_account,
 		"account_currency": second_account_currency,
-		"credit_in_account_currency": bank_transaction.deposit,
-		"debit_in_account_currency": bank_transaction.withdrawal,
+		"credit_in_account_currency": bank_transaction.deposit or 0,
+		"debit_in_account_currency": bank_transaction.withdrawal or 0,
 		"party_type": party_type,
 		"party": party,
 		"cost_center": get_default_cost_center(company),
@@ -68,8 +68,8 @@ def create_journal_entry_bts(
 		"account": company_account,
 		"account_currency": company_account_currency,
 		"bank_account": bank_transaction.bank_account,
-		"credit_in_account_currency": bank_transaction.withdrawal,
-		"debit_in_account_currency": bank_transaction.deposit,
+		"credit_in_account_currency": bank_transaction.withdrawal or 0,
+		"debit_in_account_currency": bank_transaction.deposit or 0,
 		"cost_center": get_default_cost_center(company),
 	}
 
