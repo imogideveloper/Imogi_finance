@@ -72,11 +72,12 @@ before_install = "imogi_finance.install.before_install"
 after_install = "imogi_finance.utils.ensure_coretax_export_doctypes"
 
 # Fixtures
+# Fixtures — tidak ada perubahan yang diperlukan
 fixtures = [
     {"doctype": "Custom Field"},
     {"doctype": "Property Setter"},
-    {"doctype": "Client Script", "filters": [["enabled", "=", 1]]},   
-    {"doctype": "List View Settings", "filters": [["name", "in", ["Sales Order", "Expense Request"]]]},  # ← tambah Expense Request
+    {"doctype": "Client Script", "filters": [["enabled", "=", 1]]},
+    {"doctype": "List View Settings", "filters": [["name", "in", ["Sales Order", "Expense Request"]]]},
     {"doctype": "Workflow"},
     {"doctype": "Workflow State"},
     {"doctype": "Workspace"},
