@@ -393,6 +393,7 @@ doc_events = {
 if is_payroll_installed():
     doc_events.setdefault("Salary Slip", {}).update(
         {
+            "validate": "imogi_finance.overrides.pph21_exemption.validate_pph21_exemption",
             "on_submit": "imogi_finance.api.payroll_sync.handle_salary_slip_submit",
             "on_cancel": "imogi_finance.api.payroll_sync.handle_salary_slip_cancel",
         }
