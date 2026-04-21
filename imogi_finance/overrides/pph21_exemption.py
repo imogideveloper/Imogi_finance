@@ -22,42 +22,42 @@ def validate_pph21_exemption(doc, method=None):
     Hook yang dipanggil saat Salary Slip di-validate.
     Jika employee punya flag 'exempt_from_pph21' = 1, 
     maka set PPh 21 deduction ke 0.
-    
-    Args:
-        doc: Salary Slip document
-        method: method name (dari Frappe hook system)
     """
     
-    # Skip jika tidak ada employee
     if not doc.employee:
         return
     
-    # Get employee data
-    employee = frappe.get_doc("Employee", doc.employee)
-    
-    # Check jika employee exempt dari PPh 21
-    if employee.get("exempt_from_pph21") == 1:
-        # Loop through deductions untuk cari PPh 21
-        for deduction in doc.deductions:
-            # Check apakah ini PPh 21 component
-            if deduction.salary_component in ["PPh 21", "PPH 21", "Income Tax"]:
-                # Set amount ke 0
-                deduction.amount = 0
+    try:
+        employee = frappe.get_doc("Employee", doc.employee)
+        
+        if employee.get("exempt_from_pph21") == 1:
+            pph21_found = False
+            old_amount = 0
+            
+            for deduction in doc.deductions:
+                if deduction.salary_component in ["PPh 21", "PPH 21", "Income Tax"]:
+                    old_amount = deduction.amount
+                    deduction.amount = 0
+                    pph21_found = True
+                    break
+            
+            if pph21_found:
+                # PENTING: Re-calculate totals setelah ubah deduction
+                doc.calculate_net_pay()  # ← TAMBAH INI
                 
-                # SAFE: Check apakah doc punya attribute remarks sebelum akses
-                if hasattr(doc, 'remarks'):
-                    if not doc.remarks:
-                        doc.remarks = ""
-                    doc.remarks += f"\n[Auto] PPh 21 di-set ke 0 karena employee {employee.employee_name} exempt dari PPh 21."
-                
-                # ALTERNATIVE: Bisa juga pakai frappe.msgprint saja tanpa remarks
                 frappe.msgprint(
                     msg=f"PPh 21 untuk {employee.employee_name} telah di-set ke 0 (Employee exempt dari PPh 21)",
                     indicator="blue",
                     alert=True
                 )
                 
-                break
+                frappe.logger().info(
+                    f"PPh 21 exemption applied for {employee.employee_name}. "
+                    f"Amount: Rp {old_amount:,.0f} → Rp 0"
+                )
+                
+    except Exception as e:
+        frappe.logger().error(f"Error in validate_pph21_exemption: {str(e)}")
 
 def before_calculate_tax(doc, method=None):
     """
