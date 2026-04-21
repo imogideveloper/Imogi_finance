@@ -3,7 +3,7 @@ import frappe
 def set_workspace_order():
     """Set urutan sidebar workspace"""
     sequences = {
-        # Imogi Finance - paling atas
+        "HRIS Imogi": 0.05,
         "FINANCE IMOGI": 0.1,
         "Budget Control": 0.2,
         "Asset Management": 0.3,
