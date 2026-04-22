@@ -2,7 +2,7 @@
 Hooks untuk native Bank Statement Import
 Extend native parsing dengan bank-specific configuration dari Bank Statement Bank List
 """
-
+from frappe import _
 import frappe
 from frappe.utils.file_manager import get_file_path
 from frappe.utils.data import getdate
@@ -14,7 +14,7 @@ import hashlib
 def bank_statement_import_on_before_insert(doc, method):
     """Validate imogi_bank selection saat insert."""
     if not doc.imogi_bank:
-        frappe.throw(frappe.utils._("Bank (imogi_bank) is required."))
+        frappe.throw(_("Bank (imogi_bank) is required."))
     
     # Set hash_id untuk duplicate detection
     if hasattr(doc, 'import_file') and doc.import_file:
@@ -33,7 +33,7 @@ def bank_statement_import_on_before_insert(doc, method):
             )
             if existing and existing != doc.name:
                 frappe.throw(
-                    frappe.utils._("This file has already been imported as {0}").format(existing)
+                    _("This file has already been imported as {0}").format(existing)
                 )
             
             doc.hash_id = hash_id
@@ -44,7 +44,7 @@ def bank_statement_import_on_before_insert(doc, method):
 def bank_statement_import_before_submit(doc, method):
     """Parse CSV dengan bank-specific configuration sebelum submit."""
     if not doc.imogi_bank:
-        frappe.throw(frappe.utils._("Bank (imogi_bank) must be selected before submitting."))
+        frappe.throw(_("Bank (imogi_bank) must be selected before submitting."))
     
     try:
         # Load bank config
@@ -52,7 +52,7 @@ def bank_statement_import_before_submit(doc, method):
         
         if not config_doc.enabled:
             frappe.throw(
-                frappe.utils._("Bank configuration for {0} is disabled.").format(doc.imogi_bank)
+                _("Bank configuration for {0} is disabled.").format(doc.imogi_bank)
             )
         
         # Get header map dari config
@@ -151,18 +151,18 @@ def bank_statement_import_before_submit(doc, method):
                 
                 if row_count == 0:
                     frappe.throw(
-                        frappe.utils._("No transaction rows found in the file.")
+                        _("No transaction rows found in the file.")
                     )
                 
                 doc.import_status = "Processed"
     
     except frappe.DoesNotExistError:
         frappe.throw(
-            frappe.utils._("Bank Statement Bank List configuration not found for bank: {0}").format(doc.imogi_bank)
+            _("Bank Statement Bank List configuration not found for bank: {0}").format(doc.imogi_bank)
         )
     except Exception as e:
         frappe.throw(
-            frappe.utils._("Error parsing CSV: {0}").format(str(e))
+            _("Error parsing CSV: {0}").format(str(e))
         )
 
 

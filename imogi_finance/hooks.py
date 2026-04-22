@@ -89,6 +89,7 @@ fixtures = [
 override_doctype_class = {
     "Sales Invoice": "imogi_finance.overrides.sales_invoice.CustomSalesInvoice",
     "Payment Request": "imogi_finance.overrides.payment_request.CustomPaymentRequest",
+    "Bank Statement Import": "imogi_finance.overrides.bank_statement_import.CustomBankStatementImport",
 }
 
 # Document Events
@@ -427,6 +428,8 @@ after_migrate = [
     "imogi_finance.setup.set_workspace_order",
 ]
 
+before_job = "imogi_finance.overrides.bank_statement_import.patch_start_import"
+
 # Overriding Methods
 override_whitelisted_methods = {
     "erpnext.accounts.doctype.budget.budget.validate_budget_records":
@@ -444,7 +447,9 @@ override_whitelisted_methods = {
     "erpnext.accounts.doctype.bank_reconciliation_tool.bank_reconciliation_tool.create_journal_entry_bts":
         "imogi_finance.overrides.bank_reconciliation_tool.create_journal_entry_bts",
     "erpnext.accounts.doctype.bank_statement_import.bank_statement_import.start_import": 
-        "imogi_finance.overrides.bank_statement_import.start_import"
+        "imogi_finance.overrides.bank_statement_import.start_import",
+    "erpnext.accounts.doctype.bank_statement_import.bank_statement_import.form_start_import": 
+        "imogi_finance.overrides.bank_statement_import.form_start_import"
 }
 
 ignore_links_on_delete = ["Payment Ledger Entry", "GL Entry"]

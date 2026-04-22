@@ -78,7 +78,8 @@ def _process_import(doc):
     config = frappe.get_doc("Bank Statement Bank List", doc.bank)
 
     if not config.enabled:
-        frappe.throw(_(f"Konfigurasi bank {doc.bank} dinonaktifkan."))
+        # FIX 1: ganti _(f"...") dengan _("...").format(...)
+        frappe.throw(_("Konfigurasi bank {0} dinonaktifkan.").format(doc.bank))
 
     # Build header map dari konfigurasi
     header_map = {}
@@ -163,7 +164,8 @@ def _process_import(doc):
     required = ["posting_date", "description"]
     missing = [f for f in required if f not in field_map]
     if missing:
-        frappe.throw(_(f"Field wajib tidak ditemukan di CSV: {', '.join(missing)}."))
+        # FIX 2: ganti _(f"...") dengan _("...").format(...)
+        frappe.throw(_("Field wajib tidak ditemukan di CSV: {0}.").format(", ".join(missing)))
 
     # Proses setiap row
     log_lines = []
@@ -293,7 +295,7 @@ def _process_import(doc):
         except Exception as e:
             errors += 1
             log_lines.append(f"Row {row_idx}: ERROR - {str(e)}")
-            frappe.log_error(f"BCA Import Row {row_idx}: {str(e)}")
+            frappe.log_error(f"Bank CSV Import Row {row_idx}: {str(e)}")
 
     # ── Kalkulasi From/To Date dari transaksi ──────────────────
     statement_from_date = None
@@ -304,16 +306,15 @@ def _process_import(doc):
         statement_to_date = all_dates[-1]
 
     # ── Kalkulasi Opening Balance ──────────────────────────────
-    # 1. Coba dari CSV (balance column atau saldo awal eksplisit)
-    csv_opening, csv_closing, _, _ = _extract_balances_from_rows(
+    # FIX 3: ganti "_, _" dengan nama variabel yang tidak conflict dengan fungsi _()
+    csv_opening, csv_closing, _from_date, _to_date = _extract_balances_from_rows(
         data_rows, headers, field_map, config
     )
 
-    # 2. Coba dari closing balance BCI sebelumnya (history)
+    # Coba dari closing balance BCI sebelumnya (history)
     prev_closing = _get_previous_closing_balance(doc.bank_account, doc.name)
 
-    # 3. Tentukan opening balance
-    # Prioritas: CSV eksplisit (Saldo Awal) > history > 0
+    # Tentukan opening balance
     if csv_opening:
         opening_balance = csv_opening
         log_lines.append(f"✅ Opening Balance dari CSV (Saldo Awal): Rp {opening_balance:,.2f}")
@@ -325,7 +326,6 @@ def _process_import(doc):
         log_lines.append("ℹ️ Opening Balance: 0 (tidak ada history sebelumnya)")
 
     # ── Kalkulasi Closing Balance ──────────────────────────
-    # Prioritas: CSV eksplisit (Saldo Akhir) > kalkulasi dari transaksi
     if csv_closing:
         closing_balance = csv_closing
         log_lines.append(f"✅ Closing Balance dari CSV (Saldo Akhir): Rp {closing_balance:,.2f}")
@@ -538,12 +538,12 @@ def _ensure_opening_balance_je(bank_account_name, account, company, opening_bala
         frappe.log_error("Opening Balance JE: Tidak ada temporary/equity account")
         return None
 
-    import datetime as _datetime
+    import datetime as dt
     if isinstance(as_of_date, str):
-        as_of_date_obj = _datetime.date.fromisoformat(as_of_date)
+        as_of_date_obj = dt.date.fromisoformat(as_of_date)
     else:
         as_of_date_obj = as_of_date
-    je_date = (as_of_date_obj - _datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+    je_date = (as_of_date_obj - dt.timedelta(days=1)).strftime("%Y-%m-%d")
 
     je = frappe.get_doc({
         "doctype": "Journal Entry",
