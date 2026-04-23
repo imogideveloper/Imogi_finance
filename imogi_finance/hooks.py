@@ -87,11 +87,9 @@ fixtures = [
     {"doctype": "Workflow Action Master", "filters": [["workflow_action_name", "in", 
         ["Assign Driver", "Konfirmasi Pick Up", "Konfirmasi Delivered", "Selesaikan DO", "Cancel"]]]},
     {"doctype": "Workflow", "filters": [["name", "=", "DO Towing Workflow"]]},
-    {"doctype": "DocType", "filters": [["name", "in", 
-        ["Delivery Order Towing", "DO Towing Kondisi Item"]]]},
     {"doctype": "Item", "filters": [["name", "=", "JASA-TOWING-001"]]},
+    # ← DocType dihapus
 ]
-
 # DocType Class
 override_doctype_class = {
     "Sales Invoice": "imogi_finance.overrides.sales_invoice.CustomSalesInvoice",
