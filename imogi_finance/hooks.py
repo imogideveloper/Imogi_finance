@@ -70,7 +70,7 @@ jinja = {
 
 # Installation
 before_install = "imogi_finance.install.before_install"
-after_install = "imogi_finance.utils.ensure_coretax_export_doctypes"
+# after_install = "imogi_finance.utils.ensure_coretax_export_doctypes"
 
 # Fixtures
 # Fixtures — tidak ada perubahan yang diperlukan
@@ -431,7 +431,7 @@ before_migrate = [
 ]
 
 after_migrate = [
-    "imogi_finance.utils.ensure_coretax_export_doctypes",
+    # "imogi_finance.utils.ensure_coretax_export_doctypes",
     "imogi_finance.utils.ensure_advances_allow_on_submit",
     "imogi_finance.imogi_finance.utils.ensure_budget_control_settings",
     "imogi_finance.setup.set_workspace_order",
