@@ -1,0 +1,1 @@
+imogi_finance.patches.fix_round_floats_compatibility

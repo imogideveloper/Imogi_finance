@@ -41,6 +41,7 @@ doctype_js = {
         "public/js/sales_invoice_tax_invoice.js",
         "public/js/payment_reconciliation_helper.js",
     ],
+    "Delivery Order Towing": "public/js/delivery_order_towing.js",
 }
 
 app_include_js = "/assets/imogi_finance/js/imogi_finance.js"
@@ -78,11 +79,17 @@ fixtures = [
     {"doctype": "Property Setter"},
     {"doctype": "Client Script", "filters": [["enabled", "=", 1]]},
     {"doctype": "List View Settings", "filters": [["name", "in", ["Sales Order", "Expense Request"]]]},
-    {"doctype": "Workflow"},
-    {"doctype": "Workflow State"},
     {"doctype": "Workspace"},
     {"doctype": "Report"},
     {"doctype": "Print Format", "filters": [["module", "=", "Imogi Finance"]]},
+    {"doctype": "Workflow State", "filters": [["workflow_state_name", "in", 
+        ["Draft", "Assigned", "Pick Up", "Delivered", "Done", "Cancelled"]]]},
+    {"doctype": "Workflow Action Master", "filters": [["workflow_action_name", "in", 
+        ["Assign Driver", "Konfirmasi Pick Up", "Konfirmasi Delivered", "Selesaikan DO", "Cancel"]]]},
+    {"doctype": "Workflow", "filters": [["name", "=", "DO Towing Workflow"]]},
+    {"doctype": "DocType", "filters": [["name", "in", 
+        ["Delivery Order Towing", "DO Towing Kondisi Item"]]]},
+    {"doctype": "Item", "filters": [["name", "=", "JASA-TOWING-001"]]},
 ]
 
 # DocType Class
@@ -389,6 +396,10 @@ doc_events = {
     },
 
     "Payroll Entry": {},
+    "Delivery Order Towing": {
+        "after_save": "imogi_finance.overrides.delivery_order_towing.after_save",
+        "on_update_after_submit": "imogi_finance.overrides.delivery_order_towing.on_update_after_submit",
+    }
 }
 
 if is_payroll_installed():
@@ -426,6 +437,7 @@ after_migrate = [
     "imogi_finance.utils.ensure_advances_allow_on_submit",
     "imogi_finance.imogi_finance.utils.ensure_budget_control_settings",
     "imogi_finance.setup.set_workspace_order",
+    "imogi_finance.utils.patch_round_floats_compatibility",  # ← tambahkan ini
 ]
 
 before_job = "imogi_finance.overrides.bank_statement_import.patch_start_import"
@@ -453,3 +465,5 @@ override_whitelisted_methods = {
 }
 
 ignore_links_on_delete = ["Payment Ledger Entry", "GL Entry"]
+
+on_session_creation = "imogi_finance.utils.patch_round_floats_compatibility"
