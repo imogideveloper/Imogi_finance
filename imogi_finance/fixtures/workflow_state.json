@@ -2,6 +2,15 @@
  {
   "docstatus": 0,
   "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2026-04-24 15:01:01.114249",
+  "name": "Submitted",
+  "style": "Info",
+  "workflow_state_name": "Submitted"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
   "icon": null,
   "modified": "2026-03-10 11:30:56.116861",
   "name": "Cancelled",

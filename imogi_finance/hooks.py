@@ -93,7 +93,7 @@ fixtures = [
     
     # 4. Workflow (urutan penting!)
     {"doctype": "Workflow State", "filters": [["workflow_state_name", "in", 
-        ["Draft", "Assigned", "Pick Up", "Delivered", "Done", "Cancelled"]]]},
+        ["Draft", "Submitted", "Assigned", "Pick Up", "Delivered", "Done", "Cancelled"]]]},
     {"doctype": "Workflow Action Master", "filters": [["workflow_action_name", "in", 
         ["Assign Driver", "Konfirmasi Pick Up", "Konfirmasi Delivered", "Selesaikan DO", "Cancel"]]]},
     {"doctype": "Workflow", "filters": [["name", "=", "DO Towing Workflow"]]},
