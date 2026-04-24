@@ -75,20 +75,32 @@ before_install = "imogi_finance.install.before_install"
 # Fixtures
 # Fixtures — tidak ada perubahan yang diperlukan
 fixtures = [
+    # 1. DocTypes
+    {"doctype": "DocType", "filters": [["name", "in", [
+        "Delivery Order Towing",
+        "DO Towing Kondisi Item"
+    ]]]},
+    
+    # 2. Customizations
     {"doctype": "Custom Field"},
     {"doctype": "Property Setter"},
     {"doctype": "Client Script", "filters": [["enabled", "=", 1]]},
-    {"doctype": "List View Settings", "filters": [["name", "in", ["Sales Order", "Expense Request"]]]},
-    {"doctype": "Workspace"},
-    {"doctype": "Report"},
-    {"doctype": "Print Format", "filters": [["module", "=", "Imogi Finance"]]},
+    {"doctype": "List View Settings", "filters": [["name", "in", ["Sales Order", "Expense Request", "Delivery Order Towing"]]]},
+    
+    # 3. Master Data
+    {"doctype": "Item", "filters": [["name", "=", "JASA-TOWING-001"]]},
+    
+    # 4. Workflow (urutan penting!)
     {"doctype": "Workflow State", "filters": [["workflow_state_name", "in", 
         ["Draft", "Assigned", "Pick Up", "Delivered", "Done", "Cancelled"]]]},
     {"doctype": "Workflow Action Master", "filters": [["workflow_action_name", "in", 
         ["Assign Driver", "Konfirmasi Pick Up", "Konfirmasi Delivered", "Selesaikan DO", "Cancel"]]]},
     {"doctype": "Workflow", "filters": [["name", "=", "DO Towing Workflow"]]},
-    {"doctype": "Item", "filters": [["name", "=", "JASA-TOWING-001"]]},
-    # ← DocType dihapus
+    
+    # 5. Reports & UI
+    {"doctype": "Report"},
+    {"doctype": "Print Format", "filters": [["module", "=", "Imogi Finance"]]},
+    {"doctype": "Workspace"},
 ]
 # DocType Class
 override_doctype_class = {
