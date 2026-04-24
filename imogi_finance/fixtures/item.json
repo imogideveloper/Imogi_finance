@@ -11,6 +11,8 @@
   "brand": null,
   "country_of_origin": null,
   "create_new_batch": 0,
+  "custom_lokasi_pickup": null,
+  "custom_lokasi_tujuan": null,
   "customer": null,
   "customer_code": "",
   "customer_items": [],

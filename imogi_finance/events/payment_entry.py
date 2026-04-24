@@ -215,15 +215,26 @@ def clean_payment_ledger(doc, method=None):
 
 def on_submit(doc, method=None):
     """Handle Payment Entry submit."""
+    # Update DO Towing dulu — selalu dipanggil apapun tipe payment-nya
+    _update_do_towing_payment_status(doc)
+    
+    # Lanjut logic expense request seperti biasa
     expense_request = _resolve_expense_request(doc)
     if not expense_request:
         return
-
     _handle_expense_request_submit(doc, expense_request)
-
     if getattr(doc, "awaiting_bank_reconciliation", 0):
         _revert_pi_status_for_bank_payment(doc)
 
+
+def _update_do_towing_payment_status(doc):
+    """Update status uang jalan di DO Towing saat payment dibuat."""
+    try:
+        from imogi_finance.overrides.delivery_order_towing import update_do_payment_status
+        update_do_payment_status(doc)
+    except Exception as e:
+        import frappe
+        frappe.log_error(str(e), "DO Towing Payment Status Update Error")
 
 def _handle_expense_request_submit(doc, expense_request):
     """Handle Expense Request logic on Payment Entry submit."""

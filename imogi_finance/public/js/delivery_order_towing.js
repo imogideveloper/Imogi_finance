@@ -1,6 +1,53 @@
 // delivery_order_towing.js  — VERSI INTEGRASI FINANCE IMOGI
 // Letakkan di: [app]/[app]/doctype/delivery_order_towing/delivery_order_towing.js
 
+
+// Event handler untuk child table SO Towing Kendaraan
+frappe.ui.form.on('Sales Order', {
+    refresh: function(frm) {
+        frm.fields_dict['custom_towing_kendaraan'].grid.wrapper.on(
+            'click', '.grid-remove-rows', function() {
+                setTimeout(function() { _update_item_qty(frm); }, 300);
+            }
+        );
+    }
+});
+
+frappe.ui.form.on('SO Towing Kendaraan', {
+    so_item_code: function(frm, cdt, cdn) {
+        _update_item_qty(frm);
+    },
+    nomor_polisi: function(frm, cdt, cdn) {
+        _update_item_qty(frm);
+    },
+    custom_towing_kendaraan_add: function(frm) {
+        _update_item_qty(frm);
+    },
+    custom_towing_kendaraan_remove: function(frm) {
+        _update_item_qty(frm);
+    }
+});
+
+var _update_item_qty = function(frm) {
+    var kendaraan_list = frm.doc.custom_towing_kendaraan || [];
+    var qty_per_item = {};
+
+    kendaraan_list.forEach(function(k) {
+        if (k.so_item_code) {
+            qty_per_item[k.so_item_code] = (qty_per_item[k.so_item_code] || 0) + 1;
+        }
+    });
+
+    (frm.doc.items || []).forEach(function(item) {
+        var new_qty = qty_per_item[item.item_code] || 0;
+        if (new_qty > 0) {
+            frappe.model.set_value(item.doctype, item.name, 'qty', new_qty);
+        }
+    });
+
+    frm.refresh_field('items');
+};
+
 frappe.ui.form.on('Delivery Order Towing', {
 
     // ── REFRESH FORM ──────────────────────────────────────────
