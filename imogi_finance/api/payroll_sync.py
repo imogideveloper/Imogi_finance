@@ -51,12 +51,21 @@ def _get_salary_slips(company: str, date_from=None, date_to=None) -> list[dict]:
     elif date_to:
         filters["posting_date"] = ["<=", date_to]
 
-    return frappe.get_all(
+    slips = frappe.get_all(
         "Salary Slip",
         filters=filters,
         fields=["name", "employee", "employee_name", "posting_date", "company"],
         order_by="posting_date asc",
     )
+
+    # Filter hanya employee yang has_bpjs = 1
+    result = []
+    for slip in slips:
+        has_bpjs = frappe.db.get_value("Employee", slip["employee"], "has_bpjs")
+        if has_bpjs:
+            result.append(slip)
+
+    return result
 
 
 def _collect_bpjs_amounts_from_details(slip_name: str) -> tuple[float, float]:
