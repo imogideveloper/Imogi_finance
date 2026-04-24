@@ -2,7 +2,7 @@
   "doctype": "DocType",
   "name": "Budget Control Entry",
   "module": "Imogi Finance",
-  "custom": 0,
+  "custom": 1,
   "istable": 0,
   "is_submittable": 1,
   "track_changes": 1,

@@ -2,7 +2,7 @@
   "doctype": "DocType",
   "name": "Budget Control Settings",
   "module": "Imogi Finance",
-  "custom": 0,
+  "custom": 1,
   "istable": 0,
   "issingle": 1,
   "editable_grid": 0,

@@ -2,7 +2,7 @@
  "doctype": "DocType",
  "name": "Internal Charge Line",
  "module": "Imogi Finance",
- "custom": 0,
+ "custom": 1,
  "istable": 1,
  "track_changes": 1,
  "editable_grid": 1,
