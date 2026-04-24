@@ -431,7 +431,7 @@ before_migrate = [
 ]
 
 after_migrate = [
-    # "imogi_finance.utils.ensure_coretax_export_doctypes",
+    "imogi_finance.utils.ensure_coretax_export_doctypes",
     "imogi_finance.utils.ensure_advances_allow_on_submit",
     "imogi_finance.imogi_finance.utils.ensure_budget_control_settings",
     "imogi_finance.setup.set_workspace_order",
