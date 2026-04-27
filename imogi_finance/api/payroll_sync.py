@@ -62,7 +62,7 @@ def _get_salary_slips(company: str, date_from=None, date_to=None) -> list[dict]:
     result = []
     for slip in slips:
         has_bpjs = frappe.db.get_value("Employee", slip["employee"], "has_bpjs")
-        if has_bpjs:
+        if not has_bpjs:
             result.append(slip)
 
     return result

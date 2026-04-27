@@ -7585,8 +7585,8 @@
   "dt": "Employee",
   "fieldname": "has_bpjs",
   "fieldtype": "Check",
-  "label": "With BPJS",
-  "insert_after": "date_of_joining",
+  "label": "Bebas BPJS",
+  "insert_after": "npwp_attachment",
   "module": "Imogi Finance"
  }
 ]
