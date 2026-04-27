@@ -1,1 +1,2 @@
 imogi_finance.patches.fix_round_floats_compatibility
+imogi_finance.patches.fix_has_bpjs_label
