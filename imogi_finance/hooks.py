@@ -77,9 +77,10 @@ before_install = "imogi_finance.install.before_install"
 # Fixtures — tidak ada perubahan yang diperlukan
 fixtures = [
     # 1. DocTypes
-    {"doctype": "DocType", "filters": [["name", "in", [
+   {"doctype": "DocType", "filters": [["name", "in", [
         "Delivery Order Towing",
-        "DO Towing Kondisi Item"
+        "DO Towing Kondisi Item",
+        "SO Towing Kendaraan"
     ]]]},
     
     # 2. Customizations
