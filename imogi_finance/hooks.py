@@ -172,6 +172,7 @@ doc_events = {
         ],
         "before_insert": [
             "imogi_finance.overrides.delivery_order_towing.validate_invoice_do_completion",
+            "imogi_finance.overrides.sales_invoice_towing.before_insert",
         ],
     },
 

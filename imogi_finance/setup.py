@@ -3,6 +3,7 @@ import frappe
 def set_workspace_order():
     """Set urutan sidebar workspace"""
     sequences = {
+        "Towing Imogi": -1,      # ← tambahkan ini
         "HRIS Imogi": 0.05,
         "FINANCE IMOGI": 0.1,
         "Budget Control": 0.2,
@@ -12,7 +13,6 @@ def set_workspace_order():
         "Treasury & Payments": 0.6,
         "Accounting & Reporting": 0.7,
         "Company List": 0.8,
-        # ERPNext - sesuai urutan aslinya
         "Home": 1,
         "Accounting": 2,
         "Payables": 3,

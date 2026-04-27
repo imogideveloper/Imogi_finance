@@ -185,8 +185,9 @@ class DeliveryOrderTowing(Document):
 
     # ── ON UPDATE AFTER SUBMIT ───────────────────────────────
     def on_update_after_submit(self):
-        if self.status == "Done" and not self.sales_invoice:
-            self.create_sales_invoice_via_imogi()
+        pass
+        # if self.status == "Done" and not self.sales_invoice:
+        #     self.create_sales_invoice_via_imogi()
 
     # ──────────────────────────────────────────────────────────
     # INTEGRASI 1: AUTO-CREATE PURCHASE ORDER UANG JALAN
