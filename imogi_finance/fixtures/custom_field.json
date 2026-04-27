@@ -7586,7 +7586,8 @@
   "fieldname": "has_bpjs",
   "fieldtype": "Check",
   "label": "Bebas BPJS",
-  "insert_after": "npwp_attachment",
-  "module": "Imogi Finance"
+  "insert_after": "exempt_from_pph21",
+  "module": "Imogi Finance",
+  "modified": "2026-04-27 12:58:08"
  }
 ]
