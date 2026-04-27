@@ -458,6 +458,7 @@ after_migrate = [
     "imogi_finance.imogi_finance.utils.ensure_budget_control_settings",
     "imogi_finance.setup.set_workspace_order",
     "imogi_finance.utils.patch_round_floats_compatibility",  # ← tambahkan ini
+    "imogi_finance.setup.install_towing_doctypes",  # ← tambahkan
 ]
 
 before_job = "imogi_finance.overrides.bank_statement_import.patch_start_import"
