@@ -165,6 +165,32 @@ def on_change_expense_request(doc, method=None):
         pass
 
 
+
+def _generate_towing_remarks(doc) -> None:
+    """Auto-generate remarks untuk Payment Entry towing."""
+    do_name = doc.get("delivery_order_towing")
+    if not do_name:
+        return
+
+    try:
+        do = frappe.get_doc("Delivery Order Towing", do_name)
+        rute = f"{do.kota_pickup or '-'} -> {do.kota_tujuan or '-'}"
+        kendaraan = do.kendaraan_towing or '-'
+        driver = do.driver_nama or '-'
+        doc.remarks = (
+            f"Uang jalan driver towing {do_name} | "
+            f"Rute: {rute} | "
+            f"Kendaraan: {kendaraan} | "
+            f"Driver: {driver}."
+        )
+    except Exception as e:
+        frappe.log_error(str(e), "Generate Towing Remarks Error")
+
+
+def generate_towing_remarks(doc, method=None) -> None:
+    """Hook: Auto-generate remarks untuk Payment Entry towing."""
+    _generate_towing_remarks(doc)
+
 def after_insert(doc, method=None):
     """Reserved hook. References are usually not available yet here."""
     pass
