@@ -5,6 +5,11 @@
 // Event handler untuk child table SO Towing Kendaraan
 frappe.ui.form.on('Sales Order', {
     refresh: function(frm) {
+         if (frm.doc.docstatus === 0) {
+            frm.add_custom_button(__('Generate Detail Kendaraan'), function() {
+                _generate_detail_kendaraan(frm);
+            }, __('Towing'));
+        }
         frm.fields_dict['custom_towing_kendaraan'].grid.wrapper.on(
             'click', '.grid-remove-rows', function() {
                 setTimeout(function() { _update_item_qty(frm); }, 300);
@@ -12,6 +17,48 @@ frappe.ui.form.on('Sales Order', {
         );
     }
 });
+
+function _generate_detail_kendaraan(frm) {
+    var towing_items = (frm.doc.items || []).filter(function(item) {
+        return item.item_code && item.item_code.toUpperCase().includes('TOWING');
+    });
+
+    if (towing_items.length === 0) {
+        frappe.msgprint({
+            title: 'Tidak Ada Item Towing',
+            message: 'Tambahkan item towing terlebih dahulu di tabel Items.',
+            indicator: 'orange'
+        });
+        return;
+    }
+
+    var total_kendaraan = towing_items.reduce(function(a, b) { return a + (b.qty || 1); }, 0);
+
+    frappe.confirm(
+        'Generate <b>' + total_kendaraan + '</b> baris kendaraan dari ' + towing_items.length + ' item towing?<br>' +
+        '<small>Baris yang sudah ada akan dihapus.</small>',
+        function() {
+            // Clear existing
+            frm.doc.custom_towing_kendaraan = [];
+            frm.refresh_field('custom_towing_kendaraan');
+
+            // Generate per item sesuai qty
+            towing_items.forEach(function(item) {
+                var qty = Math.floor(item.qty) || 1;
+                for (var i = 0; i < qty; i++) {
+                    var row = frm.add_child('custom_towing_kendaraan');
+                    row.so_item_code = item.item_code;
+                }
+            });
+
+            frm.refresh_field('custom_towing_kendaraan');
+            frappe.show_alert({
+                message: '✅ ' + frm.doc.custom_towing_kendaraan.length + ' baris kendaraan berhasil digenerate',
+                indicator: 'green'
+            }, 5);
+        }
+    );
+}
 
 frappe.ui.form.on('SO Towing Kendaraan', {
     so_item_code: function(frm, cdt, cdn) {
