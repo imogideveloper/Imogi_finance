@@ -20,7 +20,10 @@ frappe.ui.form.on('Sales Order', {
 
 function _generate_detail_kendaraan(frm) {
     var towing_items = (frm.doc.items || []).filter(function(item) {
-        return item.item_code && item.item_code.toUpperCase().includes('TOWING');
+        return item.item_code && (
+            item.item_code.toUpperCase().includes('TOWING') ||
+            item.item_code.toUpperCase().includes('RDC')
+        );
     });
 
     if (towing_items.length === 0) {
