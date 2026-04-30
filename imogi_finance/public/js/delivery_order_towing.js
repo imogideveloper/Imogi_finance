@@ -102,6 +102,35 @@ frappe.ui.form.on('Delivery Order Towing', {
 
     // ── REFRESH FORM ──────────────────────────────────────────
     refresh: function(frm) {
+     if (!frm.is_new()) {
+    const editable_fields = ['driver', 'driver_nama', 'koordinator', 'kendaraan_towing'];
+
+    frm.fields.forEach(function(f) {
+        const fn = f.df.fieldname;
+        if (fn === 'harga_jasa') {
+            f.df.hidden = 1;
+            f.df.read_only = 1;
+            f.df.allow_on_submit = 0;
+        } else if (!editable_fields.includes(fn) &&
+            f.df.fieldtype !== 'Section Break' &&
+            f.df.fieldtype !== 'Column Break') {
+            f.df.read_only = 1;
+            f.df.allow_on_submit = 0;
+        } else if (editable_fields.includes(fn)) {
+            f.df.read_only = 0;
+        }
+    });
+
+    frm.refresh_fields();
+
+    // Force hide harga_jasa via DOM
+    setTimeout(function() {
+        if (frm.fields_dict['harga_jasa']) {
+            frm.fields_dict['harga_jasa'].$wrapper.hide();
+        }
+    }, 200);
+}
+
         frm.trigger('set_status_indicator');
         frm.trigger('render_custom_buttons');
         frm.trigger('set_field_readonly_by_role');
