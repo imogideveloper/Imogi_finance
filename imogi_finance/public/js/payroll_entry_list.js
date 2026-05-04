@@ -1,99 +1,128 @@
-frappe.listview_settings['Payroll Entry'] = {
-    add_fields: ["periode", "total_karyawan", "total_amount", "currency", "start_date"],
+function get_month_name(month) {
+    const months = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+    ];
+    return months[month] || "-";
+}
 
-    onload: function(listview) {
-        // Default group by: Status (lebih mirip grouped list).
-        const default_group_by = "status";
-        if (!listview.group_by && listview.meta?.fields) {
-            listview.group_by = default_group_by;
-            listview.refresh();
-        }
+function format_period_label(doc) {
+    if (doc.periode) return doc.periode;
+    if (!doc.start_date) return "-";
+    const d = frappe.datetime.str_to_obj(doc.start_date);
+    return `${get_month_name(d.getMonth())} ${d.getFullYear()}`;
+}
 
-        // Build dynamic group-by options:
-        // - selalu ada granularity Year/Month/Day
-        // - tambah kolom nyata dari meta doctype Payroll Entry
-        const original_get_group_by_fields = listview.get_group_by_fields;
-        if (original_get_group_by_fields) {
-            listview.get_group_by_fields = function() {
-                const fields = (listview.meta?.fields || []);
-                const dynamic = [];
-                const seen = new Set();
+function get_status_label(doc) {
+    if (doc.docstatus === 2) return __("Cancelled");
+    if (doc.docstatus === 1) return __("Submitted");
+    return __("Draft");
+}
 
-                const pushOption = (label, fieldname) => {
-                    if (!fieldname || seen.has(fieldname)) return;
-                    seen.add(fieldname);
-                    dynamic.push({ label, fieldname });
-                };
+function group_docs_for_dropdown(docs) {
+    const grouped = {};
 
-                // Date fields in this doctype + core dates for grouping
-                const dateCandidates = ["start_date", "end_date", "posting_date", "creation", "modified"];
-                dateCandidates.forEach((base) => {
-                    pushOption(__(`${frappe.model.unscrub(base)} (Year)`), `${base}:Year`);
-                    pushOption(__(`${frappe.model.unscrub(base)} (Month)`), `${base}:Month`);
-                    pushOption(__(`${frappe.model.unscrub(base)} (Day)`), `${base}:Day`);
-                });
+    (docs || []).forEach((doc) => {
+        const baseDate = doc.start_date ? frappe.datetime.str_to_obj(doc.start_date) : null;
+        const year = baseDate ? `${baseDate.getFullYear()}` : __("No Year");
+        const monthKey = baseDate ? `${String(baseDate.getMonth() + 1).padStart(2, "0")}-${get_month_name(baseDate.getMonth())}` : __("No Month");
+        const status = get_status_label(doc);
 
-                // Add doctype columns dynamically (only commonly groupable fieldtypes)
-                const allowedFieldtypes = new Set([
-                    "Data", "Link", "Select", "Dynamic Link", "Check",
-                    "Date", "Datetime", "Int", "Float", "Currency",
-                ]);
+        if (!grouped[year]) grouped[year] = {};
+        if (!grouped[year][monthKey]) grouped[year][monthKey] = {};
+        if (!grouped[year][monthKey][status]) grouped[year][monthKey][status] = [];
 
-                fields.forEach((df) => {
-                    if (!df || !df.fieldname) return;
-                    if (["Section Break", "Column Break", "Tab Break", "HTML", "Button", "Fold"].includes(df.fieldtype)) return;
-                    if (!allowedFieldtypes.has(df.fieldtype)) return;
+        grouped[year][monthKey][status].push(doc);
+    });
 
-                    // For Date/Datetime, prefer granularity options above.
-                    if (["Date", "Datetime"].includes(df.fieldtype)) {
-                        pushOption(__(`${df.label || frappe.model.unscrub(df.fieldname)} (Year)`), `${df.fieldname}:Year`);
-                        pushOption(__(`${df.label || frappe.model.unscrub(df.fieldname)} (Month)`), `${df.fieldname}:Month`);
-                        pushOption(__(`${df.label || frappe.model.unscrub(df.fieldname)} (Day)`), `${df.fieldname}:Day`);
-                    } else {
-                        pushOption(__(df.label || frappe.model.unscrub(df.fieldname)), df.fieldname);
-                    }
-                });
+    return grouped;
+}
 
-                // Keep a few important defaults on top.
-                const prioritized = [];
-                const priorityFields = ["status", "company", "department", "branch"];
-                priorityFields.forEach((f) => {
-                    const item = dynamic.find((d) => d.fieldname === f);
-                    if (item) prioritized.push(item);
-                });
-
-                const rest = dynamic.filter((d) => !priorityFields.includes(d.fieldname));
-                return [...prioritized, ...rest];
-            };
-        }
-    },
-
-    formatters: {
-        total_karyawan: function(value) {
-            return value ? `${value} karyawan` : "-";
-        },
-        total_amount: function(value, df, doc) {
-            if (!value) return "-";
-            return frappe.format(value, {fieldtype: "Currency"});
-        },
-        start_date: function(value) {
-            if (!value) return "-";
-            const d = frappe.datetime.str_to_obj(value);
-            const bulan = ["Jan","Feb","Mar","Apr","May","Jun",
-                          "Jul","Aug","Sep","Oct","Nov","Dec"];
-            return `${bulan[d.getMonth()]} ${d.getFullYear()}`;
-        }
-    },
-
-    get_indicator: function(doc) {
-        if (doc.docstatus == 0) {
-            return [__("Draft"), "grey", "docstatus,=,0"];
-        }
-        if (doc.docstatus == 1) {
-            return [__("Submitted"), "blue", "docstatus,=,1"];
-        }
-        if (doc.docstatus == 2) {
-            return [__("Cancelled"), "red", "docstatus,=,2"];
-        }
+function render_dropdown_view(listview) {
+    if (!listview.$custom_dropdown_view) {
+        listview.$custom_dropdown_view = $(`<div class="payroll-entry-dropdown-view"></div>`);
+        listview.$result.after(listview.$custom_dropdown_view);
     }
+
+    // Hide the standard table body to force dropdown-like UX.
+    listview.$result.hide();
+
+    const grouped = group_docs_for_dropdown(listview.data || []);
+    const years = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
+
+    if (!years.length) {
+        listview.$custom_dropdown_view.html(
+            `<div class="text-muted" style="padding: 12px;">${__("No Payroll Entry data found.")}</div>`
+        );
+        return;
+    }
+
+    let html = `<div style="display:flex;flex-direction:column;gap:10px;">`;
+    years.forEach((year) => {
+        const yearBuckets = grouped[year];
+        const yearCount = Object.values(yearBuckets).reduce(
+            (acc, statuses) => acc + Object.values(statuses).reduce((x, arr) => x + arr.length, 0),
+            0
+        );
+
+        html += `<details open><summary><b>${__("Year")} ${year}</b> (${yearCount})</summary>`;
+
+        const months = Object.keys(yearBuckets).sort((a, b) => b.localeCompare(a));
+        months.forEach((monthKey) => {
+            const monthStatuses = yearBuckets[monthKey];
+            const monthCount = Object.values(monthStatuses).reduce((acc, arr) => acc + arr.length, 0);
+
+            html += `<details style="margin-left:14px;" open><summary>${__("Month")} ${monthKey} (${monthCount})</summary>`;
+
+            Object.keys(monthStatuses).forEach((status) => {
+                const rows = monthStatuses[status];
+                html += `<details style="margin-left:18px;" open><summary>${__("Status")}: ${status} (${rows.length})</summary>`;
+                html += `<div style="margin-left:22px;margin-top:6px;display:flex;flex-direction:column;gap:6px;">`;
+
+                rows.forEach((doc) => {
+                    const amount = doc.total_amount
+                        ? frappe.format(doc.total_amount, { fieldtype: "Currency", options: doc.currency })
+                        : "-";
+                    const period = format_period_label(doc);
+                    const employees = doc.total_karyawan || 0;
+
+                    html += `
+                        <div class="list-row-container" style="padding:8px 10px;border:1px solid var(--border-color);border-radius:8px;">
+                            <a href="#" data-name="${frappe.utils.escape_html(doc.name)}" class="payroll-entry-open-link">
+                                <b>${frappe.utils.escape_html(doc.name)}</b>
+                            </a>
+                            <div class="text-muted small" style="margin-top:4px;">
+                                ${__("Period")}: ${frappe.utils.escape_html(period)} | ${__("Employees")}: ${employees} | ${__("Total")}: ${amount}
+                            </div>
+                        </div>`;
+                });
+
+                html += `</div></details>`;
+            });
+
+            html += `</details>`;
+        });
+
+        html += `</details>`;
+    });
+    html += `</div>`;
+
+    listview.$custom_dropdown_view.html(html);
+    listview.$custom_dropdown_view.find(".payroll-entry-open-link").on("click", function (e) {
+        e.preventDefault();
+        const name = $(this).data("name");
+        frappe.set_route("Form", "Payroll Entry", name);
+    });
+}
+
+frappe.listview_settings["Payroll Entry"] = {
+    add_fields: ["name", "status", "docstatus", "periode", "total_karyawan", "total_amount", "currency", "start_date"],
+
+    onload: function (listview) {
+        listview.page.add_inner_button(__("Reload Dropdown View"), () => render_dropdown_view(listview));
+    },
+
+    refresh: function (listview) {
+        render_dropdown_view(listview);
+    },
 };
