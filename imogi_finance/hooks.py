@@ -56,7 +56,7 @@ doctype_list_js = {
     "Payment Entry": "public/js/payment_entry_list.js",
     "Budget": "public/js/budget_list.js",
     "Tax Invoice OCR Upload": "public/js/tax_invoice_ocr_upload_list.js",
-    "Payroll Entry": "public/js/payroll_entry_list.js",
+    # "Payroll Entry": "public/js/payroll_entry_list.js",
 }
 
 # Jinja
