@@ -26,5 +26,19 @@
   "modified": "2026-04-10 16:38:40.051920",
   "name": "Sales Order",
   "total_fields": "9"
+ },
+ {
+  "allow_edit": 0,
+  "disable_auto_refresh": 0,
+  "disable_automatic_recency_filters": 0,
+  "disable_comment_count": 0,
+  "disable_count": 0,
+  "disable_sidebar_stats": 0,
+  "docstatus": 0,
+  "doctype": "List View Settings",
+  "fields": "[{\"label\":\"ID\",\"fieldname\":\"name\"},{\"label\":\"Company\",\"fieldname\":\"company\"},{\"label\":\"Start Date\",\"fieldname\":\"start_date\"},{\"label\":\"End Date\",\"fieldname\":\"end_date\"}]",
+  "modified": "2026-05-04 11:05:58.563177",
+  "name": "Payroll Period",
+  "total_fields": "10"
  }
 ]
