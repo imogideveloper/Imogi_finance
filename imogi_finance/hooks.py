@@ -78,7 +78,12 @@ fixtures = [
     # 1. DocTypes
     {"doctype": "DocType", "filters": [["name", "in", [
         "Delivery Order Towing",
-        "DO Towing Kondisi Item"
+        "DO Towing Kondisi Item",
+        # Workshop Imogi - tambahan baru
+        "Service Booking",
+        "Vehicle Reception",
+        "Complaint Log",
+        "After Service Follow Up"
     ]]]},
     
     # 2. Customizations
