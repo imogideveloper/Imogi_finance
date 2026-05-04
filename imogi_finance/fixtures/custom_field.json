@@ -8234,7 +8234,7 @@
  "in_list_view": 0,
  "in_preview": 0,
  "in_standard_filter": 0,
- "insert_after": "health_insurance_no",
+ "insert_after": "exempt_from_pph21",
  "is_system_generated": 0,
  "is_virtual": 0,
  "label": "Bebas BPJS Kesehatan",
