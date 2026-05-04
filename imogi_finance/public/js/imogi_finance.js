@@ -6,7 +6,24 @@ frappe.after_ajax(function() {
     };
 });
 
-// Payroll Entry List View
+frappe.after_ajax(function() {
+    if (frappe.listview_settings) {
+        frappe.listview_settings["Payroll Entry"] = {
+            add_fields: ["name", "status", "docstatus", "periode", "total_karyawan", "total_amount", "currency", "start_date"],
+
+            onload: function(listview) {
+                listview.page.add_inner_button(__("Reload Dropdown View"), function() {
+                    render_payroll_dropdown(listview);
+                });
+            },
+
+            refresh: function(listview) {
+                render_payroll_dropdown(listview);
+            }
+        };
+    }
+});
+
 function get_month_name(month) {
     var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
     return months[month] || "-";
@@ -94,17 +111,3 @@ function render_payroll_dropdown(listview) {
         frappe.set_route("Form", "Payroll Entry", $(this).data("name"));
     });
 }
-
-frappe.listview_settings["Payroll Entry"] = {
-    add_fields: ["name", "status", "docstatus", "periode", "total_karyawan", "total_amount", "currency", "start_date"],
-
-    onload: function(listview) {
-        listview.page.add_inner_button(__("Reload Dropdown View"), function() {
-            render_payroll_dropdown(listview);
-        });
-    },
-
-    refresh: function(listview) {
-        render_payroll_dropdown(listview);
-    }
-};
