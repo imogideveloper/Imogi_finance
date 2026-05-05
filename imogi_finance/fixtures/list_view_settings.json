@@ -40,5 +40,19 @@
   "modified": "2026-05-04 11:05:58.563177",
   "name": "Payroll Period",
   "total_fields": "10"
+ },
+ {
+  "allow_edit": 0,
+  "disable_auto_refresh": 0,
+  "disable_automatic_recency_filters": 0,
+  "disable_comment_count": 0,
+  "disable_count": 0,
+  "disable_sidebar_stats": 0,
+  "docstatus": 0,
+  "doctype": "List View Settings",
+  "fields": "[{\"fieldname\":\"name\",\"label\":\"ID\"},{\"fieldname\":\"status\",\"label\":\"Status\"},{\"fieldname\":\"periode\",\"label\":\"Periode\"},{\"fieldname\":\"total_karyawan\",\"label\":\"Total Karyawan\"},{\"fieldname\":\"total_amount\",\"label\":\"Total Amount\"},{\"fieldname\":\"currency\",\"label\":\"Mata Uang\"}]",
+  "modified": "2026-05-05 00:00:00.000000",
+  "name": "Payroll Entry",
+  "total_fields": "6"
  }
 ]

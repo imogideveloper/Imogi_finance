@@ -56,6 +56,7 @@ doctype_list_js = {
     "Payment Entry": "public/js/payment_entry_list.js",
     "Budget": "public/js/budget_list.js",
     "Tax Invoice OCR Upload": "public/js/tax_invoice_ocr_upload_list.js",
+    # "Payroll Entry": "public/js/payroll_entry_list.js",
 }
 
 # Jinja
@@ -90,7 +91,7 @@ fixtures = [
     {"doctype": "Custom Field"},
     {"doctype": "Property Setter"},
     {"doctype": "Client Script", "filters": [["enabled", "=", 1]]},
-    {"doctype": "List View Settings", "filters": [["name", "in", ["Sales Order", "Expense Request", "Delivery Order Towing", "Payroll Period"]]]},
+    {"doctype": "List View Settings", "filters": [["name", "in", ["Sales Order", "Expense Request", "Delivery Order Towing", "Payroll Period", "Payroll Entry"]]]},
     
     # 3. Master Data
     {"doctype": "Item", "filters": [["name", "=", "JASA-TOWING-001"]]},
