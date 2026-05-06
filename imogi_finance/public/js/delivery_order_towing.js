@@ -10,6 +10,12 @@ frappe.ui.form.on('Sales Order', {
                 _generate_detail_kendaraan(frm);
             }, __('Towing'));
         }
+        _inject_generate_button_on_items_grid(frm);
+        [250, 700, 1400].forEach(function(ms) {
+            setTimeout(function() {
+                _inject_generate_button_on_items_grid(frm);
+            }, ms);
+        });
         frm.fields_dict['custom_towing_kendaraan'].grid.wrapper.on(
             'click', '.grid-remove-rows', function() {
                 setTimeout(function() { _update_item_qty(frm); }, 300);
@@ -61,6 +67,32 @@ function _generate_detail_kendaraan(frm) {
             }, 5);
         }
     );
+}
+
+function _inject_generate_button_on_items_grid(frm) {
+    var items_grid = frm.fields_dict && frm.fields_dict.items && frm.fields_dict.items.grid;
+    if (!items_grid || !items_grid.wrapper) return;
+
+    var $wrapper = $(items_grid.wrapper);
+    var $grid_buttons = $wrapper.find('.grid-buttons');
+    if (!$grid_buttons.length) return;
+
+    var button_class = 'btn-generate-detail-kendaraan-grid';
+    $grid_buttons.find('.' + button_class).remove();
+
+    var $button = $('<button class="btn btn-xs btn-secondary ' + button_class + '" type="button"></button>')
+        .text(__('Generate Detail Kendaraan'));
+
+    $button.on('click', function() {
+        _generate_detail_kendaraan(frm);
+    });
+
+    var $add_multiple = $grid_buttons.find('.grid-add-multiple-rows');
+    if ($add_multiple.length) {
+        $button.insertAfter($add_multiple);
+    } else {
+        $grid_buttons.append($button);
+    }
 }
 
 frappe.ui.form.on('SO Towing Kendaraan', {

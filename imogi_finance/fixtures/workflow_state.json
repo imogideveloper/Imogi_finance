@@ -61,5 +61,14 @@
   "name": "Done",
   "style": "Success",
   "workflow_state_name": "Done"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2026-05-06 22:10:00.000000",
+  "name": "Awaiting Dokument",
+  "style": "Warning",
+  "workflow_state_name": "Awaiting Dokument"
  }
 ]

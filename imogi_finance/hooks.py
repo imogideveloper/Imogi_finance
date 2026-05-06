@@ -95,9 +95,9 @@ fixtures = [
     
     # 4. Workflow (urutan penting!)
     {"doctype": "Workflow State", "filters": [["workflow_state_name", "in", 
-        ["Draft", "Submitted", "Assigned", "Pick Up", "Delivered", "Done", "Cancelled"]]]},
+        ["Draft", "Submitted", "Assigned", "Pick Up", "Delivered", "Done", "Awaiting Dokument", "Cancelled"]]]},
     {"doctype": "Workflow Action Master", "filters": [["workflow_action_name", "in", 
-        ["Assign Driver", "Konfirmasi Pick Up", "Konfirmasi Delivered", "Selesaikan DO", "Cancel"]]]},
+        ["Assign Driver", "Konfirmasi Pick Up", "Konfirmasi Delivered", "Selesaikan DO", "Awaiting Dokument", "Cancel"]]]},
     {"doctype": "Workflow", "filters": [["name", "=", "DO Towing Workflow"]]},
     
     # 5. Reports & UI
@@ -465,6 +465,7 @@ after_migrate = [
     "imogi_finance.setup.set_workspace_order",
     "imogi_finance.utils.patch_round_floats_compatibility",  # ← tambahkan ini
     "imogi_finance.setup.install_towing_doctypes",  # ← tambahkan
+    "imogi_finance.setup.ensure_towing_workflow_consistency",
 ]
 
 before_job = "imogi_finance.overrides.bank_statement_import.patch_start_import"

@@ -140,6 +140,19 @@ def imogi_get(doctype: str, name: str) -> dict:
 def imogi_update(doctype: str, name: str, data: dict) -> dict:
     return _remote_update(doctype, name, data) if _is_remote() else _local_update(doctype, name, data)
 
+def _resolve_company() -> str:
+    """Resolve company for server-side created docs with robust fallbacks."""
+    company = (
+        frappe.defaults.get_user_default("Company")
+        or frappe.db.get_single_value("Global Defaults", "default_company")
+        or frappe.db.get_value("Company", {"is_group": 0}, "name")
+    )
+    if not company:
+        frappe.throw(
+            _("Company belum dikonfigurasi. Set Global Defaults > Default Company atau buat Company aktif.")
+        )
+    return company
+
 
 # ──────────────────────────────────────────────────────────────
 # DOCTYPE CLASS
@@ -150,12 +163,17 @@ class DeliveryOrderTowing(Document):
     # ── VALIDATE ─────────────────────────────────────────────
     def validate(self):
         self.validate_driver_required_on_assign()
+        self.validate_invoice_fields_on_awaiting_document()
         self.validate_harga_jasa()
         self.set_customer_name()
 
     def validate_driver_required_on_assign(self):
         if self.status == "Assigned" and not self.driver:
             frappe.throw(_("Driver wajib diisi sebelum status Assigned."))
+
+    def validate_invoice_fields_on_awaiting_document(self):
+        if self.status == "Awaiting Dokument" and not self.tanggal_invoice:
+            frappe.throw(_("Tanggal Invoice wajib diisi saat status Awaiting Dokument."))
 
     def validate_harga_jasa(self):
         if self.harga_jasa is not None and self.harga_jasa <= 0:
@@ -221,10 +239,7 @@ class DeliveryOrderTowing(Document):
                 title="Driver Belum Punya Supplier"
             )
 
-        company = (
-            frappe.defaults.get_user_default("Company")
-            or frappe.db.get_single_value("Global Defaults", "default_company")
-        )
+        company = _resolve_company()
 
         # Ambil item dari sales_order, fallback ke JASA-TOWING-001
         item_code = "JASA-TOWING-001"
@@ -306,10 +321,7 @@ class DeliveryOrderTowing(Document):
         if not self.customer or not self.harga_jasa:
             frappe.throw(_("Customer dan Harga Jasa wajib diisi sebelum buat invoice."))
 
-        company = (
-            frappe.defaults.get_user_default("Company")
-            or frappe.db.get_single_value("Global Defaults", "default_company")
-        )
+        company = _resolve_company()
 
         invoice_data = {
             "naming_series"    : "ACC-SINV-.YYYY.-",
@@ -370,10 +382,7 @@ class DeliveryOrderTowing(Document):
         if self.expense_claim:
             frappe.throw(_("Expense Claim sudah ada: {0}").format(self.expense_claim))
 
-        company = (
-            frappe.defaults.get_user_default("Company")
-            or frappe.db.get_single_value("Global Defaults", "default_company")
-        )
+        company = _resolve_company()
 
         ec_data = {
             "naming_series": "HR-EXP-.YYYY.-",
