@@ -203,6 +203,32 @@ class DeliveryOrderTowing(Document):
                 "Customer", self.customer, "customer_name"
             )
 
+    def _get_sales_order_item_code(self) -> str:
+        """Resolve towing item from linked Sales Order (required for PO/SI consistency)."""
+        if not self.sales_order:
+            frappe.throw(
+                _(
+                    "Sales Order belum terisi pada Delivery Order Towing. "
+                    "Item harus mengikuti item yang di-order."
+                ),
+                title="Sales Order Wajib Diisi",
+            )
+
+        so_item = frappe.db.get_value(
+            "Sales Order Item",
+            {"parent": self.sales_order},
+            "item_code",
+        )
+        if not so_item:
+            frappe.throw(
+                _(
+                    "Item Sales Order untuk {0} tidak ditemukan. "
+                    "Pastikan Sales Order memiliki item sebelum melanjutkan."
+                ).format(self.sales_order),
+                title="Item Sales Order Tidak Ditemukan",
+            )
+        return so_item
+
     # ── AFTER SAVE ───────────────────────────────────────────
     def after_save(self):
         self._record_status_timestamps()
@@ -246,6 +272,8 @@ class DeliveryOrderTowing(Document):
             or frappe.db.get_single_value("Global Defaults", "default_company")
         )
 
+        item_code = self._get_sales_order_item_code()
+
         invoice_data = {
             "naming_series"    : "ACC-SINV-.YYYY.-",
             "customer"         : self.customer,
@@ -263,7 +291,7 @@ class DeliveryOrderTowing(Document):
             ),
             "items": [
                 {
-                    "item_code"  : "JASA-TOWING-001",
+                    "item_code"  : item_code,
                     "item_name"  : f"Jasa Towing - {self.nomor_polisi}",
                     "description": (
                         f"Jasa towing {self.merk_kendaraan or ''} "
@@ -328,30 +356,7 @@ class DeliveryOrderTowing(Document):
             or frappe.db.get_single_value("Global Defaults", "default_company")
         )
 
-        # WAJIB mengikuti item dari Sales Order (tanpa hardcoded fallback).
-        if not self.sales_order:
-            frappe.throw(
-                _(
-                    "Sales Order belum terisi pada Delivery Order Towing. "
-                    "Item Purchase Order harus mengikuti item yang di-order."
-                ),
-                title="Sales Order Wajib Diisi",
-            )
-
-        so_item = frappe.db.get_value(
-            "Sales Order Item",
-            {"parent": self.sales_order},
-            "item_code",
-        )
-        if not so_item:
-            frappe.throw(
-                _(
-                    "Item Sales Order untuk {0} tidak ditemukan. "
-                    "Pastikan Sales Order memiliki item sebelum submit DO."
-                ).format(self.sales_order),
-                title="Item Sales Order Tidak Ditemukan",
-            )
-        item_code = so_item
+        item_code = self._get_sales_order_item_code()
 
         # Guard duplikasi: cek PO aktif dengan supplier + nomor rangka yang sama.
         po_filters = {"supplier": supplier, "docstatus": ["!=", 2]}
