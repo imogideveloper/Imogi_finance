@@ -328,16 +328,30 @@ class DeliveryOrderTowing(Document):
             or frappe.db.get_single_value("Global Defaults", "default_company")
         )
 
-        # Ambil item towing dari SO jika ada; fallback ke item default towing.
-        item_code = "JASA-TOWING-001"
-        if self.sales_order:
-            so_item = frappe.db.get_value(
-                "Sales Order Item",
-                {"parent": self.sales_order},
-                "item_code",
+        # WAJIB mengikuti item dari Sales Order (tanpa hardcoded fallback).
+        if not self.sales_order:
+            frappe.throw(
+                _(
+                    "Sales Order belum terisi pada Delivery Order Towing. "
+                    "Item Purchase Order harus mengikuti item yang di-order."
+                ),
+                title="Sales Order Wajib Diisi",
             )
-            if so_item:
-                item_code = so_item
+
+        so_item = frappe.db.get_value(
+            "Sales Order Item",
+            {"parent": self.sales_order},
+            "item_code",
+        )
+        if not so_item:
+            frappe.throw(
+                _(
+                    "Item Sales Order untuk {0} tidak ditemukan. "
+                    "Pastikan Sales Order memiliki item sebelum submit DO."
+                ).format(self.sales_order),
+                title="Item Sales Order Tidak Ditemukan",
+            )
+        item_code = so_item
 
         # Guard duplikasi: cek PO aktif dengan supplier + nomor rangka yang sama.
         po_filters = {"supplier": supplier, "docstatus": ["!=", 2]}
