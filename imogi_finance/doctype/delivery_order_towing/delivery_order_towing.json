@@ -112,7 +112,7 @@
       "allow_in_quick_entry": 0,
       "print_hide": 0,
       "report_hide": 0,
-      "reqd": 1,
+      "reqd": 0,
       "bold": 0,
       "in_global_search": 0,
       "collapsible": 0,
