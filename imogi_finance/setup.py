@@ -212,13 +212,13 @@ def ensure_towing_workflow_consistency():
         has_transition = any(
             t.state == "Awaiting Dokument"
             and t.next_state == "Done"
-            and t.action == "Selesaikan DO"
+            and t.action == "Konfirmasi Dokumen"
             for t in wf.transitions
         )
         if not has_transition:
             wf.append("transitions", {
                 "state": "Awaiting Dokument",
-                "action": "Selesaikan DO",
+                "action": "Konfirmasi Dokumen",
                 "next_state": "Done",
                 "allowed": "System Manager",
                 "allow_self_approval": 1,
