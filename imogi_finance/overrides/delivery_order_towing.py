@@ -473,7 +473,105 @@ def _legacy_hook_noop(hook_name: str, doc=None):
 
 
 def create_do_from_sales_order(doc, method=None):
-    _legacy_hook_noop("create_do_from_sales_order", doc)
+    """
+    Auto-create Delivery Order Towing rows from Sales Order child table `custom_towing_kendaraan`.
+    Keeps backward compatibility with existing hook wiring in hooks.py.
+    """
+    rows = getattr(doc, "custom_towing_kendaraan", None) or []
+    if not rows:
+        return
+
+    items_by_code = {d.item_code: d for d in (getattr(doc, "items", None) or []) if d.item_code}
+    fallback_item = (getattr(doc, "items", None) or [None])[0]
+
+    def _split_route(route_value):
+        route = (route_value or "").strip()
+        if " - " in route:
+            pickup, tujuan = route.split(" - ", 1)
+            return pickup.strip(), tujuan.strip()
+        return route, route
+
+    created = 0
+
+    for row in rows:
+        # Idempotency: if already linked, skip.
+        if getattr(row, "delivery_order", None):
+            continue
+
+        route_item = getattr(row, "so_item_code", None)
+        item_row = items_by_code.get(route_item) or fallback_item
+        pickup, tujuan = _split_route(route_item or "")
+
+        # Best-effort duplicate guard by Sales Order + key vehicle identifiers.
+        existing_name = frappe.db.get_value(
+            "Delivery Order Towing",
+            {
+                "sales_order": doc.name,
+                "nomor_rangka": getattr(row, "nomor_rangka", None) or "",
+                "nomor_polisi": getattr(row, "nomor_polisi", None) or "",
+            },
+            "name",
+        )
+
+        if existing_name:
+            frappe.db.set_value(
+                row.doctype,
+                row.name,
+                "delivery_order",
+                existing_name,
+                update_modified=False,
+            )
+            continue
+
+        harga_jasa = 0
+        try:
+            harga_jasa = float(getattr(item_row, "rate", 0) or 0)
+        except Exception:
+            harga_jasa = 0
+
+        if harga_jasa <= 0:
+            harga_jasa = 1
+
+        do_doc = frappe.new_doc("Delivery Order Towing")
+        do_doc.update(
+            {
+                "naming_series": "DO-TOW-.YYYY.-.####",
+                "status": "Draft",
+                "customer": doc.customer,
+                "customer_name": doc.customer_name,
+                "tanggal_do": doc.transaction_date or nowdate(),
+                "sales_order": doc.name,
+                "nomor_polisi": getattr(row, "nomor_polisi", None) or route_item or "-",
+                "nomor_rangka": getattr(row, "nomor_rangka", None),
+                "merk_kendaraan": getattr(item_row, "item_name", None)
+                or getattr(item_row, "item_code", None)
+                or route_item
+                or "-",
+                "tipe_kendaraan": getattr(row, "tipe_model", None)
+                or getattr(item_row, "description", None)
+                or "-",
+                "lokasi_pickup": pickup or "-",
+                "lokasi_tujuan": tujuan or "-",
+                "harga_jasa": harga_jasa,
+                "currency": getattr(doc, "currency", None) or "IDR",
+            }
+        )
+        do_doc.insert(ignore_permissions=True)
+
+        frappe.db.set_value(
+            row.doctype,
+            row.name,
+            "delivery_order",
+            do_doc.name,
+            update_modified=False,
+        )
+        created += 1
+
+    if created:
+        frappe.msgprint(
+            _("Berhasil membuat {0} Delivery Order Towing dari Sales Order ini.").format(created),
+            alert=True,
+        )
 
 
 def validate_invoice_do_completion(doc, method=None):
