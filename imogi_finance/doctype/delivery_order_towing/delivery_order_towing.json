@@ -753,7 +753,7 @@
       "show_preview_popup": 0,
       "trigger": null,
       "collapsible_depends_on": null,
-      "mandatory_depends_on": null,
+      "mandatory_depends_on": "eval:doc.status=='Awaiting Dokument'",
       "read_only_depends_on": null,
       "depends_on": "eval:doc.status=='Awaiting Dokument'",
       "permlevel": 0,
