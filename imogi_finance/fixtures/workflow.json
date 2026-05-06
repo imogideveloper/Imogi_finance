@@ -108,6 +108,22 @@
    {
     "allow_edit": "System Manager",
     "avoid_status_override": 0,
+    "doc_status": "1",
+    "is_optional_state": 0,
+    "message": null,
+    "next_action_email_template": null,
+    "parent": "DO Towing Workflow",
+    "parentfield": "states",
+    "parenttype": "Workflow",
+    "send_email": 1,
+    "state": "Awaiting Dokument",
+    "update_field": "status",
+    "update_value": "Awaiting Dokument",
+    "workflow_builder_id": null
+   },
+   {
+    "allow_edit": "System Manager",
+    "avoid_status_override": 0,
     "doc_status": "2",
     "is_optional_state": 0,
     "message": null,
@@ -186,6 +202,19 @@
     "parenttype": "Workflow",
     "send_email_to_creator": 0,
     "state": "Delivered",
+    "workflow_builder_id": null
+   },
+   {
+    "action": "Selesaikan DO",
+    "allow_self_approval": 1,
+    "allowed": "System Manager",
+    "condition": null,
+    "next_state": "Done",
+    "parent": "DO Towing Workflow",
+    "parentfield": "transitions",
+    "parenttype": "Workflow",
+    "send_email_to_creator": 0,
+    "state": "Awaiting Dokument",
     "workflow_builder_id": null
    },
    {

@@ -13,6 +13,7 @@ app_include_css = "/assets/imogi_finance/css/custom.css"
 
 # include js in doctype views
 doctype_js = {
+    "Sales Order": "public/js/sales_order.js",
     "Tax Invoice OCR Upload": "public/js/tax_invoice_ocr_upload_form.js",
     "VAT OUT Batch": "public/js/vat_out_batch_form.js",
     "Bank Transaction": "public/js/bank_transaction.js",
@@ -42,6 +43,7 @@ doctype_js = {
         "public/js/payment_reconciliation_helper.js",
     ],
     "Delivery Order Towing": "public/js/delivery_order_towing.js",
+    "Sales Order": "public/js/delivery_order_towing.js",  # ← tambahkan ini
 }
 
 app_include_js = "/assets/imogi_finance/js/imogi_finance.js"
@@ -56,7 +58,6 @@ doctype_list_js = {
     "Payment Entry": "public/js/payment_entry_list.js",
     "Budget": "public/js/budget_list.js",
     "Tax Invoice OCR Upload": "public/js/tax_invoice_ocr_upload_list.js",
-    # "Payroll Entry": "public/js/payroll_entry_list.js",
 }
 
 # Jinja
@@ -77,30 +78,26 @@ before_install = "imogi_finance.install.before_install"
 # Fixtures — tidak ada perubahan yang diperlukan
 fixtures = [
     # 1. DocTypes
-    {"doctype": "DocType", "filters": [["name", "in", [
+   {"doctype": "DocType", "filters": [["name", "in", [
         "Delivery Order Towing",
         "DO Towing Kondisi Item",
-        # Workshop Imogi - tambahan baru
-        "Service Booking",
-        "Vehicle Reception",
-        "Complaint Log",
-        "After Service Follow Up"
+        # "SO Towing Kendaraan",  # temporary disabled to avoid deploy conflict
     ]]]},
     
     # 2. Customizations
     {"doctype": "Custom Field"},
     {"doctype": "Property Setter"},
     {"doctype": "Client Script", "filters": [["enabled", "=", 1]]},
-    {"doctype": "List View Settings", "filters": [["name", "in", ["Sales Order", "Expense Request", "Delivery Order Towing", "Payroll Period", "Payroll Entry"]]]},
+    {"doctype": "List View Settings", "filters": [["name", "in", ["Sales Order", "Expense Request", "Delivery Order Towing"]]]},
     
     # 3. Master Data
     {"doctype": "Item", "filters": [["name", "=", "JASA-TOWING-001"]]},
     
     # 4. Workflow (urutan penting!)
     {"doctype": "Workflow State", "filters": [["workflow_state_name", "in", 
-        ["Draft", "Assigned", "Pick Up", "Delivered", "Done", "Cancelled"]]]},
+        ["Draft", "Submitted", "Assigned", "Pick Up", "Delivered", "Done", "Awaiting Dokument", "Cancelled"]]]},
     {"doctype": "Workflow Action Master", "filters": [["workflow_action_name", "in", 
-        ["Assign Driver", "Konfirmasi Pick Up", "Konfirmasi Delivered", "Selesaikan DO", "Cancel"]]]},
+        ["Assign Driver", "Konfirmasi Pick Up", "Konfirmasi Delivered", "Selesaikan DO", "Awaiting Dokument", "Cancel"]]]},
     {"doctype": "Workflow", "filters": [["name", "=", "DO Towing Workflow"]]},
     
     # 5. Reports & UI
@@ -121,8 +118,8 @@ doc_events = {
         "validate": [
             "imogi_finance.events.metadata_fields.set_created_by",
         ],
-        "on_submit": [
-            "imogi_finance.events.metadata_fields.set_submit_on",
+       "on_submit": [
+            "imogi_finance.sales_order_payment_status.update_from_sales_order",
         ],
         "after_save": [
             "imogi_finance.events.tax_invoice_ocr_upload.auto_link_to_sales_invoice",
@@ -175,6 +172,10 @@ doc_events = {
             "imogi_finance.events.sales_invoice.on_update_after_submit",
             "imogi_finance.sales_order_payment_status.update_from_sales_invoice",
         ],
+        "before_insert": [
+            "imogi_finance.overrides.delivery_order_towing.validate_invoice_do_completion",
+            "imogi_finance.overrides.sales_invoice_towing.before_insert",
+        ],
     },
 
     "Sales Order": {
@@ -185,6 +186,7 @@ doc_events = {
         ],
         "on_submit": [
             "imogi_finance.sales_order_payment_status.update_from_sales_order",
+            "imogi_finance.overrides.delivery_order_towing.create_do_from_sales_order",
         ],
         "on_cancel": [
             "imogi_finance.sales_order_payment_status.update_from_sales_order",
@@ -380,6 +382,7 @@ doc_events = {
         ],
         "before_submit": [
             "imogi_finance.receipt_control.payment_entry_hooks.validate_customer_receipt_link",
+            "imogi_finance.events.payment_entry.generate_towing_remarks",
         ],
         "on_submit": [
             "imogi_finance.events.payment_entry.on_submit",
@@ -388,6 +391,7 @@ doc_events = {
             "imogi_finance.events.sales_order.update_sales_order_outstanding_from_payment",
             "imogi_finance.sales_order_payment_status.update_from_payment_entry",
             "imogi_finance.imogi_finance.doctype.expense_request.expense_request.update_er_status_on_payment",
+            "imogi_finance.overrides.delivery_order_towing.update_do_payment_status",
         ],
         "on_update_after_submit": [
             "imogi_finance.events.payment_entry.on_update_after_submit",
@@ -415,7 +419,13 @@ doc_events = {
     "Delivery Order Towing": {
         "after_save": "imogi_finance.overrides.delivery_order_towing.after_save",
         "on_update_after_submit": "imogi_finance.overrides.delivery_order_towing.on_update_after_submit",
-    }
+        "on_submit": "imogi_finance.overrides.delivery_order_towing.on_submit",
+    },
+    "Purchase Order": {
+        "on_update": "imogi_finance.overrides.delivery_order_towing.update_do_from_po",
+        "on_submit": "imogi_finance.overrides.delivery_order_towing.update_do_from_po",
+        "on_cancel": "imogi_finance.overrides.delivery_order_towing.update_do_from_po",
+    },
 }
 
 if is_payroll_installed():
@@ -454,6 +464,8 @@ after_migrate = [
     "imogi_finance.imogi_finance.utils.ensure_budget_control_settings",
     "imogi_finance.setup.set_workspace_order",
     "imogi_finance.utils.patch_round_floats_compatibility",  # ← tambahkan ini
+    "imogi_finance.setup.install_towing_doctypes",  # ← tambahkan
+    "imogi_finance.setup.ensure_towing_workflow_consistency",
 ]
 
 before_job = "imogi_finance.overrides.bank_statement_import.patch_start_import"
