@@ -373,6 +373,7 @@ class DeliveryOrderTowing(Document):
             "transaction_date": nowdate(),
             "schedule_date": nowdate(),
             "currency": self.currency or "IDR",
+            "ignore_pricing_rule": 1,
             "buying_price_list": "Standard Buying",
             "remarks": (
                 f"Uang Jalan DO Towing: {self.name} | "
@@ -390,11 +391,14 @@ class DeliveryOrderTowing(Document):
                     ),
                     "qty": 1,
                     "rate": 0,
+                    "price_list_rate": 0,
                     "uom": "Nos",
                     "schedule_date": nowdate(),
                 }
             ],
         }
+        if frappe.db.has_column("Purchase Order", "custom_delivery_order"):
+            po_data["custom_delivery_order"] = self.name
         if frappe.db.has_column("Purchase Order", "custom_nomor_rangka"):
             po_data["custom_nomor_rangka"] = self.nomor_rangka or "-"
 
@@ -714,4 +718,40 @@ def on_submit(doc, method=None):
 
 
 def update_do_from_po(doc, method=None):
-    _legacy_hook_noop("update_do_from_po", doc)
+    """Sync nominal/status uang jalan DO dari Purchase Order terkait."""
+    do_name = None
+
+    if frappe.db.has_column("Purchase Order", "custom_delivery_order"):
+        do_name = getattr(doc, "custom_delivery_order", None)
+
+    if not do_name and frappe.db.has_column("Delivery Order Towing", "purchase_order_uang_jalan"):
+        do_name = frappe.db.get_value(
+            "Delivery Order Towing",
+            {"purchase_order_uang_jalan": doc.name},
+            "name",
+        )
+
+    if not do_name:
+        return
+
+    # Nominal mengikuti nilai yang diisi user di PO (rate x qty per row).
+    total = sum(
+        float(getattr(item, "rate", 0) or 0) * float(getattr(item, "qty", 0) or 0)
+        for item in (doc.get("items") or [])
+    )
+
+    if doc.docstatus == 1:
+        status = "Dibayar"
+    elif doc.docstatus == 2:
+        status = "Belum Diajukan"
+    else:
+        status = "Diajukan"
+
+    frappe.db.set_value(
+        "Delivery Order Towing",
+        do_name,
+        {
+            "uang_jalan_amount": total,
+            "uang_jalan_status": status,
+        },
+    )

@@ -422,7 +422,9 @@ doc_events = {
         "on_submit": "imogi_finance.overrides.delivery_order_towing.on_submit",
     },
     "Purchase Order": {
+        "on_update": "imogi_finance.overrides.delivery_order_towing.update_do_from_po",
         "on_submit": "imogi_finance.overrides.delivery_order_towing.update_do_from_po",
+        "on_cancel": "imogi_finance.overrides.delivery_order_towing.update_do_from_po",
     },
 }
 
