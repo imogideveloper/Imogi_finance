@@ -194,10 +194,8 @@ class DeliveryOrderTowing(Document):
             frappe.throw(_("Driver wajib diisi sebelum status Assigned."))
 
     def validate_harga_jasa(self):
-        # harga_jasa disembunyikan dari form (hidden), validasi dilonggarkan
-        # nilai tetap tersimpan dan digunakan untuk kalkulasi invoice
-        if self.harga_jasa is not None and self.harga_jasa < 0:
-            frappe.throw(_("Harga Jasa Towing tidak boleh negatif."))
+        if self.harga_jasa is not None and self.harga_jasa <= 0:
+            frappe.throw(_("Harga Jasa Towing harus lebih dari 0."))
 
     def set_customer_name(self):
         if self.customer and not self.customer_name:
