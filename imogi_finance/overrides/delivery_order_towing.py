@@ -300,6 +300,113 @@ class DeliveryOrderTowing(Document):
         return invoice_name
 
     # ──────────────────────────────────────────────────────────
+    # INTEGRASI: AUTO-CREATE PURCHASE ORDER UANG JALAN
+    # ──────────────────────────────────────────────────────────
+    def create_po_uang_jalan(self):
+        """
+        Auto-create Purchase Order uang jalan saat DO di-submit.
+        Supplier diambil dari Driver.custom_supplier (logic lama).
+        """
+        if not self.driver:
+            frappe.throw(
+                _("Driver wajib diisi sebelum DO bisa di-submit."),
+                title="Driver Belum Diisi",
+            )
+
+        supplier = frappe.db.get_value("Driver", self.driver, "custom_supplier")
+        if not supplier:
+            frappe.throw(
+                _(
+                    "Driver {0} belum punya Supplier (Uang Jalan). "
+                    "Buka master Driver dan isi field Supplier terlebih dahulu."
+                ).format(self.driver_nama or self.driver),
+                title="Driver Belum Punya Supplier",
+            )
+
+        company = (
+            frappe.defaults.get_user_default("Company")
+            or frappe.db.get_single_value("Global Defaults", "default_company")
+        )
+
+        # Ambil item towing dari SO jika ada; fallback ke item default towing.
+        item_code = "JASA-TOWING-001"
+        if self.sales_order:
+            so_item = frappe.db.get_value(
+                "Sales Order Item",
+                {"parent": self.sales_order},
+                "item_code",
+            )
+            if so_item:
+                item_code = so_item
+
+        # Guard duplikasi: cek PO aktif dengan supplier + nomor rangka yang sama.
+        po_filters = {"supplier": supplier, "docstatus": ["!=", 2]}
+        if frappe.db.has_column("Purchase Order", "custom_nomor_rangka"):
+            po_filters["custom_nomor_rangka"] = self.nomor_rangka or "-"
+        existing_po = frappe.db.get_value("Purchase Order", po_filters, "name")
+        if existing_po:
+            return existing_po
+
+        po_data = {
+            "naming_series": "PUR-ORD-.YYYY.-",
+            "supplier": supplier,
+            "company": company,
+            "transaction_date": nowdate(),
+            "schedule_date": nowdate(),
+            "currency": self.currency or "IDR",
+            "buying_price_list": "Standard Buying",
+            "remarks": (
+                f"Uang Jalan DO Towing: {self.name} | "
+                f"Nopol: {self.nomor_polisi or '-'} | "
+                f"No. Rangka: {self.nomor_rangka or '-'}"
+            ),
+            "items": [
+                {
+                    "item_code": item_code,
+                    "item_name": f"Uang Jalan - {self.nomor_polisi or '-'}",
+                    "description": (
+                        f"Uang jalan towing {self.nomor_polisi or '-'} | "
+                        f"No. Rangka: {self.nomor_rangka or '-'} | "
+                        f"Rute: {self.lokasi_pickup or '-'} -> {self.lokasi_tujuan or '-'}"
+                    ),
+                    "qty": 1,
+                    "rate": 0,
+                    "uom": "Nos",
+                    "schedule_date": nowdate(),
+                }
+            ],
+        }
+        if frappe.db.has_column("Purchase Order", "custom_nomor_rangka"):
+            po_data["custom_nomor_rangka"] = self.nomor_rangka or "-"
+
+        result = imogi_create("Purchase Order", po_data)
+        po_name = result.get("name")
+        if not po_name:
+            frappe.log_error(
+                f"PO response tidak ada name: {json.dumps(result, default=str, indent=2)}",
+                "DO Towing: PO uang jalan gagal",
+            )
+            frappe.throw(_("Purchase Order gagal dibuat. Cek Error Log."))
+
+        if frappe.db.has_column("Delivery Order Towing", "purchase_order_uang_jalan"):
+            frappe.db.set_value(
+                "Delivery Order Towing",
+                self.name,
+                "purchase_order_uang_jalan",
+                po_name,
+                update_modified=False,
+            )
+        frappe.db.set_value(
+            "Delivery Order Towing",
+            self.name,
+            "uang_jalan_status",
+            "Diajukan",
+            update_modified=False,
+        )
+        frappe.db.commit()
+        return po_name
+
+    # ──────────────────────────────────────────────────────────
     # INTEGRASI 2: BUAT EXPENSE CLAIM UANG JALAN
     # ──────────────────────────────────────────────────────────
 
@@ -583,7 +690,8 @@ def update_do_payment_status(doc, method=None):
 
 
 def on_submit(doc, method=None):
-    _legacy_hook_noop("on_submit", doc)
+    instance = DeliveryOrderTowing(doc.doctype, doc.name)
+    instance.create_po_uang_jalan()
 
 
 def update_do_from_po(doc, method=None):
