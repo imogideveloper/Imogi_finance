@@ -165,6 +165,32 @@ def on_change_expense_request(doc, method=None):
         pass
 
 
+
+def _generate_towing_remarks(doc) -> None:
+    """Auto-generate remarks untuk Payment Entry towing."""
+    do_name = doc.get("delivery_order_towing")
+    if not do_name:
+        return
+
+    try:
+        do = frappe.get_doc("Delivery Order Towing", do_name)
+        rute = f"{do.kota_pickup or '-'} -> {do.kota_tujuan or '-'}"
+        kendaraan = do.kendaraan_towing or '-'
+        driver = do.driver_nama or '-'
+        doc.remarks = (
+            f"Uang jalan driver towing {do_name} | "
+            f"Rute: {rute} | "
+            f"Kendaraan: {kendaraan} | "
+            f"Driver: {driver}."
+        )
+    except Exception as e:
+        frappe.log_error(str(e), "Generate Towing Remarks Error")
+
+
+def generate_towing_remarks(doc, method=None) -> None:
+    """Hook: Auto-generate remarks untuk Payment Entry towing."""
+    _generate_towing_remarks(doc)
+
 def after_insert(doc, method=None):
     """Reserved hook. References are usually not available yet here."""
     pass
@@ -215,15 +241,26 @@ def clean_payment_ledger(doc, method=None):
 
 def on_submit(doc, method=None):
     """Handle Payment Entry submit."""
+    # Update DO Towing dulu — selalu dipanggil apapun tipe payment-nya
+    _update_do_towing_payment_status(doc)
+    
+    # Lanjut logic expense request seperti biasa
     expense_request = _resolve_expense_request(doc)
     if not expense_request:
         return
-
     _handle_expense_request_submit(doc, expense_request)
-
     if getattr(doc, "awaiting_bank_reconciliation", 0):
         _revert_pi_status_for_bank_payment(doc)
 
+
+def _update_do_towing_payment_status(doc):
+    """Update status uang jalan di DO Towing saat payment dibuat."""
+    try:
+        from imogi_finance.overrides.delivery_order_towing import update_do_payment_status
+        update_do_payment_status(doc)
+    except Exception as e:
+        import frappe
+        frappe.log_error(str(e), "DO Towing Payment Status Update Error")
 
 def _handle_expense_request_submit(doc, expense_request):
     """Handle Expense Request logic on Payment Entry submit."""
