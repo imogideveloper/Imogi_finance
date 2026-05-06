@@ -13,6 +13,7 @@ app_include_css = "/assets/imogi_finance/css/custom.css"
 
 # include js in doctype views
 doctype_js = {
+    "Sales Order": "public/js/sales_order.js",
     "Tax Invoice OCR Upload": "public/js/tax_invoice_ocr_upload_form.js",
     "VAT OUT Batch": "public/js/vat_out_batch_form.js",
     "Bank Transaction": "public/js/bank_transaction.js",
@@ -80,6 +81,7 @@ fixtures = [
     {"doctype": "DocType", "filters": [["name", "in", [
         "Delivery Order Towing",
         "DO Towing Kondisi Item",
+        # "SO Towing Kendaraan",  # temporary disabled to avoid deploy conflict
         # Workshop Imogi - tambahan baru
         "Service Booking",
         "Vehicle Reception",
