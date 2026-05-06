@@ -1,21 +1,6 @@
 # ============================================================
 # delivery_order_towing.py
 # Lokasi: imogi_finance/imogi_finance/overrides/delivery_order_towing.py
-#
-# AUTO-DETECT environment:
-#   - Sama site/bench → langsung frappe.get_doc() / frappe.new_doc()
-#   - Beda server     → Frappe REST API + API key
-#
-# CARA KERJA:
-#   Kalau "finance_imogi_url" TIDAK ada di site_config → pakai local (direct)
-#   Kalau "finance_imogi_url" ADA di site_config       → pakai REST API
-#
-# Untuk LOCAL: tidak perlu config apapun, langsung jalan.
-#
-# Untuk PRODUCTION (deploy ke server lain):
-#   bench --site [site] set-config finance_imogi_url        "https://imogi-dev.j.frappe.cloud"
-#   bench --site [site] set-config finance_imogi_api_key    "xxx"
-#   bench --site [site] set-config finance_imogi_api_secret "yyy"
 # ============================================================
 
 import frappe
@@ -26,122 +11,112 @@ from frappe import _
 
 
 # ──────────────────────────────────────────────────────────────
-# DETEKSI MODE: LOCAL atau REMOTE
+# KONFIGURASI — DYNAMIC PER SITE
 # ──────────────────────────────────────────────────────────────
 
 def _is_remote() -> bool:
-    """
-    Return True  → Finance Imogi ada di server lain, pakai REST API.
-    Return False → Finance Imogi sama site/bench, pakai direct frappe call.
-
-    Cukup cek apakah finance_imogi_url sudah di-set di site_config.
-    Kalau belum di-set = local mode.
-    """
     return bool(frappe.conf.get("finance_imogi_url"))
 
 
-# ──────────────────────────────────────────────────────────────
-# MODE LOCAL — direct frappe call (sama site/bench)
-# ──────────────────────────────────────────────────────────────
-
-# Di delivery_order_towing.py — ganti _local_create dengan ini
-
-def _local_create(doctype: str, data: dict) -> dict:
-    doc = frappe.new_doc(doctype)
-    doc.update(data)
-    doc.flags.ignore_permissions = True
-    doc.flags.ignore_mandatory   = True
-    doc.insert(ignore_permissions=True)
-    
-    # Langsung submit setelah insert
-    if doctype == "Sales Invoice":
-        frappe.db.commit()  # commit insert dulu
-        fresh = frappe.get_doc(doctype, doc.name)
-        fresh.flags.ignore_permissions = True
-        fresh.submit()
-    
-    frappe.db.commit()
-    return {"name": doc.name}
-
-
-def _local_get(doctype: str, name: str) -> dict:
-    """Ambil dokumen langsung via frappe.get_doc()."""
-    doc = frappe.get_doc(doctype, name)
-    return doc.as_dict()
-
-
-def _local_update(doctype: str, name: str, data: dict) -> dict:
-    """Update dokumen langsung via frappe.db.set_value()."""
-    frappe.db.set_value(doctype, name, data)
-    frappe.db.commit()
-    return {"name": name}
-
-
-# ──────────────────────────────────────────────────────────────
-# MODE REMOTE — Frappe REST API (beda server/production)
-# ──────────────────────────────────────────────────────────────
-
-def _get_remote_base_url() -> str:
+def _get_imogi_base_url() -> str:
     url = frappe.conf.get("finance_imogi_url", "").rstrip("/")
     if not url:
         frappe.throw(_("finance_imogi_url belum dikonfigurasi di site_config."))
     return url
 
 
-def _get_remote_headers() -> dict:
+def _get_imogi_headers() -> dict:
     key    = frappe.conf.get("finance_imogi_api_key", "")
     secret = frappe.conf.get("finance_imogi_api_secret", "")
     if not key or not secret:
-        frappe.throw(
-            _("finance_imogi_api_key / finance_imogi_api_secret belum dikonfigurasi.<br>"
-              "<code>bench --site [site] set-config finance_imogi_api_key \"xxx\"</code>"),
-            title="API Key Tidak Ditemukan"
-        )
+        frappe.throw(_("finance_imogi_api_key / api_secret belum dikonfigurasi."))
     return {
         "Content-Type" : "application/json",
         "Authorization": f"token {key}:{secret}",
     }
 
 
+# ──────────────────────────────────────────────────────────────
+# LOCAL MODE
+# ──────────────────────────────────────────────────────────────
+
+def _local_create(doctype: str, data: dict) -> dict:
+    import frappe.model.document as _doc_module
+    _original = _doc_module.Document.round_floats_in
+
+    def _patched(self, doc, fieldnames=None, do_not_round_fields=None):
+        return _original(self, doc, fieldnames)
+
+    _doc_module.Document.round_floats_in = _patched
+
+    try:
+        doc = frappe.new_doc(doctype)
+        doc.update(data)
+        doc.flags.ignore_permissions = True
+        doc.flags.ignore_mandatory   = True
+        doc.insert(ignore_permissions=True)
+
+        if doctype == "Sales Invoice":
+            frappe.db.commit()
+            fresh = frappe.get_doc(doctype, doc.name)
+            fresh.flags.ignore_permissions = True
+            fresh.submit()
+
+        frappe.db.commit()
+        return {"name": doc.name}
+    finally:
+        _doc_module.Document.round_floats_in = _original
+
+
+def _local_get(doctype: str, name: str) -> dict:
+    return frappe.get_doc(doctype, name).as_dict()
+
+
+def _local_update(doctype: str, name: str, data: dict) -> dict:
+    frappe.db.set_value(doctype, name, data)
+    frappe.db.commit()
+    return {"name": name}
+
+
+# ──────────────────────────────────────────────────────────────
+# REMOTE MODE
+# ──────────────────────────────────────────────────────────────
+
 def _remote_create(doctype: str, data: dict) -> dict:
     import requests
-    url  = f"{_get_remote_base_url()}/api/resource/{doctype}"
-    resp = requests.post(url, headers=_get_remote_headers(), json=data, timeout=30)
+    url  = f"{_get_imogi_base_url()}/api/resource/{doctype}"
+    resp = requests.post(url, headers=_get_imogi_headers(), json=data, timeout=30)
     _raise_for_status(resp, f"CREATE {doctype}")
     return resp.json().get("data", {})
 
 
 def _remote_get(doctype: str, name: str) -> dict:
     import requests
-    url  = f"{_get_remote_base_url()}/api/resource/{doctype}/{name}"
-    resp = requests.get(url, headers=_get_remote_headers(), timeout=15)
+    url  = f"{_get_imogi_base_url()}/api/resource/{doctype}/{name}"
+    resp = requests.get(url, headers=_get_imogi_headers(), timeout=15)
     _raise_for_status(resp, f"GET {doctype}/{name}")
     return resp.json().get("data", {})
 
 
 def _remote_update(doctype: str, name: str, data: dict) -> dict:
     import requests
-    url  = f"{_get_remote_base_url()}/api/resource/{doctype}/{name}"
-    resp = requests.put(url, headers=_get_remote_headers(), json=data, timeout=15)
+    url  = f"{_get_imogi_base_url()}/api/resource/{doctype}/{name}"
+    resp = requests.put(url, headers=_get_imogi_headers(), json=data, timeout=15)
     _raise_for_status(resp, f"UPDATE {doctype}/{name}")
     return resp.json().get("data", {})
 
 
 def _raise_for_status(resp, context: str):
-    """Error handler untuk REST API response."""
     if resp.status_code == 200:
         return
     try:
         msg = resp.json().get("exception") or resp.json().get("message") or resp.text
     except Exception:
         msg = resp.text
-
     frappe.log_error(
-        f"Finance Imogi REST error [{context}]\n"
-        f"Status: {resp.status_code}\nResponse: {resp.text[:1000]}",
+        f"Finance Imogi REST error [{context}]\nStatus: {resp.status_code}\n{resp.text[:1000]}",
         "DO Towing → Finance Imogi Error"
     )
-
     if resp.status_code == 401:
         frappe.throw(_("Finance Imogi: API Key/Secret salah."))
     elif resp.status_code == 403:
@@ -153,28 +128,17 @@ def _raise_for_status(resp, context: str):
 
 
 # ──────────────────────────────────────────────────────────────
-# PUBLIC INTERFACE — otomatis pilih local atau remote
+# PUBLIC INTERFACE — auto local/remote
 # ──────────────────────────────────────────────────────────────
 
 def imogi_create(doctype: str, data: dict) -> dict:
-    """Buat dokumen di Finance Imogi — auto local/remote."""
-    if _is_remote():
-        return _remote_create(doctype, data)
-    return _local_create(doctype, data)
-
+    return _remote_create(doctype, data) if _is_remote() else _local_create(doctype, data)
 
 def imogi_get(doctype: str, name: str) -> dict:
-    """Ambil dokumen dari Finance Imogi — auto local/remote."""
-    if _is_remote():
-        return _remote_get(doctype, name)
-    return _local_get(doctype, name)
-
+    return _remote_get(doctype, name) if _is_remote() else _local_get(doctype, name)
 
 def imogi_update(doctype: str, name: str, data: dict) -> dict:
-    """Update dokumen di Finance Imogi — auto local/remote."""
-    if _is_remote():
-        return _remote_update(doctype, name, data)
-    return _local_update(doctype, name, data)
+    return _remote_update(doctype, name, data) if _is_remote() else _local_update(doctype, name, data)
 
 
 # ──────────────────────────────────────────────────────────────
@@ -203,32 +167,6 @@ class DeliveryOrderTowing(Document):
                 "Customer", self.customer, "customer_name"
             )
 
-    def _get_sales_order_item_code(self) -> str:
-        """Resolve towing item from linked Sales Order (required for PO/SI consistency)."""
-        if not self.sales_order:
-            frappe.throw(
-                _(
-                    "Sales Order belum terisi pada Delivery Order Towing. "
-                    "Item harus mengikuti item yang di-order."
-                ),
-                title="Sales Order Wajib Diisi",
-            )
-
-        so_item = frappe.db.get_value(
-            "Sales Order Item",
-            {"parent": self.sales_order},
-            "item_code",
-        )
-        if not so_item:
-            frappe.throw(
-                _(
-                    "Item Sales Order untuk {0} tidak ditemukan. "
-                    "Pastikan Sales Order memiliki item sebelum melanjutkan."
-                ).format(self.sales_order),
-                title="Item Sales Order Tidak Ditemukan",
-            )
-        return so_item
-
     # ── AFTER SAVE ───────────────────────────────────────────
     def after_save(self):
         self._record_status_timestamps()
@@ -247,20 +185,121 @@ class DeliveryOrderTowing(Document):
 
     # ── ON UPDATE AFTER SUBMIT ───────────────────────────────
     def on_update_after_submit(self):
-        """Auto-buat invoice ke Finance Imogi saat status pertama kali Done."""
-        if self.status == "Done" and not self.sales_invoice:
-            self.create_sales_invoice_via_imogi()
+        pass
+        # if self.status == "Done" and not self.sales_invoice:
+        #     self.create_sales_invoice_via_imogi()
 
     # ──────────────────────────────────────────────────────────
-    # INTEGRASI 1: BUAT SALES INVOICE
+    # INTEGRASI 1: AUTO-CREATE PURCHASE ORDER UANG JALAN
+    # Dipanggil saat DO di-submit (status: Draft → Submitted)
+    # ──────────────────────────────────────────────────────────
+
+    def create_po_uang_jalan(self):
+        """
+        Auto-create Purchase Order uang jalan saat DO di-submit.
+        Supplier = Driver, Item = item towing, Rate = 0 (diisi manual).
+        Referensi = Nomor Rangka kendaraan.
+        """
+        if self.get("purchase_order_uang_jalan"):
+            return
+
+        if not self.driver:
+            frappe.throw(
+                _("Driver wajib diisi sebelum DO bisa di-submit."),
+                title="Driver Belum Diisi"
+            )
+
+        # Ambil supplier dari driver
+        supplier = frappe.db.get_value("Driver", self.driver, "custom_supplier")
+        # ✅ STOPPER — DO tidak bisa submit kalau driver belum punya supplier
+        if not supplier:
+            frappe.throw(
+                _("Driver {0} belum punya Supplier (Uang Jalan). "
+                "Buka master Driver → isi field <b>Supplier (Uang Jalan)</b> terlebih dahulu.").format(
+                    self.driver_nama or self.driver
+                ),
+                title="Driver Belum Punya Supplier"
+            )
+
+        company = (
+            frappe.defaults.get_user_default("Company")
+            or frappe.db.get_single_value("Global Defaults", "default_company")
+        )
+
+        # Ambil item dari sales_order, fallback ke JASA-TOWING-001
+        item_code = "JASA-TOWING-001"
+        if self.sales_order:
+            so_items = frappe.get_all(
+                "Sales Order Item",
+                filters={"parent": self.sales_order},
+                fields=["item_code"],
+                limit=1
+            )
+            if so_items:
+                item_code = so_items[0].item_code
+
+        po_data = {
+            "naming_series"    : "PUR-ORD-.YYYY.-",
+            "supplier"         : supplier,
+            "company"          : company,
+            "transaction_date" : nowdate(),
+            "schedule_date"    : nowdate(),
+            "custom_delivery_order": self.name,           # ← tambahkan
+            "custom_nomor_rangka"  : self.nomor_rangka or "-",  # ← tambahka
+            "currency"         : self.currency or "IDR",
+            "buying_price_list": "Standard Buying",
+            "remarks": (
+                f"Uang Jalan DO Towing: {self.name} | "
+                f"Nopol: {self.nomor_polisi} | "
+                f"No. Rangka: {self.nomor_rangka or '-'}"
+            ),
+            "items": [
+                {
+                    "item_code"    : item_code,
+                    "item_name"    : f"Uang Jalan - {self.nomor_polisi}",
+                    "description"  : (
+                        f"Uang jalan towing {self.nomor_polisi} | "
+                        f"No. Rangka: {self.nomor_rangka or '-'} | "
+                        f"Rute: {self.lokasi_pickup or '-'} → {self.lokasi_tujuan or '-'}"
+                    ),
+                    "qty"          : 1,
+                    "rate"         : 0,
+                    "uom"          : "Nos",
+                    "schedule_date": nowdate(),
+                }
+            ],
+        }
+
+        result  = imogi_create("Purchase Order", po_data)
+        po_name = result.get("name")
+
+        if not po_name:
+            frappe.log_error(
+                f"PO response tidak ada 'name': {result}",
+                "DO Towing: PO uang jalan gagal"
+            )
+            frappe.throw(_("Purchase Order gagal dibuat. Cek Error Log."))
+
+        frappe.db.set_value(
+            "Delivery Order Towing", self.name,
+            "purchase_order_uang_jalan", po_name
+        )
+        frappe.db.commit()
+
+        frappe.msgprint(
+            _("✅ Purchase Order {0} berhasil dibuat untuk uang jalan.").format(
+                frappe.bold(po_name)
+            ),
+            title="Purchase Order Dibuat",
+            indicator="green"
+        )
+        return po_name
+
+    # ──────────────────────────────────────────────────────────
+    # INTEGRASI 2: BUAT SALES INVOICE
     # ──────────────────────────────────────────────────────────
 
     def create_sales_invoice_via_imogi(self):
-        """
-        Buat Sales Invoice di Finance Imogi.
-        Local  → frappe.new_doc() langsung
-        Remote → POST /api/resource/Sales Invoice
-        """
         if self.sales_invoice:
             return self.sales_invoice
 
@@ -272,8 +311,6 @@ class DeliveryOrderTowing(Document):
             or frappe.db.get_single_value("Global Defaults", "default_company")
         )
 
-        item_code = self._get_sales_order_item_code()
-
         invoice_data = {
             "naming_series"    : "ACC-SINV-.YYYY.-",
             "customer"         : self.customer,
@@ -283,7 +320,7 @@ class DeliveryOrderTowing(Document):
             "currency"         : self.currency or "IDR",
             "conversion_rate"  : 1,
             "selling_price_list": "Standard Selling",
-            "po_no"  : self.name,   # referensi DO Towing
+            "po_no"  : self.name,
             "remarks": (
                 f"DO Towing: {self.name} | "
                 f"Nopol: {self.nomor_polisi} | "
@@ -291,7 +328,7 @@ class DeliveryOrderTowing(Document):
             ),
             "items": [
                 {
-                    "item_code"  : item_code,
+                    "item_code"  : "JASA-TOWING-001",
                     "item_name"  : f"Jasa Towing - {self.nomor_polisi}",
                     "description": (
                         f"Jasa towing {self.merk_kendaraan or ''} "
@@ -319,130 +356,17 @@ class DeliveryOrderTowing(Document):
         frappe.db.commit()
 
         frappe.msgprint(
-            _("✅ Sales Invoice {0} berhasil dibuat di Finance Imogi.").format(
-                frappe.bold(invoice_name)
-            ),
+            _("✅ Sales Invoice {0} berhasil dibuat.").format(frappe.bold(invoice_name)),
             title="Invoice Dibuat",
             indicator="green",
         )
         return invoice_name
 
     # ──────────────────────────────────────────────────────────
-    # INTEGRASI: AUTO-CREATE PURCHASE ORDER UANG JALAN
-    # ──────────────────────────────────────────────────────────
-    def create_po_uang_jalan(self):
-        """
-        Auto-create Purchase Order uang jalan saat DO di-submit.
-        Supplier diambil dari Driver.custom_supplier (logic lama).
-        """
-        if not self.driver:
-            frappe.throw(
-                _("Driver wajib diisi sebelum DO bisa di-submit."),
-                title="Driver Belum Diisi",
-            )
-
-        supplier = frappe.db.get_value("Driver", self.driver, "custom_supplier")
-        if not supplier:
-            frappe.throw(
-                _(
-                    "Driver {0} belum punya Supplier (Uang Jalan). "
-                    "Buka master Driver dan isi field Supplier terlebih dahulu."
-                ).format(self.driver_nama or self.driver),
-                title="Driver Belum Punya Supplier",
-            )
-
-        company = (
-            frappe.defaults.get_user_default("Company")
-            or frappe.db.get_single_value("Global Defaults", "default_company")
-        )
-
-        item_code = self._get_sales_order_item_code()
-
-        # Guard duplikasi: cek PO aktif dengan supplier + nomor rangka yang sama.
-        po_filters = {"supplier": supplier, "docstatus": ["!=", 2]}
-        if frappe.db.has_column("Purchase Order", "custom_nomor_rangka"):
-            po_filters["custom_nomor_rangka"] = self.nomor_rangka or "-"
-        existing_po = frappe.db.get_value("Purchase Order", po_filters, "name")
-        if existing_po:
-            return existing_po
-
-        po_data = {
-            "naming_series": "PUR-ORD-.YYYY.-",
-            "supplier": supplier,
-            "company": company,
-            "transaction_date": nowdate(),
-            "schedule_date": nowdate(),
-            "currency": self.currency or "IDR",
-            "ignore_pricing_rule": 1,
-            "buying_price_list": "Standard Buying",
-            "remarks": (
-                f"Uang Jalan DO Towing: {self.name} | "
-                f"Nopol: {self.nomor_polisi or '-'} | "
-                f"No. Rangka: {self.nomor_rangka or '-'}"
-            ),
-            "items": [
-                {
-                    "item_code": item_code,
-                    "item_name": f"Uang Jalan - {self.nomor_polisi or '-'}",
-                    "description": (
-                        f"Uang jalan towing {self.nomor_polisi or '-'} | "
-                        f"No. Rangka: {self.nomor_rangka or '-'} | "
-                        f"Rute: {self.lokasi_pickup or '-'} -> {self.lokasi_tujuan or '-'}"
-                    ),
-                    "qty": 1,
-                    "rate": 0,
-                    "price_list_rate": 0,
-                    "uom": "Nos",
-                    "schedule_date": nowdate(),
-                }
-            ],
-        }
-        if frappe.db.has_column("Purchase Order", "custom_delivery_order"):
-            po_data["custom_delivery_order"] = self.name
-        if frappe.db.has_column("Purchase Order", "custom_nomor_rangka"):
-            po_data["custom_nomor_rangka"] = self.nomor_rangka or "-"
-
-        result = imogi_create("Purchase Order", po_data)
-        po_name = result.get("name")
-        if not po_name:
-            frappe.log_error(
-                f"PO response tidak ada name: {json.dumps(result, default=str, indent=2)}",
-                "DO Towing: PO uang jalan gagal",
-            )
-            frappe.throw(_("Purchase Order gagal dibuat. Cek Error Log."))
-
-        if frappe.db.has_column("Delivery Order Towing", "purchase_order_uang_jalan"):
-            frappe.db.set_value(
-                "Delivery Order Towing",
-                self.name,
-                "purchase_order_uang_jalan",
-                po_name,
-                update_modified=False,
-            )
-        frappe.db.set_value(
-            "Delivery Order Towing",
-            self.name,
-            "uang_jalan_status",
-            "Diajukan",
-            update_modified=False,
-        )
-        frappe.db.commit()
-        return po_name
-
-    # ──────────────────────────────────────────────────────────
-    # INTEGRASI 2: BUAT EXPENSE CLAIM UANG JALAN
+    # INTEGRASI 3: BUAT EXPENSE CLAIM
     # ──────────────────────────────────────────────────────────
 
     def create_expense_claim_via_imogi(self, employee: str, amount: float):
-        """
-        Buat Expense Claim di Finance Imogi.
-        Local  → frappe.new_doc() langsung
-        Remote → POST /api/resource/Expense Claim
-
-        Args:
-            employee : ID employee, contoh "HR-EMP-00001"
-            amount   : nominal uang jalan (IDR)
-        """
         if self.expense_claim:
             frappe.throw(_("Expense Claim sudah ada: {0}").format(self.expense_claim))
 
@@ -473,7 +397,7 @@ class DeliveryOrderTowing(Document):
 
         if not ec_name:
             frappe.log_error(
-                f"Expense Claim response:\n{json.dumps(result, default=str, indent=2)}",
+                f"EC response:\n{json.dumps(result, default=str, indent=2)}",
                 "DO Towing: EC name tidak ditemukan"
             )
             frappe.throw(_("Expense Claim gagal dibuat. Cek Error Log."))
@@ -488,20 +412,17 @@ class DeliveryOrderTowing(Document):
         frappe.db.commit()
 
         frappe.msgprint(
-            _("✅ Expense Claim {0} berhasil dibuat di Finance Imogi.").format(
-                frappe.bold(ec_name)
-            ),
+            _("✅ Expense Claim {0} berhasil dibuat.").format(frappe.bold(ec_name)),
             title="Uang Jalan Dibuat",
             indicator="green",
         )
         return ec_name
 
     # ──────────────────────────────────────────────────────────
-    # INTEGRASI 3: SYNC REMARKS KE INVOICE (opsional)
+    # INTEGRASI 4: SYNC REMARKS
     # ──────────────────────────────────────────────────────────
 
     def sync_remarks_to_imogi(self):
-        """Update remarks di Sales Invoice saat status DO berubah. Non-blocking."""
         if not self.sales_invoice:
             return
         try:
@@ -513,18 +434,210 @@ class DeliveryOrderTowing(Document):
             })
         except Exception:
             frappe.log_error(
-                f"Gagal sync remarks DO {self.name} → invoice {self.sales_invoice}",
+                f"Gagal sync remarks DO {self.name} → {self.sales_invoice}",
                 "DO Towing Sync Warning"
             )
 
 
 # ──────────────────────────────────────────────────────────────
-# WHITELISTED ENDPOINTS — dipanggil dari client-side JS
+# HOOK FUNCTIONS — dipanggil dari hooks.py doc_events
+# ──────────────────────────────────────────────────────────────
+
+def after_save(doc, method=None):
+    instance = DeliveryOrderTowing(doc.doctype, doc.name)
+    instance.after_save()
+
+def on_update_after_submit(doc, method=None):
+    instance = DeliveryOrderTowing(doc.doctype, doc.name)
+    instance.on_update_after_submit()
+
+def on_submit(doc, method=None):
+    """Hook: dipanggil saat DO di-submit (Draft → Submitted)."""
+    instance = DeliveryOrderTowing(doc.doctype, doc.name)
+    instance.create_po_uang_jalan()
+
+
+# ──────────────────────────────────────────────────────────────
+# AUTO-GENERATE DO DARI SALES ORDER
+# ──────────────────────────────────────────────────────────────
+
+def create_do_from_sales_order(doc, method=None):
+    """
+    Dipanggil dari hooks.py saat Sales Order di-submit.
+    Kendaraan diambil dari custom_towing_kendaraan di SO.
+    Field so_item_code menentukan rute/harga dari item SO mana.
+    """
+    kendaraan_list = doc.get("custom_towing_kendaraan", [])
+    if not kendaraan_list:
+        frappe.msgprint(
+            "⚠️ Tidak ada kendaraan di tabel Detail Kendaraan Towing. DO tidak dibuat.",
+            indicator="orange"
+        )
+        return
+
+    created_dos = []
+    errors      = []
+
+    for kendaraan in kendaraan_list:
+        if kendaraan.get("delivery_order"):
+            continue
+
+        try:
+            item_code     = kendaraan.get("so_item_code")
+            harga_jasa    = 0
+            lokasi_pickup = "-"
+            lokasi_tujuan = "-"
+
+            if item_code:
+                for so_item in doc.items:
+                    if so_item.item_code == item_code:
+                        harga_jasa = so_item.rate or 0
+                        break
+                item_doc      = frappe.get_cached_doc("Item", item_code)
+                lokasi_pickup = getattr(item_doc, "custom_lokasi_pickup", "") or "-"
+                lokasi_tujuan = getattr(item_doc, "custom_lokasi_tujuan", "") or "-"
+
+            do = frappe.new_doc("Delivery Order Towing")
+            do.sales_order     = doc.name
+            do.customer        = doc.customer
+            do.customer_name   = doc.customer_name
+            do.tanggal_do      = doc.transaction_date
+            do.status          = "Draft"
+            do.currency        = doc.currency or "IDR"
+            do.harga_jasa      = harga_jasa
+            do.lokasi_pickup   = lokasi_pickup
+            do.lokasi_tujuan   = lokasi_tujuan
+            do.nomor_polisi    = kendaraan.get("nomor_polisi") or "-"
+            do.nomor_rangka    = kendaraan.get("nomor_rangka") or "-"
+            do.tahun_kendaraan = kendaraan.get("tahun_kendaraan") or 0
+            do.tipe_kendaraan  = kendaraan.get("tipe_model") or "-"
+            do.nomor_mesin     = kendaraan.get("nomor_mesin") or "-"
+            do.merk_kendaraan  = "-"
+
+            do.insert(ignore_permissions=True)
+
+            frappe.db.set_value(
+                "SO Towing Kendaraan",
+                kendaraan.get("name"),
+                "delivery_order",
+                do.name
+            )
+
+            created_dos.append(do.name)
+
+        except Exception as e:
+            errors.append(f"Nopol {kendaraan.get('nomor_polisi', '?')}: {str(e)}")
+            frappe.log_error(
+                f"Gagal buat DO {kendaraan.get('nomor_polisi')} dari SO {doc.name}: {e}",
+                "DO Towing Auto-Create Error"
+            )
+
+    frappe.db.commit()
+
+    if created_dos:
+        frappe.msgprint(
+            _("✅ {0} Delivery Order Towing berhasil dibuat:<br>{1}").format(
+                len(created_dos),
+                "<br>".join(f"• {do}" for do in created_dos)
+            ),
+            title="DO Towing Dibuat",
+            indicator="green"
+        )
+
+    if errors:
+        frappe.msgprint(
+            _("⚠️ {0} DO gagal:<br>{1}").format(
+                len(errors), "<br>".join(errors)
+            ),
+            title="Sebagian DO Gagal",
+            indicator="orange"
+        )
+
+def update_do_from_po(doc, method=None):
+    """Update nominal uang jalan di DO saat PO di-submit."""
+    do_name = doc.get("custom_delivery_order")
+    if not do_name:
+        return
+    
+    # Ambil total amount dari PO
+    total = sum(item.amount for item in doc.items)
+    
+    frappe.db.set_value("Delivery Order Towing", do_name, {
+        "uang_jalan_amount": total,
+        "uang_jalan_status": "Diajukan",
+    })
+    frappe.db.commit()
+
+def validate_invoice_do_completion(doc, method=None):
+    """
+    Block Sales Invoice jika dibuat dari SO yang punya DO belum Done.
+    """
+    # Ambil SO dari invoice items
+    so_list = list(set(
+        item.sales_order 
+        for item in doc.items 
+        if item.get("sales_order")
+    ))
+
+    if not so_list:
+        return
+
+    for so_name in so_list:
+        dos = frappe.get_all(
+            "Delivery Order Towing",
+            filters={
+                "sales_order": so_name,
+                "docstatus": ["!=", 2]
+            },
+            fields=["name", "status", "nomor_polisi"]
+        )
+
+        if not dos:
+            continue
+
+        belum_done = [d for d in dos if d.status != "Done"]
+
+        if belum_done:
+            detail = "<br>".join(
+                f"• {d.name} ({d.nomor_polisi}) — status: <b>{d.status}</b>"
+                for d in belum_done
+            )
+            frappe.throw(
+                _("Sales Invoice tidak bisa dibuat dari SO <b>{0}</b> "
+                  "karena ada DO Towing yang belum selesai:<br><br>{1}").format(
+                    so_name, detail
+                ),
+                title="DO Towing Belum Selesai"
+            )
+
+
+def update_do_payment_status(doc, method=None):
+    """Update status uang jalan di DO saat Payment Entry di-submit."""
+    # Cari PO dari payment entry
+    for ref in doc.get("references", []):
+        if ref.reference_doctype != "Purchase Order":
+            continue
+        
+        po_name = ref.reference_name
+        do_name = frappe.db.get_value(
+            "Purchase Order", po_name, "custom_delivery_order"
+        )
+        
+        if not do_name:
+            continue
+        
+        frappe.db.set_value("Delivery Order Towing", do_name, {
+            "uang_jalan_status": "Dibayar",
+            "uang_jalan_amount": ref.allocated_amount or doc.paid_amount,
+        })
+        frappe.db.commit()
+
+# ──────────────────────────────────────────────────────────────
+# WHITELISTED API ENDPOINTS
 # ──────────────────────────────────────────────────────────────
 
 @frappe.whitelist()
 def trigger_create_invoice(do_name: str):
-    """Tombol 'Buat Invoice' di form DO Towing."""
     doc = frappe.get_doc("Delivery Order Towing", do_name)
     if doc.status != "Done":
         frappe.throw(_("Invoice hanya bisa dibuat saat status = Done."))
@@ -536,7 +649,6 @@ def trigger_create_invoice(do_name: str):
 
 @frappe.whitelist()
 def trigger_create_expense_claim(do_name: str, employee: str, amount: float):
-    """Tombol 'Buat Uang Jalan' di form DO Towing."""
     amount = float(amount)
     if amount <= 0:
         frappe.throw(_("Nominal uang jalan harus lebih dari 0."))
@@ -549,7 +661,6 @@ def trigger_create_expense_claim(do_name: str, employee: str, amount: float):
 
 @frappe.whitelist()
 def get_invoice_status_from_imogi(invoice_name: str):
-    """Refresh status invoice dari Finance Imogi — ditampilkan live di form DO."""
     data = imogi_get("Sales Invoice", invoice_name)
     return {
         "name"              : data.get("name"),
@@ -562,7 +673,6 @@ def get_invoice_status_from_imogi(invoice_name: str):
 
 @frappe.whitelist()
 def update_driver_status(do_name: str, new_status: str, catatan_driver: str = None):
-    """Update status DO dari mobile portal driver."""
     allowed        = {"Assigned": "Pick Up", "Pick Up": "Delivered"}
     doc            = frappe.get_doc("Delivery Order Towing", do_name)
     is_koordinator = frappe.has_role("Towing Koordinator")
@@ -582,176 +692,3 @@ def update_driver_status(do_name: str, new_status: str, catatan_driver: str = No
     doc.save(ignore_permissions=True)
     frappe.db.commit()
     return {"success": True, "status": doc.status, "do_name": doc.name}
-
-# ── HOOK FUNCTIONS — dipanggil dari hooks.py ─────────────────
-
-def after_save(doc, method=None):
-    instance = DeliveryOrderTowing(doc.doctype, doc.name)
-    instance.after_save()
-
-def on_update_after_submit(doc, method=None):
-    instance = DeliveryOrderTowing(doc.doctype, doc.name)
-    instance.on_update_after_submit()
-
-
-def _legacy_hook_noop(hook_name: str, doc=None):
-    """Keep backward compatibility for legacy hooks still referenced in hooks.py."""
-    target = f"{getattr(doc, 'doctype', '-')}/{getattr(doc, 'name', '-')}"
-    frappe.logger("imogi_finance").warning(
-        "Legacy towing hook '%s' executed as no-op on %s", hook_name, target
-    )
-
-
-def create_do_from_sales_order(doc, method=None):
-    """
-    Auto-create Delivery Order Towing rows from Sales Order child table `custom_towing_kendaraan`.
-    Keeps backward compatibility with existing hook wiring in hooks.py.
-    """
-    rows = getattr(doc, "custom_towing_kendaraan", None) or []
-    if not rows:
-        return
-
-    items_by_code = {d.item_code: d for d in (getattr(doc, "items", None) or []) if d.item_code}
-    fallback_item = (getattr(doc, "items", None) or [None])[0]
-
-    def _split_route(route_value):
-        route = (route_value or "").strip()
-        if " - " in route:
-            pickup, tujuan = route.split(" - ", 1)
-            return pickup.strip(), tujuan.strip()
-        return route, route
-
-    created = 0
-
-    for row in rows:
-        # Idempotency: if already linked, skip.
-        if getattr(row, "delivery_order", None):
-            continue
-
-        route_item = getattr(row, "so_item_code", None)
-        item_row = items_by_code.get(route_item) or fallback_item
-        pickup, tujuan = _split_route(route_item or "")
-
-        # Best-effort duplicate guard by Sales Order + key vehicle identifiers.
-        existing_name = frappe.db.get_value(
-            "Delivery Order Towing",
-            {
-                "sales_order": doc.name,
-                "nomor_rangka": getattr(row, "nomor_rangka", None) or "",
-                "nomor_polisi": getattr(row, "nomor_polisi", None) or "",
-            },
-            "name",
-        )
-
-        if existing_name:
-            frappe.db.set_value(
-                row.doctype,
-                row.name,
-                "delivery_order",
-                existing_name,
-                update_modified=False,
-            )
-            continue
-
-        harga_jasa = 0
-        try:
-            harga_jasa = float(getattr(item_row, "rate", 0) or 0)
-        except Exception:
-            harga_jasa = 0
-
-        if harga_jasa <= 0:
-            harga_jasa = 1
-
-        do_doc = frappe.new_doc("Delivery Order Towing")
-        do_doc.update(
-            {
-                "naming_series": "DO-TOW-.YYYY.-.####",
-                "status": "Draft",
-                "customer": doc.customer,
-                "customer_name": doc.customer_name,
-                "tanggal_do": doc.transaction_date or nowdate(),
-                "sales_order": doc.name,
-                "nomor_polisi": getattr(row, "nomor_polisi", None) or route_item or "-",
-                "nomor_rangka": getattr(row, "nomor_rangka", None),
-                "merk_kendaraan": getattr(item_row, "item_name", None)
-                or getattr(item_row, "item_code", None)
-                or route_item
-                or "-",
-                "tipe_kendaraan": getattr(row, "tipe_model", None)
-                or getattr(item_row, "description", None)
-                or "-",
-                "lokasi_pickup": pickup or "-",
-                "lokasi_tujuan": tujuan or "-",
-                "harga_jasa": harga_jasa,
-                "currency": getattr(doc, "currency", None) or "IDR",
-            }
-        )
-        do_doc.insert(ignore_permissions=True)
-
-        frappe.db.set_value(
-            row.doctype,
-            row.name,
-            "delivery_order",
-            do_doc.name,
-            update_modified=False,
-        )
-        created += 1
-
-    if created:
-        frappe.msgprint(
-            _("Berhasil membuat {0} Delivery Order Towing dari Sales Order ini.").format(created),
-            alert=True,
-        )
-
-
-def validate_invoice_do_completion(doc, method=None):
-    _legacy_hook_noop("validate_invoice_do_completion", doc)
-
-
-def update_do_payment_status(doc, method=None):
-    _legacy_hook_noop("update_do_payment_status", doc)
-
-
-def on_submit(doc, method=None):
-    instance = DeliveryOrderTowing(doc.doctype, doc.name)
-    instance.create_po_uang_jalan()
-
-
-def update_do_from_po(doc, method=None):
-    """Sync nominal/status uang jalan DO dari Purchase Order terkait."""
-    do_name = None
-
-    if frappe.db.has_column("Purchase Order", "custom_delivery_order"):
-        do_name = getattr(doc, "custom_delivery_order", None)
-
-    if not do_name and frappe.db.has_column("Delivery Order Towing", "purchase_order_uang_jalan"):
-        do_name = frappe.db.get_value(
-            "Delivery Order Towing",
-            {"purchase_order_uang_jalan": doc.name},
-            "name",
-        )
-
-    if not do_name:
-        return
-
-    # Nominal mengikuti nilai yang diisi user di PO (rate x qty per row).
-    total = sum(
-        float(getattr(item, "rate", 0) or 0) * float(getattr(item, "qty", 0) or 0)
-        for item in (doc.get("items") or [])
-    )
-
-    if doc.docstatus == 1:
-        status = "Dibayar"
-    elif doc.docstatus == 2:
-        status = "Belum Diajukan"
-    else:
-        status = "Diajukan"
-
-    frappe.db.set_value(
-        "Delivery Order Towing",
-        do_name,
-        {
-            "uang_jalan_amount": total,
-            "uang_jalan_status": status,
-        },
-    )
