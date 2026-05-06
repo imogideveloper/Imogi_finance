@@ -1,10 +1,136 @@
 // delivery_order_towing.js  — VERSI INTEGRASI FINANCE IMOGI
 // Letakkan di: [app]/[app]/doctype/delivery_order_towing/delivery_order_towing.js
 
+
+// Event handler untuk child table SO Towing Kendaraan
+frappe.ui.form.on('Sales Order', {
+    refresh: function(frm) {
+         if (frm.doc.docstatus === 0) {
+            frm.add_custom_button(__('Generate Detail Kendaraan'), function() {
+                _generate_detail_kendaraan(frm);
+            }, __('Towing'));
+        }
+        frm.fields_dict['custom_towing_kendaraan'].grid.wrapper.on(
+            'click', '.grid-remove-rows', function() {
+                setTimeout(function() { _update_item_qty(frm); }, 300);
+            }
+        );
+    }
+});
+
+function _generate_detail_kendaraan(frm) {
+    var towing_items = (frm.doc.items || []).filter(function(item) {
+        return item.item_code && (
+            item.item_code.toUpperCase().includes('TOWING') ||
+            item.item_code.toUpperCase().includes('RDC')
+        );
+    });
+
+    if (towing_items.length === 0) {
+        frappe.msgprint({
+            title: 'Tidak Ada Item Towing',
+            message: 'Tambahkan item towing terlebih dahulu di tabel Items.',
+            indicator: 'orange'
+        });
+        return;
+    }
+
+    var total_kendaraan = towing_items.reduce(function(a, b) { return a + (b.qty || 1); }, 0);
+
+    frappe.confirm(
+        'Generate <b>' + total_kendaraan + '</b> baris kendaraan dari ' + towing_items.length + ' item towing?<br>' +
+        '<small>Baris yang sudah ada akan dihapus.</small>',
+        function() {
+            // Clear existing
+            frm.doc.custom_towing_kendaraan = [];
+            frm.refresh_field('custom_towing_kendaraan');
+
+            // Generate per item sesuai qty
+            towing_items.forEach(function(item) {
+                var qty = Math.floor(item.qty) || 1;
+                for (var i = 0; i < qty; i++) {
+                    var row = frm.add_child('custom_towing_kendaraan');
+                    row.so_item_code = item.item_code;
+                }
+            });
+
+            frm.refresh_field('custom_towing_kendaraan');
+            frappe.show_alert({
+                message: '✅ ' + frm.doc.custom_towing_kendaraan.length + ' baris kendaraan berhasil digenerate',
+                indicator: 'green'
+            }, 5);
+        }
+    );
+}
+
+frappe.ui.form.on('SO Towing Kendaraan', {
+    so_item_code: function(frm, cdt, cdn) {
+        _update_item_qty(frm);
+    },
+    nomor_polisi: function(frm, cdt, cdn) {
+        _update_item_qty(frm);
+    },
+    custom_towing_kendaraan_add: function(frm) {
+        _update_item_qty(frm);
+    },
+    custom_towing_kendaraan_remove: function(frm) {
+        _update_item_qty(frm);
+    }
+});
+
+var _update_item_qty = function(frm) {
+    var kendaraan_list = frm.doc.custom_towing_kendaraan || [];
+    var qty_per_item = {};
+
+    kendaraan_list.forEach(function(k) {
+        if (k.so_item_code) {
+            qty_per_item[k.so_item_code] = (qty_per_item[k.so_item_code] || 0) + 1;
+        }
+    });
+
+    (frm.doc.items || []).forEach(function(item) {
+        var new_qty = qty_per_item[item.item_code] || 0;
+        if (new_qty > 0) {
+            frappe.model.set_value(item.doctype, item.name, 'qty', new_qty);
+        }
+    });
+
+    frm.refresh_field('items');
+};
+
 frappe.ui.form.on('Delivery Order Towing', {
 
     // ── REFRESH FORM ──────────────────────────────────────────
     refresh: function(frm) {
+     if (!frm.is_new()) {
+    const editable_fields = ['driver', 'driver_nama', 'koordinator', 'kendaraan_towing'];
+
+    frm.fields.forEach(function(f) {
+        const fn = f.df.fieldname;
+        if (fn === 'harga_jasa') {
+            f.df.hidden = 1;
+            f.df.read_only = 1;
+            f.df.allow_on_submit = 0;
+        } else if (!editable_fields.includes(fn) &&
+            f.df.fieldtype !== 'Section Break' &&
+            f.df.fieldtype !== 'Column Break') {
+            f.df.read_only = 1;
+            f.df.allow_on_submit = 0;
+        } else if (editable_fields.includes(fn)) {
+            f.df.read_only = 0;
+        }
+    });
+
+    frm.refresh_fields();
+
+    // Force hide harga_jasa via DOM
+    setTimeout(function() {
+        if (frm.fields_dict['harga_jasa']) {
+            frm.fields_dict['harga_jasa'].$wrapper.hide();
+        }
+    }, 200);
+}
+
         frm.trigger('set_status_indicator');
         frm.trigger('render_custom_buttons');
         frm.trigger('set_field_readonly_by_role');

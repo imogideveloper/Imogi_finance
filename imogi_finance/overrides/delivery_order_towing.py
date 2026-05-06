@@ -462,3 +462,31 @@ def after_save(doc, method=None):
 def on_update_after_submit(doc, method=None):
     instance = DeliveryOrderTowing(doc.doctype, doc.name)
     instance.on_update_after_submit()
+
+
+def _legacy_hook_noop(hook_name: str, doc=None):
+    """Keep backward compatibility for legacy hooks still referenced in hooks.py."""
+    target = f"{getattr(doc, 'doctype', '-')}/{getattr(doc, 'name', '-')}"
+    frappe.logger("imogi_finance").warning(
+        "Legacy towing hook '%s' executed as no-op on %s", hook_name, target
+    )
+
+
+def create_do_from_sales_order(doc, method=None):
+    _legacy_hook_noop("create_do_from_sales_order", doc)
+
+
+def validate_invoice_do_completion(doc, method=None):
+    _legacy_hook_noop("validate_invoice_do_completion", doc)
+
+
+def update_do_payment_status(doc, method=None):
+    _legacy_hook_noop("update_do_payment_status", doc)
+
+
+def on_submit(doc, method=None):
+    _legacy_hook_noop("on_submit", doc)
+
+
+def update_do_from_po(doc, method=None):
+    _legacy_hook_noop("update_do_from_po", doc)
