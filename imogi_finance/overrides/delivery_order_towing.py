@@ -215,8 +215,7 @@ class DeliveryOrderTowing(Document):
     def create_po_uang_jalan(self):
         """
         Auto-create Purchase Order uang jalan saat DO di-submit.
-        Supplier = Driver, Item = item towing, Rate = 0 (diisi manual).
-        Referensi = Nomor Rangka kendaraan.
+        Detail kendaraan diambil dari DO itu sendiri (bukan seluruh SO).
         """
         if self.get("purchase_order_uang_jalan"):
             return
@@ -227,9 +226,7 @@ class DeliveryOrderTowing(Document):
                 title="Driver Belum Diisi"
             )
 
-        # Ambil supplier dari driver
         supplier = frappe.db.get_value("Driver", self.driver, "custom_supplier")
-        # ✅ STOPPER — DO tidak bisa submit kalau driver belum punya supplier
         if not supplier:
             frappe.throw(
                 _("Driver {0} belum punya Supplier (Uang Jalan). "
@@ -241,28 +238,23 @@ class DeliveryOrderTowing(Document):
 
         company = _resolve_company()
 
-        # Ambil item dari sales_order, fallback ke JASA-TOWING-001
-        item_code = "JASA-TOWING-001"
-        if self.sales_order:
-            so_items = frappe.get_all(
-                "Sales Order Item",
-                filters={"parent": self.sales_order},
-                fields=["item_code"],
-                limit=1
-            )
-            if so_items:
-                item_code = so_items[0].item_code
+        # ✅ item_code diambil dari SO Towing Kendaraan yang linked ke DO ini
+        item_code = frappe.db.get_value(
+            "SO Towing Kendaraan",
+            {"delivery_order": self.name},
+            "so_item_code"
+        ) or "JASA-TOWING-001"
 
         po_data = {
-            "naming_series"    : "PUR-ORD-.YYYY.-",
-            "supplier"         : supplier,
-            "company"          : company,
-            "transaction_date" : nowdate(),
-            "schedule_date"    : nowdate(),
-            "custom_delivery_order": self.name,           # ← tambahkan
-            "custom_nomor_rangka"  : self.nomor_rangka or "-",  # ← tambahka
-            "currency"         : self.currency or "IDR",
-            "buying_price_list": "Standard Buying",
+            "naming_series"        : "PUR-ORD-.YYYY.-",
+            "supplier"             : supplier,
+            "company"              : company,
+            "transaction_date"     : nowdate(),
+            "schedule_date"        : nowdate(),
+            "custom_delivery_order": self.name,
+            "custom_nomor_rangka"  : self.nomor_rangka or "-",
+            "currency"             : self.currency or "IDR",
+            "buying_price_list"    : "Standard Buying",
             "remarks": (
                 f"Uang Jalan DO Towing: {self.name} | "
                 f"Nopol: {self.nomor_polisi} | "
@@ -309,6 +301,33 @@ class DeliveryOrderTowing(Document):
             indicator="green"
         )
         return po_name
+
+
+    def _get_towing_rows(do_name: str) -> list:
+        """
+        ✅ Ambil data kendaraan dari DO itu sendiri (bukan dari SO).
+        Hanya 1 kendaraan yang di-assigned ke DO ini.
+        """
+        try:
+            do = frappe.get_doc("Delivery Order Towing", do_name)
+            item_code = frappe.db.get_value(
+                "SO Towing Kendaraan",
+                {"delivery_order": do_name},
+                "so_item_code"
+            )
+            return [{
+                "so_item_code": item_code or "",
+                "nomor_rangka": do.nomor_rangka or "",
+                "nomor_polisi": do.nomor_polisi or "",
+                "tipe_model"  : do.tipe_kendaraan or "",
+                "nomor_mesin" : do.nomor_mesin or "",
+            }]
+        except Exception as exc:
+            frappe.log_error(
+                f"[Towing] Gagal ambil data dari DO {do_name}: {exc}",
+                "Auto Populate Towing",
+            )
+            return []
 
     # ──────────────────────────────────────────────────────────
     # INTEGRASI 2: BUAT SALES INVOICE
@@ -493,25 +512,75 @@ def _get_towing_rows(sales_order: str) -> list:
 
 
 def _populate_towing_table(doctype: str, docname: str, towing_rows: list) -> bool:
-    """Kosongkan dan isi ulang custom_towing_kendaraan pada dokumen target."""
+    """
+    Isi custom_towing_kendaraan langsung via SQL — menghindari TimestampMismatchError
+    saat dokumen baru saja dibuat dan belum di-reload.
+    """
     try:
-        linked_doc = frappe.get_doc(doctype, docname)
-        if linked_doc.docstatus == 1:
+        # Cek docstatus tanpa load full doc
+        docstatus = frappe.db.get_value(doctype, docname, "docstatus")
+        if docstatus == 1:
             return False
-        linked_doc.set("custom_towing_kendaraan", [])
-        for row in towing_rows:
-            linked_doc.append(
-                "custom_towing_kendaraan",
-                {
+
+        # Hapus existing rows langsung via DB
+        frappe.db.delete(
+            f"tab{doctype} Detail Kendaraan",
+            {"parent": docname, "parenttype": doctype}
+        )
+
+        # Cari nama child table yang benar
+        child_doctype = frappe.db.get_value(
+            "DocField",
+            {"parent": doctype, "fieldname": "custom_towing_kendaraan"},
+            "options"
+        )
+        if not child_doctype:
+            # Fallback: load doc jika child doctype tidak ditemukan
+            linked_doc = frappe.get_doc(doctype, docname)
+            linked_doc.set("custom_towing_kendaraan", [])
+            for row in towing_rows:
+                linked_doc.append("custom_towing_kendaraan", {
                     "so_item_code": row.get("so_item_code"),
                     "nomor_rangka": row.get("nomor_rangka"),
                     "nomor_polisi": row.get("nomor_polisi"),
-                    "tipe_model":   row.get("tipe_model"),
-                    "nomor_mesin":  row.get("nomor_mesin"),
-                },
-            )
-        linked_doc.save(ignore_permissions=True)
+                    "tipe_model"  : row.get("tipe_model"),
+                    "nomor_mesin" : row.get("nomor_mesin"),
+                })
+            linked_doc.flags.ignore_version = True
+            linked_doc.flags.ignore_timestamp = True
+            linked_doc.save(ignore_permissions=True)
+            return True
+
+        # Insert rows langsung via frappe.db.insert
+        from frappe.utils import now_datetime
+        now = now_datetime()
+        user = frappe.session.user or "Administrator"
+
+        for idx, row in enumerate(towing_rows, start=1):
+            frappe.db.insert({
+                "doctype"     : child_doctype,
+                "name"        : frappe.generate_hash(length=10),
+                "parent"      : docname,
+                "parenttype"  : doctype,
+                "parentfield" : "custom_towing_kendaraan",
+                "idx"         : idx,
+                "so_item_code": row.get("so_item_code") or "",
+                "nomor_rangka": row.get("nomor_rangka") or "",
+                "nomor_polisi": row.get("nomor_polisi") or "",
+                "tipe_model"  : row.get("tipe_model") or "",
+                "nomor_mesin" : row.get("nomor_mesin") or "",
+                "owner"       : user,
+                "modified_by" : user,
+                "creation"    : now,
+                "modified"    : now,
+                "docstatus"   : 0,
+            })
+
+        # Update modified timestamp dokumen parent
+        frappe.db.set_value(doctype, docname, "modified", now, update_modified=False)
+        frappe.db.commit()
         return True
+
     except Exception as exc:
         frappe.log_error(
             f"[Towing] Gagal populate {doctype} {docname}: {exc}",
@@ -546,29 +615,21 @@ def _safe_get_linked_docs(doctype: str, do_field: str, do_name: str) -> list:
 def populate_towing_to_linked_docs(doc, method=None):
     """
     Setelah DO di-submit, otomatis isi Detail Kendaraan Towing
-    ke semua PO, PI, PE yang terhubung dengan DO ini.
+    ke PO, PI, PE yang terhubung — data diambil dari DO itu sendiri.
     """
-    so_name = doc.get("sales_order")
-    if not so_name:
-        return
-
-    towing_rows = _get_towing_rows(so_name)
+    # ✅ Tidak lagi butuh sales_order, langsung dari DO
+    towing_rows = _get_towing_rows(doc.name)
     if not towing_rows:
         return
 
-    po_count = pi_count = pe_count = 0
-
     for po in _safe_get_linked_docs("Purchase Order", "custom_delivery_order", doc.name):
-        if _populate_towing_table("Purchase Order", po.name, towing_rows):
-            po_count += 1
+        _populate_towing_table("Purchase Order", po.name, towing_rows)
 
     for pi in _safe_get_linked_docs("Purchase Invoice", "custom_delivery_order", doc.name):
-        if _populate_towing_table("Purchase Invoice", pi.name, towing_rows):
-            pi_count += 1
+        _populate_towing_table("Purchase Invoice", pi.name, towing_rows)
 
     for pe in _safe_get_linked_docs("Payment Entry", "delivery_order_towing", doc.name):
-        if _populate_towing_table("Payment Entry", pe.name, towing_rows):
-            pe_count += 1
+        _populate_towing_table("Payment Entry", pe.name, towing_rows)
 
     # Silent - tidak perlu notifikasi terpisah, cukup notif PO uang jalan
 

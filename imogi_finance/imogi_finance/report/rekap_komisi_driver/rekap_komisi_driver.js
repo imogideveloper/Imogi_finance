@@ -49,14 +49,11 @@ frappe.query_reports["Rekap Komisi Driver"] = {
 					value = `<a href="/app/delivery-order-towing/${do_name}" target="_blank">${do_name}</a>`;
 				}
 			}
-		} catch(e) {
-			// jangan crash, return value apa adanya
-		}
+		} catch(e) {}
 		return value;
 	},
 
 	onload: function (report) {
-		// Tambah tombol Create Payment Entry
 		report.page.add_inner_button(__("Create Payment Entry"), function () {
 			let all_data = report.data || [];
 			let unpaid = all_data.filter(r => r.status_komisi === "Unpaid");
@@ -66,7 +63,6 @@ frappe.query_reports["Rekap Komisi Driver"] = {
 				return;
 			}
 
-			// Group by driver
 			let by_driver = {};
 			unpaid.forEach(r => {
 				let key = r.driver || "unknown";
@@ -84,67 +80,22 @@ frappe.query_reports["Rekap Komisi Driver"] = {
 			let driver_list = Object.values(by_driver);
 
 			if (driver_list.length === 1) {
-				// Langsung proses kalau hanya 1 driver
 				_confirm_and_create(report, driver_list[0]);
 			} else {
-				// Tampilkan dialog pilih driver
 				_show_driver_picker(report, driver_list);
 			}
 		}, __("Tools"));
 
-		// Tambah tombol Export Excel
 		report.page.add_inner_button(__("Export Excel"), function () {
 			report.export_report("Excel");
 		}, __("Tools"));
 	},
 
-	get_chart_data: function (columns, result) {
-		try {
-			if (!result || !result.length) return null;
-
-			// Cari index kolom driver_nama dan komisi
-			let driver_idx = columns.findIndex(c => c.fieldname === "driver_nama");
-			let komisi_idx = columns.findIndex(c => c.fieldname === "komisi");
-
-			if (driver_idx < 0 || komisi_idx < 0) return null;
-
-			let by_driver = {};
-			result.forEach(r => {
-				// Support both dict and array format
-				let driver_nama = Array.isArray(r) ? r[driver_idx] : r.driver_nama;
-				let komisi = Array.isArray(r) ? r[komisi_idx] : r.komisi;
-				if (!driver_nama) return;
-				if (!by_driver[driver_nama]) by_driver[driver_nama] = 0;
-				by_driver[driver_nama] += flt(komisi);
-			});
-
-			let labels = Object.keys(by_driver);
-			let values = Object.values(by_driver);
-			if (!labels.length) return null;
-
-			return {
-				data: {
-					labels: labels,
-					datasets: [{ values: values }],
-				},
-				type: "bar",
-				colors: ["#5e64ff"],
-				title: __("Komisi per Driver"),
-			};
-		} catch(e) {
-			console.error("Chart error:", e);
-			return null;
-		}
-	},
-
 	after_datatable_render: function (datatable) {
-		// Tambah summary row di bawah
 		_render_summary(this);
 	},
 };
 
-
-// ── Helpers ──────────────────────────────────────────────────
 
 function _confirm_and_create(report, driver_info) {
 	let rows = driver_info.rows;
@@ -206,21 +157,6 @@ function _show_driver_picker(report, driver_list) {
 	}, 300);
 }
 
-function _get_checked_rows(report) {
-	let rows = [];
-	try {
-		let checked_rows = report.datatable.rowmanager.getCheckedRows();
-		checked_rows.forEach(idx => {
-			let row_data = report.data[idx];
-			if (row_data) rows.push(row_data);
-		});
-	} catch (e) {
-		// fallback: ambil semua data yang Unpaid
-		rows = (report.data || []).filter(r => r.status_komisi === "Unpaid");
-	}
-	return rows;
-}
-
 function _create_payment_entry(report, checked, supplier, driver_nama, total, do_list) {
 	frappe.call({
 		method: "imogi_finance.api.commission.create_payment_entry_from_report",
@@ -242,8 +178,6 @@ function _create_payment_entry(report, checked, supplier, driver_nama, total, do
 					message: `
 						Driver Commission <b>${dc_name}</b> berhasil dibuat.<br><br>
 						Payment Entry <b>${pe_name}</b> sudah disiapkan (Draft).<br>
-						<b>Langkah selanjutnya:</b> Buka Payment Entry → set akun → Submit untuk mencatat pembayaran.
-						<br><br>
 						<a href="/app/payment-entry/${pe_name}" class="btn btn-primary btn-sm">
 							Buka Payment Entry →
 						</a>
@@ -276,18 +210,15 @@ function _render_summary(report) {
 		</div>
 	`;
 
-	// Remove existing summary
 	$(report.wrapper).find(".commission-summary").remove();
 	$(report.wrapper).find(".datatable").after(summary_html.replace('class="', 'class="commission-summary '));
 }
 
 function format_currency(val) {
 	try {
-		// Frappe v15 pakai format_number atau number_format tergantung versi
 		if (frappe.utils.format_number) {
 			return "Rp " + frappe.utils.format_number(val, null, 0);
 		}
-		// Fallback manual
 		return "Rp " + Math.round(flt(val)).toLocaleString("id-ID");
 	} catch(e) {
 		return "Rp " + Math.round(flt(val)).toLocaleString("id-ID");

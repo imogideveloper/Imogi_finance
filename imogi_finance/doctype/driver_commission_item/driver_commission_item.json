@@ -100,7 +100,6 @@
   {
    "fieldname": "rate_type",
    "fieldtype": "Select",
-   "in_list_view": 1,
    "label": "Tipe",
    "options": "\nFlat\nPercent",
    "read_only": 1
@@ -108,7 +107,6 @@
   {
    "fieldname": "rate_value",
    "fieldtype": "Float",
-   "in_list_view": 1,
    "label": "Nilai",
    "precision": "2",
    "read_only": 1
