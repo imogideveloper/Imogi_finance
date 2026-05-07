@@ -49,7 +49,6 @@ def install_towing_doctypes():
     """Install DO Towing DocTypes jika belum ada di production."""
     import os
     from frappe.modules.import_file import import_file_by_path
-    from frappe import get_app_path
 
     # Urutan penting: child table dulu sebelum parent
     doctypes = [
@@ -72,7 +71,9 @@ def install_towing_doctypes():
             print(f"⚠️ {dt_name} sudah ada, skip")
             continue
 
-        path = get_app_path("imogi_finance", "doctype", folder, f"{folder}.json")
+        app_path = frappe.get_app_path("imogi_finance")
+        # Towing doctypes ada di imogi_finance/doctype/ (bukan imogi_finance/imogi_finance/doctype/)
+        path = os.path.join(os.path.dirname(app_path), "doctype", folder, f"{folder}.json")
 
         if not os.path.exists(path):
             print(f"❌ File tidak ditemukan: {path}")
@@ -157,7 +158,9 @@ def ensure_towing_workflow_consistency():
             as_dict=True,
         )
         if existing:
-            frappe.db.set_value("DocField", existing.name, spec, update_modified=False)
+            # insert_after is not a DB column, remove before set_value
+            update_spec = {k: v for k, v in spec.items() if k != "insert_after"}
+            frappe.db.set_value("DocField", existing.name, update_spec, update_modified=False)
             return
 
         docfield = frappe.get_doc({
@@ -176,7 +179,7 @@ def ensure_towing_workflow_consistency():
             "label": "Attachment Invoice",
             "fieldtype": "Attach",
             "insert_after": "sales_order",
-            "depends_on": "eval:doc.status=='Awaiting Dokument'",
+            "depends_on": "",
             "allow_on_submit": 1,
             "hidden": 0,
             "reqd": 0,
@@ -189,7 +192,7 @@ def ensure_towing_workflow_consistency():
             "label": "Tanggal Invoice",
             "fieldtype": "Date",
             "insert_after": "attachment_invoice",
-            "depends_on": "eval:doc.status=='Awaiting Dokument'",
+            "depends_on": "",
             "mandatory_depends_on": "eval:doc.status=='Awaiting Dokument'",
             "allow_on_submit": 1,
             "hidden": 0,
