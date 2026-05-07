@@ -464,6 +464,119 @@ def on_submit(doc, method=None):
     """Hook: dipanggil saat DO di-submit (Draft → Submitted)."""
     instance = DeliveryOrderTowing(doc.doctype, doc.name)
     instance.create_po_uang_jalan()
+    populate_towing_to_linked_docs(doc)
+
+
+# ──────────────────────────────────────────────────────────────
+# POPULATE DETAIL KENDARAAN TOWING → PO / PI / PE
+# ──────────────────────────────────────────────────────────────
+
+def _get_towing_rows(sales_order: str) -> list:
+    """Ambil baris SO Towing Kendaraan dari Sales Order."""
+    try:
+        return frappe.db.sql(
+            """
+            SELECT so_item_code, nomor_rangka, nomor_polisi, tipe_model, nomor_mesin
+            FROM `tabSO Towing Kendaraan`
+            WHERE parent = %s AND parenttype = 'Sales Order'
+            ORDER BY idx ASC
+            """,
+            sales_order,
+            as_dict=True,
+        )
+    except Exception as exc:
+        frappe.log_error(
+            f"[Towing] Gagal ambil baris dari SO {sales_order}: {exc}",
+            "Auto Populate Towing",
+        )
+        return []
+
+
+def _populate_towing_table(doctype: str, docname: str, towing_rows: list) -> bool:
+    """Kosongkan dan isi ulang custom_towing_kendaraan pada dokumen target."""
+    try:
+        linked_doc = frappe.get_doc(doctype, docname)
+        if linked_doc.docstatus == 1:
+            return False
+        linked_doc.set("custom_towing_kendaraan", [])
+        for row in towing_rows:
+            linked_doc.append(
+                "custom_towing_kendaraan",
+                {
+                    "so_item_code": row.get("so_item_code"),
+                    "nomor_rangka": row.get("nomor_rangka"),
+                    "nomor_polisi": row.get("nomor_polisi"),
+                    "tipe_model":   row.get("tipe_model"),
+                    "nomor_mesin":  row.get("nomor_mesin"),
+                },
+            )
+        linked_doc.save(ignore_permissions=True)
+        return True
+    except Exception as exc:
+        frappe.log_error(
+            f"[Towing] Gagal populate {doctype} {docname}: {exc}",
+            "Auto Populate Towing",
+        )
+        return False
+
+
+def _field_exists(doctype: str, fieldname: str) -> bool:
+    """Cek apakah custom field sudah ada di database sebelum dipakai sebagai filter."""
+    return frappe.db.has_column(doctype, fieldname)
+
+
+def _safe_get_linked_docs(doctype: str, do_field: str, do_name: str) -> list:
+    """
+    Query dokumen yang linked ke DO ini, dengan pengecekan field terlebih dahulu.
+    Menghindari crash jika custom field belum di-migrate.
+    """
+    if not _field_exists(doctype, do_field):
+        frappe.logger().warning(
+            f"[Towing] Field '{do_field}' belum ada di {doctype}. "
+            f"Jalankan bench migrate terlebih dahulu."
+        )
+        return []
+    return frappe.db.get_all(
+        doctype,
+        filters={do_field: do_name, "docstatus": 0},
+        fields=["name"],
+    )
+
+
+def populate_towing_to_linked_docs(doc, method=None):
+    """
+    Setelah DO di-submit, otomatis isi Detail Kendaraan Towing
+    ke semua PO, PI, PE yang terhubung dengan DO ini.
+    """
+    so_name = doc.get("sales_order")
+    if not so_name:
+        return
+
+    towing_rows = _get_towing_rows(so_name)
+    if not towing_rows:
+        return
+
+    po_count = pi_count = pe_count = 0
+
+    for po in _safe_get_linked_docs("Purchase Order", "custom_delivery_order", doc.name):
+        if _populate_towing_table("Purchase Order", po.name, towing_rows):
+            po_count += 1
+
+    for pi in _safe_get_linked_docs("Purchase Invoice", "custom_delivery_order", doc.name):
+        if _populate_towing_table("Purchase Invoice", pi.name, towing_rows):
+            pi_count += 1
+
+    for pe in _safe_get_linked_docs("Payment Entry", "delivery_order_towing", doc.name):
+        if _populate_towing_table("Payment Entry", pe.name, towing_rows):
+            pe_count += 1
+
+    if po_count or pi_count or pe_count:
+        frappe.msgprint(
+            f"Detail Kendaraan Towing dari SO <b>{so_name}</b> berhasil disalin ke "
+            f"<b>{po_count}</b> PO, <b>{pi_count}</b> PI, <b>{pe_count}</b> PE.",
+            title="Auto Populate Towing",
+            indicator="green",
+        )
 
 
 # ──────────────────────────────────────────────────────────────
@@ -516,8 +629,12 @@ def create_do_from_sales_order(doc, method=None):
             do.harga_jasa      = harga_jasa
             do.lokasi_pickup   = lokasi_pickup
             do.lokasi_tujuan   = lokasi_tujuan
-            do.nomor_polisi    = kendaraan.get("nomor_polisi") or "-"
-            do.nomor_rangka    = kendaraan.get("nomor_rangka") or "-"
+            # Jika nomor_polisi kosong, fallback ke nomor_rangka
+            # (karena nomor_polisi adalah title_field di DO, harus terisi)
+            _nomor_polisi = (kendaraan.get("nomor_polisi") or "").strip()
+            _nomor_rangka = (kendaraan.get("nomor_rangka") or "-").strip()
+            do.nomor_polisi    = _nomor_polisi if _nomor_polisi else _nomor_rangka
+            do.nomor_rangka    = _nomor_rangka
             do.tahun_kendaraan = kendaraan.get("tahun_kendaraan") or 0
             do.tipe_kendaraan  = kendaraan.get("tipe_model") or "-"
             do.nomor_mesin     = kendaraan.get("nomor_mesin") or "-"

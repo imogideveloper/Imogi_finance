@@ -16,17 +16,26 @@
  ],
  "fields": [
   {
+   "fieldname": "so_item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Rute (Item)",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "nomor_rangka",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Nomor Rangka",
+   "reqd": 1
+  },
+  {
    "fieldname": "nomor_polisi",
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Nomor Polisi",
    "reqd": 1
-  },
-  {
-   "fieldname": "tahun_kendaraan",
-   "fieldtype": "Int",
-   "in_list_view": 1,
-   "label": "Tahun Kendaraan"
   },
   {
    "fieldname": "tipe_model",
@@ -49,19 +58,10 @@
    "read_only": 1
   },
   {
-   "fieldname": "so_item_code",
-   "fieldtype": "Link",
+   "fieldname": "tahun_kendaraan",
+   "fieldtype": "Int",
    "in_list_view": 1,
-   "label": "Rute (Item)",
-   "options": "Item",
-   "reqd": 1
-  },
-  {
-   "fieldname": "nomor_rangka",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Nomor Rangka",
-   "reqd": 1
+   "label": "Tahun Kendaraan"
   }
  ],
  "grid_page_length": 50,
