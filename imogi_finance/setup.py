@@ -98,12 +98,13 @@ def ensure_towing_workflow_consistency():
 
     # Paksa reset field properties setelah reload_doc
     field_overrides = {
-        "lokasi_pickup":   {"reqd": 0},
-        "lokasi_tujuan":   {"reqd": 0},
-        "harga_jasa":      {"reqd": 0, "hidden": 1},
-        "tipe_kendaraan":  {"reqd": 0},
-        "merk_kendaraan":  {"reqd": 0},
-        "nomor_polisi":    {"reqd": 0},
+        "lokasi_pickup":      {"reqd": 0},
+        "lokasi_tujuan":      {"reqd": 0},
+        "harga_jasa":         {"reqd": 0, "hidden": 1},
+        "tipe_kendaraan":     {"reqd": 0},
+        "merk_kendaraan":     {"reqd": 0},
+        "nomor_polisi":       {"reqd": 0},
+        "uang_jalan_status":  {"read_only": 1},
     }
     for fn, updates in field_overrides.items():
         field_rec = frappe.db.get_value(

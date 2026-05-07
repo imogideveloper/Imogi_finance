@@ -189,5 +189,6 @@
  "sort_order": "DESC",
  "states": [],
  "title_field": "item",
- "track_changes": 1
+ "track_changes": 1,
+ "custom": 1
 }

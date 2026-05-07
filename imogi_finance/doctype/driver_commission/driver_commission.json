@@ -60,7 +60,7 @@
    "reqd": 1
   },
   {
-   "fetch_from": "driver.driver_name",
+   "fetch_from": "driver.full_name",
    "fieldname": "driver_nama",
    "fieldtype": "Data",
    "in_list_view": 1,

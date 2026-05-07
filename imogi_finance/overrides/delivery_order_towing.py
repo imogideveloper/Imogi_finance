@@ -684,18 +684,38 @@ def create_do_from_sales_order(doc, method=None):
         )
 
 def update_do_from_po(doc, method=None):
-    """Update nominal uang jalan di DO saat PO di-submit."""
+    """
+    Update nominal uang jalan & status di DO berdasarkan state PO Approval.
+
+    Mapping workflow state PO → uang_jalan_status DO:
+      Draft            → Belum Diajukan
+      Pending Approval → Diajukan
+      Approved         → Approved
+      Rejected         → Belum Diajukan  (bisa diajukan ulang)
+    """
     do_name = doc.get("custom_delivery_order")
     if not do_name:
         return
-    
-    # Ambil total amount dari PO
-    total = sum(item.amount for item in doc.items)
-    
-    frappe.db.set_value("Delivery Order Towing", do_name, {
-        "uang_jalan_amount": total,
-        "uang_jalan_status": "Diajukan",
-    })
+
+    # Map workflow_state PO ke uang_jalan_status DO
+    state_map = {
+        "Draft":            "Belum Diajukan",
+        "Pending Approval": "Diajukan",
+        "Approved":         "Approved",
+        "Rejected":         "Belum Diajukan",
+    }
+
+    po_state = doc.get("workflow_state") or doc.get("status") or "Draft"
+    uang_jalan_status = state_map.get(po_state, "Diajukan")
+
+    # Ambil total amount dari items PO
+    total = sum(item.amount for item in doc.items) if doc.items else 0
+
+    updates = {"uang_jalan_status": uang_jalan_status}
+    if total > 0:
+        updates["uang_jalan_amount"] = total
+
+    frappe.db.set_value("Delivery Order Towing", do_name, updates)
     frappe.db.commit()
 
 def validate_invoice_do_completion(doc, method=None):

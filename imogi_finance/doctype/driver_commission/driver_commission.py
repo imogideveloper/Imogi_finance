@@ -9,7 +9,7 @@ from imogi_finance.doctype.towing_commission_rate.towing_commission_rate import 
 )
 
 
-ELIGIBLE_DO_STATUS = ("Delivered",)
+ELIGIBLE_DO_STATUS = ("Delivered", "Awaiting Dokument", "Done")
 
 
 class DriverCommission(Document):
