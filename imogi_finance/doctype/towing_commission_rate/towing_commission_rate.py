@@ -12,19 +12,23 @@ class TowingCommissionRate(Document):
         self._validate_no_active_overlap()
 
     def _auto_fill_lokasi(self):
-        """Auto-fill lokasi dari item_name jika format 'Pickup - Tujuan' dan field kosong."""
+        """Auto-fill lokasi dari item_name jika format 'Pickup - Tujuan'."""
         if not self.item:
             return
-        if self.lokasi_pickup and self.lokasi_tujuan:
-            return  # sudah diisi, skip
 
         item_name = frappe.db.get_value("Item", self.item, "item_name") or self.item
-        if " - " in item_name:
-            parts = item_name.split(" - ", 1)
-            if not self.lokasi_pickup:
-                self.lokasi_pickup = parts[0].strip()
-            if not self.lokasi_tujuan:
-                self.lokasi_tujuan = parts[1].strip()
+        if " - " not in item_name:
+            return
+
+        parts = item_name.split(" - ", 1)
+        pickup = parts[0].strip()
+        tujuan = parts[1].strip()
+
+        # Isi jika kosong ATAU berisi nilai placeholder '-'
+        if not self.lokasi_pickup or self.lokasi_pickup.strip() in ('', '-'):
+            self.lokasi_pickup = pickup
+        if not self.lokasi_tujuan or self.lokasi_tujuan.strip() in ('', '-'):
+            self.lokasi_tujuan = tujuan
 
     def _validate_dates(self):
         if self.effective_to and getdate(self.effective_to) < getdate(self.effective_from):

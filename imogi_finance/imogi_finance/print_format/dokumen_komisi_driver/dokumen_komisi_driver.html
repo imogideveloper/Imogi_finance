@@ -1,0 +1,417 @@
+<style>
+  :root {
+    --primary:    #1a1a1a;
+    --accent:     #2c5282;
+    --border:     #cbd5e0;
+    --bg-header:  #2c5282;
+    --bg-light:   #f7fafc;
+    --text:       #2d3748;
+    --text-light: #718096;
+    --text-white: #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    font-size: 10pt;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  .pf-wrap {
+    width: 100%;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  /* ── HEADER ── */
+  .pf-header {
+    background: var(--bg-header);
+    color: var(--text-white);
+    padding: 20px 28px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .pf-header .company-name {
+    font-size: 14pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .pf-header .doc-title {
+    font-size: 11pt;
+    font-weight: 400;
+    opacity: 0.85;
+    margin-top: 3px;
+  }
+  .pf-header .doc-sub {
+    font-size: 9pt;
+    opacity: 0.7;
+    margin-top: 2px;
+  }
+  .pf-header .doc-no-wrap {
+    text-align: right;
+  }
+  .pf-header .doc-no-label {
+    font-size: 8pt;
+    opacity: 0.7;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .pf-header .doc-no {
+    font-size: 13pt;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+
+  /* ── INFO GRID ── */
+  .pf-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+    border-bottom: 2px solid var(--bg-header);
+  }
+  .pf-info-cell {
+    padding: 14px 20px;
+    border-right: 1px solid var(--border);
+    background: var(--bg-light);
+  }
+  .pf-info-cell:last-child { border-right: none; }
+  .pf-info-cell .info-label {
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-light);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .pf-info-cell .info-value {
+    font-size: 10.5pt;
+    font-weight: 600;
+    color: var(--primary);
+  }
+  .pf-info-cell .info-sub {
+    font-size: 9pt;
+    color: var(--text-light);
+    margin-top: 1px;
+  }
+
+  /* ── SECTION TITLE ── */
+  .pf-section-title {
+    font-size: 9pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--bg-header);
+    padding: 14px 20px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── TABLE ── */
+  .pf-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9.5pt;
+  }
+  .pf-table thead tr {
+    background: var(--bg-header);
+    color: var(--text-white);
+  }
+  .pf-table thead th {
+    padding: 9px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .pf-table thead th.right { text-align: right; }
+  .pf-table thead th.center { text-align: center; }
+  .pf-table tbody tr { border-bottom: 1px solid var(--border); }
+  .pf-table tbody tr:nth-child(even) { background: var(--bg-light); }
+  .pf-table tbody td {
+    padding: 9px 14px;
+    vertical-align: middle;
+  }
+  .pf-table tbody td.right { text-align: right; }
+  .pf-table tbody td.center { text-align: center; }
+  .pf-table tfoot tr {
+    background: #ebf4ff;
+    border-top: 2px solid var(--bg-header);
+  }
+  .pf-table tfoot td {
+    padding: 10px 14px;
+    font-weight: 700;
+    font-size: 10pt;
+  }
+  .pf-table tfoot td.right { text-align: right; color: var(--bg-header); }
+
+  /* ── TOTAL BOX ── */
+  .pf-total-wrap {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 20px 16px;
+    background: var(--bg-light);
+    border-bottom: 1px solid var(--border);
+  }
+  .pf-total-box {
+    min-width: 260px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .pf-total-box .total-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 9.5pt;
+  }
+  .pf-total-box .total-row:last-child { border-bottom: none; }
+  .pf-total-box .total-row.grand {
+    background: var(--bg-header);
+    color: white;
+    font-weight: 700;
+    font-size: 11pt;
+  }
+  .pf-total-box .total-row .lbl { color: inherit; }
+  .pf-total-box .total-row .val { font-weight: 600; }
+
+  /* ── PAYMENT INFO ── */
+  .pf-payment {
+    padding: 14px 20px;
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    font-size: 9.5pt;
+  }
+  .pf-payment .pay-label {
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-light);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  /* ── SIGNATURES ── */
+  .pf-sign {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+    border-top: 2px solid var(--border);
+    margin-top: 20px;
+  }
+  .pf-sign-cell {
+    padding: 16px 20px 28px;
+    border-right: 1px solid var(--border);
+    text-align: center;
+  }
+  .pf-sign-cell:last-child { border-right: none; }
+  .pf-sign-cell .sign-role {
+    font-size: 8.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--bg-header);
+    margin-bottom: 40px;
+  }
+  .pf-sign-cell .sign-line {
+    border-top: 1px solid var(--primary);
+    margin: 0 10px;
+  }
+  .pf-sign-cell .sign-name {
+    font-size: 9pt;
+    font-weight: 600;
+    margin-top: 5px;
+  }
+  .pf-sign-cell .sign-date {
+    font-size: 8.5pt;
+    color: var(--text-light);
+    margin-top: 3px;
+  }
+
+  /* ── FOOTER ── */
+  .pf-footer {
+    background: var(--bg-header);
+    color: rgba(255,255,255,0.7);
+    font-size: 8pt;
+    text-align: center;
+    padding: 10px 20px;
+    margin-top: 0;
+  }
+
+  /* ── NOTES ── */
+  .pf-notes {
+    padding: 12px 20px;
+    background: #fffbeb;
+    border-top: 1px solid #fbd38d;
+    border-bottom: 1px solid var(--border);
+    font-size: 8.5pt;
+    color: #744210;
+  }
+  .pf-notes .notes-title {
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .pf-notes ul { padding-left: 14px; }
+  .pf-notes li { margin-bottom: 2px; }
+
+  @media print {
+    body { margin: 0; }
+    .pf-wrap { max-width: 100%; }
+  }
+</style>
+
+{% set company_doc = frappe.get_doc("Company", doc.company) if doc.company else None %}
+{% set driver_doc  = frappe.get_doc("Driver", doc.driver) if doc.driver else None %}
+{% set pe_doc      = frappe.get_doc("Payment Entry", doc.payment_entry) if doc.payment_entry else None %}
+
+{# Group commissions by so_item_code (rute) #}
+{% set rute_map = {} %}
+{% for row in doc.commissions %}
+  {% set rute = row.so_item_code or (row.lokasi_pickup ~ ' - ' ~ row.lokasi_tujuan) or 'Lainnya' %}
+  {% if rute not in rute_map %}
+    {% set _ = rute_map.update({rute: {"count": 0, "komisi": 0, "rate_type": row.rate_type, "rate_value": row.rate_value}}) %}
+  {% endif %}
+  {% set _ = rute_map[rute].update({
+    "count":   rute_map[rute]["count"] + 1,
+    "komisi":  rute_map[rute]["komisi"] + (row.komisi_amount or 0),
+    "rate_type":  row.rate_type,
+    "rate_value": row.rate_value,
+  }) %}
+{% endfor %}
+
+<div class="pf-wrap">
+
+  <!-- HEADER -->
+  <div class="pf-header">
+    <div>
+      <div class="company-name">{{ company_doc.company_name if company_doc else doc.company }}</div>
+      <div class="doc-title">Dokumen Pembayaran Komisi Driver</div>
+      <div class="doc-sub">Divisi Towing &nbsp;|&nbsp; Periode: {{ frappe.format(doc.from_date, {"fieldtype":"Date"}) }} — {{ frappe.format(doc.to_date, {"fieldtype":"Date"}) }}</div>
+    </div>
+    <div class="doc-no-wrap">
+      <div class="doc-no-label">No. Dokumen</div>
+      <div class="doc-no">{{ doc.name }}</div>
+    </div>
+  </div>
+
+  <!-- INFO GRID -->
+  <div class="pf-info">
+    <div class="pf-info-cell">
+      <div class="info-label">Driver</div>
+      <div class="info-value">{{ doc.driver_nama or doc.driver }}</div>
+      <div class="info-sub">{{ doc.driver }}</div>
+    </div>
+    <div class="pf-info-cell">
+      <div class="info-label">Periode</div>
+      <div class="info-value">
+        {{ frappe.format(doc.from_date, {"fieldtype":"Date"}) }} — {{ frappe.format(doc.to_date, {"fieldtype":"Date"}) }}
+      </div>
+      <div class="info-sub">Rekap bulanan</div>
+    </div>
+    <div class="pf-info-cell">
+      <div class="info-label">Tanggal Dibuat</div>
+      <div class="info-value">{{ frappe.format(doc.posting_date, {"fieldtype":"Date"}) }}</div>
+      <div class="info-sub">Admin Towing</div>
+    </div>
+  </div>
+
+  <!-- DETAIL TABLE -->
+  <div class="pf-section-title">Rincian Komisi per Rute</div>
+  <table class="pf-table">
+    <thead>
+      <tr>
+        <th style="width:36px">No</th>
+        <th>Nama Rute</th>
+        <th class="center">Jumlah Rit</th>
+        <th class="right">Tarif</th>
+        <th class="right">Total Komisi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% set ns = namespace(idx=1) %}
+      {% for rute, info in rute_map.items() %}
+      <tr>
+        <td>{{ ns.idx }}</td>
+        <td>{{ rute }}</td>
+        <td class="center">{{ info.count }} rit</td>
+        <td class="right">
+          {% if info.rate_type == 'Percent' %}
+            {{ "%.0f"|format(info.rate_value) }}%
+          {% else %}
+            {{ frappe.format(info.rate_value, {"fieldtype":"Currency"}) }}
+          {% endif %}
+        </td>
+        <td class="right">{{ frappe.format(info.komisi, {"fieldtype":"Currency"}) }}</td>
+      </tr>
+      {% set ns.idx = ns.idx + 1 %}
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="2"><b>TOTAL</b></td>
+        <td class="center"><b>{{ doc.do_count or doc.commissions|length }} rit</b></td>
+        <td></td>
+        <td class="right"><b>{{ frappe.format(doc.total_komisi, {"fieldtype":"Currency"}) }}</b></td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <!-- PAYMENT INFO -->
+  {% if pe_doc %}
+  <div class="pf-payment">
+    <div class="pay-label">Informasi Pembayaran</div>
+    Metode Pembayaran:
+    <b>Transfer Bank</b>
+    {% if pe_doc.paid_from %}
+      &nbsp;·&nbsp; {{ pe_doc.paid_from }}
+    {% endif %}
+    {% if pe_doc.reference_no and pe_doc.reference_no != doc.name %}
+      &nbsp;·&nbsp; Ref: {{ pe_doc.reference_no }}
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- NOTES -->
+  <div class="pf-notes">
+    <div class="notes-title">Catatan</div>
+    <ul>
+      <li>Dokumen ini adalah rekap pembayaran komisi driver berdasarkan Delivery Order berstatus Delivered.</li>
+      <li>Rate komisi mengacu pada Commission Rate Setting yang berlaku per item/rute.</li>
+    </ul>
+  </div>
+
+  <!-- SIGNATURES -->
+  <div class="pf-sign">
+    <div class="pf-sign-cell">
+      <div class="sign-role">Dibuat oleh</div>
+      <div class="sign-line"></div>
+      <div class="sign-name">Admin Towing</div>
+      <div class="sign-date">Tanggal: ___________</div>
+    </div>
+    <div class="pf-sign-cell">
+      <div class="sign-role">Disetujui oleh</div>
+      <div class="sign-line"></div>
+      <div class="sign-name">Finance Manager</div>
+      <div class="sign-date">Tanggal: ___________</div>
+    </div>
+    <div class="pf-sign-cell">
+      <div class="sign-role">Diterima oleh</div>
+      <div class="sign-line"></div>
+      <div class="sign-name">{{ doc.driver_nama or doc.driver }}</div>
+      <div class="sign-date">Tanggal: ___________</div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="pf-footer">
+    {{ company_doc.company_name if company_doc else doc.company }}
+    &nbsp;·&nbsp; Dokumen Pembayaran Komisi Driver
+    &nbsp;·&nbsp; {{ doc.name }}
+    &nbsp;·&nbsp; Halaman 1 dari 1
+  </div>
+
+</div>

@@ -49,11 +49,14 @@ frappe.query_reports["Rekap Komisi Driver"] = {
 					value = `<a href="/app/delivery-order-towing/${do_name}" target="_blank">${do_name}</a>`;
 				}
 			}
-		} catch(e) {}
+		} catch(e) {
+			// jangan crash, return value apa adanya
+		}
 		return value;
 	},
 
 	onload: function (report) {
+		// Tambah tombol Create Payment Entry
 		report.page.add_inner_button(__("Create Payment Entry"), function () {
 			let all_data = report.data || [];
 			let unpaid = all_data.filter(r => r.status_komisi === "Unpaid");
@@ -63,6 +66,7 @@ frappe.query_reports["Rekap Komisi Driver"] = {
 				return;
 			}
 
+			// Group by driver
 			let by_driver = {};
 			unpaid.forEach(r => {
 				let key = r.driver || "unknown";
@@ -80,22 +84,30 @@ frappe.query_reports["Rekap Komisi Driver"] = {
 			let driver_list = Object.values(by_driver);
 
 			if (driver_list.length === 1) {
+				// Langsung proses kalau hanya 1 driver
 				_confirm_and_create(report, driver_list[0]);
 			} else {
+				// Tampilkan dialog pilih driver
 				_show_driver_picker(report, driver_list);
 			}
 		}, __("Tools"));
 
+		// Tambah tombol Export Excel
 		report.page.add_inner_button(__("Export Excel"), function () {
 			report.export_report("Excel");
 		}, __("Tools"));
 	},
 
+
+
 	after_datatable_render: function (datatable) {
+		// Tambah summary row di bawah
 		_render_summary(this);
 	},
 };
 
+
+// ── Helpers ──────────────────────────────────────────────────
 
 function _confirm_and_create(report, driver_info) {
 	let rows = driver_info.rows;
@@ -157,6 +169,21 @@ function _show_driver_picker(report, driver_list) {
 	}, 300);
 }
 
+function _get_checked_rows(report) {
+	let rows = [];
+	try {
+		let checked_rows = report.datatable.rowmanager.getCheckedRows();
+		checked_rows.forEach(idx => {
+			let row_data = report.data[idx];
+			if (row_data) rows.push(row_data);
+		});
+	} catch (e) {
+		// fallback: ambil semua data yang Unpaid
+		rows = (report.data || []).filter(r => r.status_komisi === "Unpaid");
+	}
+	return rows;
+}
+
 function _create_payment_entry(report, checked, supplier, driver_nama, total, do_list) {
 	frappe.call({
 		method: "imogi_finance.api.commission.create_payment_entry_from_report",
@@ -171,13 +198,17 @@ function _create_payment_entry(report, checked, supplier, driver_nama, total, do
 		callback: function (r) {
 			if (r.message && r.message.payment_entry) {
 				let pe_name = r.message.payment_entry;
+				let pi_name = r.message.purchase_invoice;
 				let dc_name = r.message.driver_commission;
 
 				frappe.msgprint({
-					title: __("Payment Entry Dibuat"),
+					title: __("Komisi Berhasil Dibuat"),
 					message: `
-						Driver Commission <b>${dc_name}</b> berhasil dibuat.<br><br>
-						Payment Entry <b>${pe_name}</b> sudah disiapkan (Draft).<br>
+						<b>Driver Commission:</b> ${dc_name}<br>
+						<b>Purchase Invoice:</b> ${pi_name}<br>
+						<b>Payment Entry:</b> ${pe_name} <span style="color:green">(Allocated ✓)</span><br><br>
+						<b>Langkah selanjutnya:</b> Submit Payment Entry untuk mencatat pembayaran ke jurnal.
+						<br><br>
 						<a href="/app/payment-entry/${pe_name}" class="btn btn-primary btn-sm">
 							Buka Payment Entry →
 						</a>
@@ -210,15 +241,18 @@ function _render_summary(report) {
 		</div>
 	`;
 
+	// Remove existing summary
 	$(report.wrapper).find(".commission-summary").remove();
 	$(report.wrapper).find(".datatable").after(summary_html.replace('class="', 'class="commission-summary '));
 }
 
 function format_currency(val) {
 	try {
+		// Frappe v15 pakai format_number atau number_format tergantung versi
 		if (frappe.utils.format_number) {
 			return "Rp " + frappe.utils.format_number(val, null, 0);
 		}
+		// Fallback manual
 		return "Rp " + Math.round(flt(val)).toLocaleString("id-ID");
 	} catch(e) {
 		return "Rp " + Math.round(flt(val)).toLocaleString("id-ID");

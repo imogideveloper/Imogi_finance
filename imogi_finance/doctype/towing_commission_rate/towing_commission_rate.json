@@ -77,12 +77,13 @@
   {
    "description": "Flat: nominal Rp per trip. Percent: % dari Harga Jasa di DO.",
    "fieldname": "rate_value",
-   "fieldtype": "Float",
+   "fieldtype": "Currency",
    "in_list_view": 1,
    "label": "Nilai",
    "non_negative": 1,
    "precision": "2",
-   "reqd": 1
+   "reqd": 1,
+   "options": "currency"
   },
   {
    "fieldname": "column_rate",

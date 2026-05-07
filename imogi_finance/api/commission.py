@@ -1,14 +1,15 @@
 import frappe
 from frappe import _
-from frappe.utils import flt, nowdate
+from frappe.utils import flt, nowdate, add_days
 
 
 @frappe.whitelist()
 def create_payment_entry_from_report(do_names, supplier, driver_nama, total_komisi):
     """
-    Buat Driver Commission + Payment Entry (draft) dari Rekap Komisi Driver report.
-    PE dibuat sebagai direct payment ke supplier driver — tidak perlu references PI/PO
-    karena komisi bukan dari Purchase Invoice melainkan dari Driver Commission.
+    Flow:
+    1. Buat Driver Commission (submitted)
+    2. Buat Purchase Invoice (submitted) sebagai tagihan komisi
+    3. Buat Payment Entry yang references ke PI → status Allocated
     """
     import json
 
@@ -20,7 +21,7 @@ def create_payment_entry_from_report(do_names, supplier, driver_nama, total_komi
     if not do_names:
         frappe.throw(_("Tidak ada DO yang dipilih."))
     if not supplier:
-        frappe.throw(_("Driver belum memiliki Supplier. Isi field Supplier di master Driver."))
+        frappe.throw(_("Driver belum memiliki Supplier."))
     if total_komisi <= 0:
         frappe.throw(_("Total komisi harus lebih dari 0."))
 
@@ -31,7 +32,7 @@ def create_payment_entry_from_report(do_names, supplier, driver_nama, total_komi
         or frappe.db.get_value("Company", {"is_group": 0}, "name")
     )
     if not company:
-        frappe.throw(_("Tidak ada Company yang ditemukan. Buat Company terlebih dahulu."))
+        frappe.throw(_("Tidak ada Company yang ditemukan."))
 
     driver    = frappe.db.get_value("Delivery Order Towing", do_names[0], "driver")
     from_date = frappe.db.get_value("Delivery Order Towing", do_names[0], "tanggal_do")
@@ -42,7 +43,7 @@ def create_payment_entry_from_report(do_names, supplier, driver_nama, total_komi
         lookup_towing_commission_rate,
     )
 
-    # ── Buat Driver Commission ──────────────────────────────────────────────
+    # ── 1. Buat Driver Commission ────────────────────────────────────────────
     dc = frappe.new_doc("Driver Commission")
     dc.driver       = driver
     dc.driver_nama  = driver_nama
@@ -88,11 +89,79 @@ def create_payment_entry_from_report(do_names, supplier, driver_nama, total_komi
     dc.total_komisi = total_komisi
     dc.do_count     = len(do_names)
     dc.flags.ignore_permissions = True
+    dc.flags.ignore_version    = True
     dc.insert(ignore_permissions=True)
-    dc.reload()
+    frappe.db.commit()
+    # Fetch fresh dari DB sebelum submit
+    dc = frappe.get_doc("Driver Commission", dc.name)
+    dc.flags.ignore_permissions = True
+    dc.flags.ignore_version    = True
     dc.submit()
+    frappe.db.commit()
 
-    # ── Resolve akun ────────────────────────────────────────────────────────
+    # ── 2. Buat Purchase Invoice sebagai tagihan komisi ──────────────────────
+    # Cari expense account untuk komisi
+    expense_account = (
+        frappe.db.get_value("Account", {
+            "company": company,
+            "account_name": ["like", "%Komisi%"],
+            "is_group": 0,
+        }, "name")
+        or frappe.db.get_value("Account", {
+            "company": company,
+            "account_type": "Expense Account",
+            "is_group": 0,
+        }, "name")
+        or frappe.db.get_value("Account", {
+            "company": company,
+            "root_type": "Expense",
+            "is_group": 0,
+        }, "name")
+    )
+
+    if not expense_account:
+        frappe.throw(_("Tidak ditemukan Expense Account. Buat akun 'Komisi Driver' di Chart of Accounts."))
+
+    pi = frappe.new_doc("Purchase Invoice")
+    pi.supplier         = supplier
+    pi.company          = company
+    pi.posting_date     = nowdate()
+    pi.due_date         = nowdate()
+    pi.bill_no          = dc.name
+    pi.bill_date        = nowdate()
+    pi.remarks          = (
+        f"Komisi Driver {driver_nama} | "
+        f"Periode: {from_date} s/d {to_date} | "
+        f"{len(do_names)} DO | Ref: {dc.name}"
+    )
+    pi.is_paid          = 0
+    pi.append("items", {
+        "item_name"       : f"Komisi Driver - {driver_nama}",
+        "description"     : (
+            f"Komisi towing {driver_nama} periode {from_date} s/d {to_date} "
+            f"({len(do_names)} DO)"
+        ),
+        "qty"             : 1,
+        "rate"            : total_komisi,
+        "amount"          : total_komisi,
+        "expense_account" : expense_account,
+        "uom"             : "Nos",
+    })
+    pi.flags.ignore_permissions  = True
+    pi.flags.ignore_version      = True
+    pi.flags.ignore_mandatory    = True
+    pi.insert(ignore_permissions=True)
+    frappe.db.commit()
+    # Fetch fresh dari DB sebelum submit untuk hindari TimestampMismatch
+    pi_name = pi.name
+    pi = frappe.get_doc("Purchase Invoice", pi_name)
+    pi.flags.ignore_permissions = True
+    pi.flags.ignore_version     = True
+    pi.flags.ignore_mandatory   = True
+    pi.submit()
+    frappe.db.commit()
+
+    # ── 3. Resolve akun untuk Payment Entry ─────────────────────────────────
     default_bank_account = (
         frappe.db.get_value("Company", company, "default_bank_account")
         or frappe.db.get_value("Account", {
@@ -103,18 +172,10 @@ def create_payment_entry_from_report(do_names, supplier, driver_nama, total_komi
         }, "name")
     )
 
-    payable_account = (
-        frappe.db.get_value("Company", company, "default_payable_account")
-        or frappe.db.get_value("Account", {
-            "company": company, "account_type": "Payable", "is_group": 0
-        }, "name")
-    )
+    # Ambil payable account dari PI yang baru dibuat
+    payable_account = pi.credit_to
 
-    # ── Buat Payment Entry sebagai advance payment ──────────────────────────
-    # Komisi driver adalah direct payment, bukan pelunasan invoice.
-    # Gunakan payment_type="Pay" tanpa references → otomatis jadi advance.
-    # Status "Unallocated" di sini adalah NORMAL dan BENAR secara akuntansi
-    # karena tidak ada PI yang dilunasi — ini pembayaran langsung ke driver.
+    # ── 4. Buat Payment Entry references ke PI → status Allocated ───────────
     pe = frappe.new_doc("Payment Entry")
     pe.payment_type         = "Pay"
     pe.company              = company
@@ -127,32 +188,46 @@ def create_payment_entry_from_report(do_names, supplier, driver_nama, total_komi
     pe.target_exchange_rate = 1.0
     pe.reference_no         = dc.name
     pe.reference_date       = nowdate()
-    pe.remarks = (
+    pe.remarks              = (
         f"Komisi Driver {driver_nama} | "
         f"Periode: {from_date} s/d {to_date} | "
         f"{len(do_names)} DO | Ref: {dc.name}"
     )
 
     if default_bank_account:
-        pe.paid_from = default_bank_account
+        pe.paid_from                  = default_bank_account
         pe.paid_from_account_currency = (
             frappe.db.get_value("Account", default_bank_account, "account_currency") or "IDR"
         )
 
     if payable_account:
-        pe.paid_to = payable_account
+        pe.paid_to                  = payable_account
         pe.paid_to_account_currency = (
             frappe.db.get_value("Account", payable_account, "account_currency") or "IDR"
         )
 
+    # References ke PI → PE jadi Allocated
+    pe.append("references", {
+        "reference_doctype"  : "Purchase Invoice",
+        "reference_name"     : pi.name,
+        "bill_no"            : pi.bill_no,
+        "due_date"           : pi.due_date,
+        "total_amount"       : total_komisi,
+        "outstanding_amount" : total_komisi,
+        "allocated_amount"   : total_komisi,
+    })
+
     pe.flags.ignore_permissions = True
     pe.insert(ignore_permissions=True)
 
+    # Link PE ke DC
     frappe.db.set_value("Driver Commission", dc.name, "payment_entry", pe.name)
+    frappe.db.set_value("Driver Commission", dc.name, "status", "Approved")
     frappe.db.commit()
 
     return {
         "payment_entry"    : pe.name,
+        "purchase_invoice" : pi.name,
         "driver_commission": dc.name,
         "url"              : f"/app/payment-entry/{pe.name}"
     }
