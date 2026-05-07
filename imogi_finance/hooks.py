@@ -43,6 +43,8 @@ doctype_js = {
         "public/js/payment_reconciliation_helper.js",
     ],
     "Delivery Order Towing": "public/js/delivery_order_towing.js",
+    "Purchase Order": "public/js/purchase_order_towing.js",
+    "Purchase Invoice": "public/js/purchase_invoice_towing.js",
     "Sales Order": "public/js/delivery_order_towing.js",  # ← tambahkan ini
 }
 
@@ -144,6 +146,7 @@ doc_events = {
             "imogi_finance.events.purchase_invoice.validate_before_submit",
             "imogi_finance.imogi_finance.doctype.tax_period_closing.tax_period_closing.check_period_is_closed",
         ],
+        "after_insert": "imogi_finance.events.purchase_invoice.after_insert",
         "on_submit": "imogi_finance.events.purchase_invoice.on_submit",
         "on_update_after_submit": "imogi_finance.events.purchase_invoice.sync_expense_request_status_from_pi",
         "before_cancel": "imogi_finance.events.purchase_invoice.before_cancel",
@@ -419,9 +422,13 @@ doc_events = {
     "Delivery Order Towing": {
         "after_save": "imogi_finance.overrides.delivery_order_towing.after_save",
         "on_update_after_submit": "imogi_finance.overrides.delivery_order_towing.on_update_after_submit",
-        "on_submit": "imogi_finance.overrides.delivery_order_towing.on_submit",
+        "on_submit": [
+            "imogi_finance.overrides.delivery_order_towing.on_submit",
+            "imogi_finance.overrides.delivery_order_towing.populate_towing_to_linked_docs",
+        ],
     },
     "Purchase Order": {
+        "after_insert": "imogi_finance.events.purchase_order_towing.after_insert",
         "on_update": "imogi_finance.overrides.delivery_order_towing.update_do_from_po",
         "on_submit": "imogi_finance.overrides.delivery_order_towing.update_do_from_po",
         "on_cancel": "imogi_finance.overrides.delivery_order_towing.update_do_from_po",
