@@ -422,10 +422,7 @@ doc_events = {
     "Delivery Order Towing": {
         "after_save": "imogi_finance.overrides.delivery_order_towing.after_save",
         "on_update_after_submit": "imogi_finance.overrides.delivery_order_towing.on_update_after_submit",
-        "on_submit": [
-            "imogi_finance.overrides.delivery_order_towing.on_submit",
-            "imogi_finance.overrides.delivery_order_towing.populate_towing_to_linked_docs",
-        ],
+        "on_submit": "imogi_finance.overrides.delivery_order_towing.on_submit",
     },
     "Purchase Order": {
         "after_insert": "imogi_finance.events.purchase_order_towing.after_insert",
