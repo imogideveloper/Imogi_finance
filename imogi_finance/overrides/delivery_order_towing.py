@@ -570,13 +570,7 @@ def populate_towing_to_linked_docs(doc, method=None):
         if _populate_towing_table("Payment Entry", pe.name, towing_rows):
             pe_count += 1
 
-    if po_count or pi_count or pe_count:
-        frappe.msgprint(
-            f"Detail Kendaraan Towing dari SO <b>{so_name}</b> berhasil disalin ke "
-            f"<b>{po_count}</b> PO, <b>{pi_count}</b> PI, <b>{pe_count}</b> PE.",
-            title="Auto Populate Towing",
-            indicator="green",
-        )
+    # Silent - tidak perlu notifikasi terpisah, cukup notif PO uang jalan
 
 
 # ──────────────────────────────────────────────────────────────
@@ -607,17 +601,27 @@ def create_do_from_sales_order(doc, method=None):
         try:
             item_code     = kendaraan.get("so_item_code")
             harga_jasa    = 0
-            lokasi_pickup = "-"
-            lokasi_tujuan = "-"
+            lokasi_pickup = ""
+            lokasi_tujuan = ""
 
             if item_code:
                 for so_item in doc.items:
                     if so_item.item_code == item_code:
                         harga_jasa = so_item.rate or 0
                         break
-                item_doc      = frappe.get_cached_doc("Item", item_code)
-                lokasi_pickup = getattr(item_doc, "custom_lokasi_pickup", "") or "-"
-                lokasi_tujuan = getattr(item_doc, "custom_lokasi_tujuan", "") or "-"
+                item_doc = frappe.get_cached_doc("Item", item_code)
+
+                # Prioritas 1: custom field lokasi di Item
+                lokasi_pickup = getattr(item_doc, "custom_lokasi_pickup", "") or ""
+                lokasi_tujuan = getattr(item_doc, "custom_lokasi_tujuan", "") or ""
+
+                # Prioritas 2: parse dari item_name jika format "Pickup - Tujuan"
+                if not lokasi_pickup and not lokasi_tujuan:
+                    item_name = item_doc.item_name or item_code
+                    if " - " in item_name:
+                        parts = item_name.split(" - ", 1)
+                        lokasi_pickup = parts[0].strip()
+                        lokasi_tujuan = parts[1].strip()
 
             do = frappe.new_doc("Delivery Order Towing")
             do.sales_order     = doc.name
@@ -627,8 +631,8 @@ def create_do_from_sales_order(doc, method=None):
             do.status          = "Draft"
             do.currency        = doc.currency or "IDR"
             do.harga_jasa      = harga_jasa
-            do.lokasi_pickup   = lokasi_pickup
-            do.lokasi_tujuan   = lokasi_tujuan
+            do.lokasi_pickup   = lokasi_pickup or ""
+            do.lokasi_tujuan   = lokasi_tujuan or ""
             # Jika nomor_polisi kosong, fallback ke nomor_rangka
             # (karena nomor_polisi adalah title_field di DO, harus terisi)
             _nomor_polisi = (kendaraan.get("nomor_polisi") or "").strip()

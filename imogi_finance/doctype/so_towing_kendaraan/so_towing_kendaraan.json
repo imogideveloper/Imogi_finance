@@ -6,13 +6,13 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "so_item_code",
+  "nomor_rangka",
   "nomor_polisi",
   "tahun_kendaraan",
   "tipe_model",
   "nomor_mesin",
-  "delivery_order",
-  "so_item_code",
-  "nomor_rangka"
+  "delivery_order"
  ],
  "fields": [
   {
