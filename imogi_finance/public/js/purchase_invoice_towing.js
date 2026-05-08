@@ -1,6 +1,3 @@
-// File  : imogi_finance/public/js/purchase_invoice_towing.js
-// Fungsi: Fetch Detail Kendaraan Towing langsung dari Delivery Order Towing
-
 frappe.ui.form.on("Purchase Invoice", {
 
     refresh(frm) {
@@ -13,7 +10,11 @@ frappe.ui.form.on("Purchase Invoice", {
 
     custom_delivery_order(frm) {
         if (frm.doc.custom_delivery_order) {
-            fetch_towing_data_pi(frm);
+            // ✅ Hanya auto-fetch jika tabel kendaraan masih kosong
+            const has_data = (frm.doc.custom_towing_kendaraan || []).length > 0;
+            if (!has_data) {
+                fetch_towing_data_pi(frm);
+            }
         } else {
             frm.clear_table("custom_towing_kendaraan");
             frm.refresh_field("custom_towing_kendaraan");
@@ -22,7 +23,6 @@ frappe.ui.form.on("Purchase Invoice", {
 });
 
 function fetch_towing_data_pi(frm) {
-    // ✅ Ambil langsung dari DO, bukan melalui SO
     frappe.db.get_doc("Delivery Order Towing", frm.doc.custom_delivery_order)
         .then((do_doc) => {
             frappe.db.get_value(

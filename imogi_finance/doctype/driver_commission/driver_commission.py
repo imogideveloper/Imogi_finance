@@ -23,10 +23,14 @@ class DriverCommission(Document):
             frappe.throw(_("Tidak ada baris komisi. Klik Generate dulu."))
         if flt(self.total_komisi) <= 0:
             frappe.throw(_("Total Komisi harus lebih dari 0."))
-        self.status = "Approved"
+        # Jangan ubah self.status di sini — akan menyebabkan TimestampMismatch
+        # Status di-set via db.set_value di on_submit setelah docstatus=1
 
     def on_submit(self):
-        pass
+        # Set status setelah submit berhasil — hindari TimestampMismatch
+        frappe.db.set_value(
+            "Driver Commission", self.name, "status", "Approved", update_modified=False
+        )
 
     def on_update_after_submit(self):
         if self.status == "Cancelled":

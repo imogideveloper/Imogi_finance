@@ -305,8 +305,8 @@ class DeliveryOrderTowing(Document):
 
     def _get_towing_rows(do_name: str) -> list:
         """
-        ✅ Ambil data kendaraan dari DO itu sendiri (bukan dari SO).
-        Hanya 1 kendaraan yang di-assigned ke DO ini.
+        ✅ Ambil data kendaraan dari DO itu sendiri — hanya 1 kendaraan
+        yang di-assigned ke DO ini. BUKAN dari Sales Order.
         """
         try:
             do = frappe.get_doc("Delivery Order Towing", do_name)
@@ -513,71 +513,65 @@ def _get_towing_rows(sales_order: str) -> list:
 
 def _populate_towing_table(doctype: str, docname: str, towing_rows: list) -> bool:
     """
-    Isi custom_towing_kendaraan langsung via SQL — menghindari TimestampMismatchError
-    saat dokumen baru saja dibuat dan belum di-reload.
+    Isi custom_towing_kendaraan langsung via SQL — menghindari TimestampMismatchError.
     """
     try:
-        # Cek docstatus tanpa load full doc
         docstatus = frappe.db.get_value(doctype, docname, "docstatus")
         if docstatus == 1:
             return False
 
-        # Hapus existing rows langsung via DB
-        frappe.db.delete(
-            f"tab{doctype} Detail Kendaraan",
-            {"parent": docname, "parenttype": doctype}
+        # ✅ Cari nama child doctype yang benar dari Custom Field atau DocField
+        child_doctype = (
+            frappe.db.get_value(
+                "Custom Field",
+                {"dt": doctype, "fieldname": "custom_towing_kendaraan"},
+                "options"
+            )
+            or frappe.db.get_value(
+                "DocField",
+                {"parent": doctype, "fieldname": "custom_towing_kendaraan"},
+                "options"
+            )
         )
 
-        # Cari nama child table yang benar
-        child_doctype = frappe.db.get_value(
-            "DocField",
-            {"parent": doctype, "fieldname": "custom_towing_kendaraan"},
-            "options"
-        )
         if not child_doctype:
-            # Fallback: load doc jika child doctype tidak ditemukan
-            linked_doc = frappe.get_doc(doctype, docname)
-            linked_doc.set("custom_towing_kendaraan", [])
-            for row in towing_rows:
-                linked_doc.append("custom_towing_kendaraan", {
-                    "so_item_code": row.get("so_item_code"),
-                    "nomor_rangka": row.get("nomor_rangka"),
-                    "nomor_polisi": row.get("nomor_polisi"),
-                    "tipe_model"  : row.get("tipe_model"),
-                    "nomor_mesin" : row.get("nomor_mesin"),
-                })
-            linked_doc.flags.ignore_version = True
-            linked_doc.flags.ignore_timestamp = True
-            linked_doc.save(ignore_permissions=True)
-            return True
+            frappe.log_error(
+                f"[Towing] custom_towing_kendaraan tidak ditemukan di {doctype}",
+                "Auto Populate Towing"
+            )
+            return False
 
-        # Insert rows langsung via frappe.db.insert
+        # ✅ Hapus existing rows via SQL langsung ke nama table child yang benar
+        frappe.db.sql(
+            "DELETE FROM `tab{0}` WHERE parent=%s AND parenttype=%s".format(child_doctype),
+            (docname, doctype)
+        )
+
+        # ✅ Insert 1 baris via SQL — tidak melalui .save() sama sekali
         from frappe.utils import now_datetime
-        now = now_datetime()
+        now  = now_datetime()
         user = frappe.session.user or "Administrator"
 
         for idx, row in enumerate(towing_rows, start=1):
-            frappe.db.insert({
-                "doctype"     : child_doctype,
-                "name"        : frappe.generate_hash(length=10),
-                "parent"      : docname,
-                "parenttype"  : doctype,
-                "parentfield" : "custom_towing_kendaraan",
-                "idx"         : idx,
-                "so_item_code": row.get("so_item_code") or "",
-                "nomor_rangka": row.get("nomor_rangka") or "",
-                "nomor_polisi": row.get("nomor_polisi") or "",
-                "tipe_model"  : row.get("tipe_model") or "",
-                "nomor_mesin" : row.get("nomor_mesin") or "",
-                "owner"       : user,
-                "modified_by" : user,
-                "creation"    : now,
-                "modified"    : now,
-                "docstatus"   : 0,
-            })
+            frappe.db.sql(
+                """INSERT INTO `tab{0}`
+                   (name, parent, parenttype, parentfield, idx,
+                    so_item_code, nomor_rangka, nomor_polisi, tipe_model, nomor_mesin,
+                    owner, modified_by, creation, modified, docstatus)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """.format(child_doctype),
+                (
+                    frappe.generate_hash(length=10),
+                    docname, doctype, "custom_towing_kendaraan", idx,
+                    row.get("so_item_code") or "",
+                    row.get("nomor_rangka") or "",
+                    row.get("nomor_polisi") or "",
+                    row.get("tipe_model")   or "",
+                    row.get("nomor_mesin")  or "",
+                    user, user, now, now, 0,
+                )
+            )
 
-        # Update modified timestamp dokumen parent
-        frappe.db.set_value(doctype, docname, "modified", now, update_modified=False)
         frappe.db.commit()
         return True
 
@@ -903,3 +897,54 @@ def update_driver_status(do_name: str, new_status: str, catatan_driver: str = No
     doc.save(ignore_permissions=True)
     frappe.db.commit()
     return {"success": True, "status": doc.status, "do_name": doc.name}
+
+@frappe.whitelist()
+def get_towing_kendaraan_from_pi(pi_name: str) -> list:
+    """
+    Ambil detail kendaraan dari Purchase Invoice.
+    Dipakai oleh Payment Entry JS untuk copy data dari PI.
+    """
+    child_doctype = (
+        frappe.db.get_value(
+            "Custom Field",
+            {"dt": "Purchase Invoice", "fieldname": "custom_towing_kendaraan"},
+            "options"
+        )
+        or frappe.db.get_value(
+            "DocField",
+            {"parent": "Purchase Invoice", "fieldname": "custom_towing_kendaraan"},
+            "options"
+        )
+    )
+    if not child_doctype:
+        return []
+
+    return frappe.db.sql(
+        f"""SELECT so_item_code, nomor_rangka, nomor_polisi, tipe_model, nomor_mesin
+            FROM `tab{child_doctype}`
+            WHERE parent=%s AND parenttype='Purchase Invoice'
+            ORDER BY idx ASC""",
+        pi_name,
+        as_dict=True,
+    )
+
+
+@frappe.whitelist()
+def get_towing_kendaraan_from_do(do_name: str) -> dict:
+    """
+    Ambil detail kendaraan dari Delivery Order Towing langsung.
+    Dipakai sebagai fallback oleh Payment Entry / PI JS.
+    """
+    do = frappe.get_doc("Delivery Order Towing", do_name)
+    item_code = frappe.db.get_value(
+        "SO Towing Kendaraan",
+        {"delivery_order": do_name},
+        "so_item_code"
+    )
+    return {
+        "so_item_code": item_code or "",
+        "nomor_rangka": do.nomor_rangka or "",
+        "nomor_polisi": do.nomor_polisi or "",
+        "tipe_model"  : do.tipe_kendaraan or "",
+        "nomor_mesin" : do.nomor_mesin or "",
+    }
