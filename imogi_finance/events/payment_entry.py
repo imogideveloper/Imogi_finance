@@ -192,48 +192,95 @@ def generate_towing_remarks(doc, method=None) -> None:
     _generate_towing_remarks(doc)
 
 def after_insert(doc, method=None):
-    """Auto-populate Detail Kendaraan Towing jika PE linked ke Delivery Order Towing."""
-    _populate_towing_from_do(doc, "delivery_order_towing")
+    """Auto-populate Detail Kendaraan Towing jika PE linked ke DO atau via PI/PO."""
+    # Prioritas 1: field delivery_order_towing langsung
+    if doc.get("delivery_order_towing"):
+        _populate_towing_from_do(doc, "delivery_order_towing")
+        return
+
+    # Prioritas 2: cari DO via Purchase Invoice / Purchase Order di references
+    _populate_towing_from_references(doc)
 
 
 def _populate_towing_from_do(doc, do_field: str):
-    """Helper: ambil DO -> SO -> towing rows, lalu isi ke doc."""
+    """Helper: ambil data kendaraan langsung dari DO (bukan dari SO)."""
     do_name = doc.get(do_field)
     if not do_name:
         return
     try:
-        so_name = frappe.db.get_value("Delivery Order Towing", do_name, "sales_order")
-        if not so_name:
-            return
-        rows = frappe.db.sql(
-            """
-            SELECT so_item_code, nomor_rangka, nomor_polisi, tipe_model, nomor_mesin
-            FROM `tabSO Towing Kendaraan`
-            WHERE parent = %s AND parenttype = 'Sales Order'
-            ORDER BY idx ASC
-            """,
-            so_name,
-            as_dict=True,
+        do = frappe.get_doc("Delivery Order Towing", do_name)
+
+        # Ambil so_item_code dari SO Towing Kendaraan yang linked ke DO ini
+        item_code = frappe.db.get_value(
+            "SO Towing Kendaraan",
+            {"delivery_order": do_name},
+            "so_item_code"
         )
-        if not rows:
-            return
+
+        rows = [{
+            "so_item_code": item_code or "",
+            "nomor_rangka": do.nomor_rangka or "",
+            "nomor_polisi": do.nomor_polisi or "",
+            "tipe_model"  : do.tipe_kendaraan or "",
+            "nomor_mesin" : do.nomor_mesin or "",
+        }]
+
         linked = frappe.get_doc(doc.doctype, doc.name)
         linked.set("custom_towing_kendaraan", [])
         for row in rows:
             linked.append("custom_towing_kendaraan", {
-                "so_item_code": row.get("so_item_code"),
-                "nomor_rangka": row.get("nomor_rangka"),
-                "nomor_polisi": row.get("nomor_polisi"),
-                "tipe_model":   row.get("tipe_model"),
-                "nomor_mesin":  row.get("nomor_mesin"),
+                "so_item_code": row["so_item_code"],
+                "nomor_rangka": row["nomor_rangka"],
+                "nomor_polisi": row["nomor_polisi"],
+                "tipe_model"  : row["tipe_model"],
+                "nomor_mesin" : row["nomor_mesin"],
             })
         linked.save(ignore_permissions=True)
         frappe.logger().info(
-            f"[Towing] {doc.doctype} {doc.name}: {len(rows)} baris diisi dari SO {so_name}"
+            f"[Towing] {doc.doctype} {doc.name}: 1 baris diisi dari DO {do_name}"
         )
     except Exception as exc:
         frappe.log_error(
             f"[Towing] Error {doc.doctype} after_insert {doc.name}: {exc}",
+            "Auto Populate Towing",
+        )
+
+def _populate_towing_from_references(doc):
+    """
+    Cari DO via references PE (Purchase Invoice atau Purchase Order),
+    lalu isi Detail Kendaraan Towing dari DO yang ditemukan.
+    """
+    do_name = None
+
+    for ref in doc.get("references") or []:
+        ref_doctype = ref.get("reference_doctype")
+        ref_name    = ref.get("reference_name")
+
+        if ref_doctype == "Purchase Invoice":
+            do_name = frappe.db.get_value(
+                "Purchase Invoice", ref_name, "custom_delivery_order"
+            )
+        elif ref_doctype == "Purchase Order":
+            do_name = frappe.db.get_value(
+                "Purchase Order", ref_name, "custom_delivery_order"
+            )
+
+        if do_name:
+            break
+
+    if not do_name:
+        return
+
+    # Simpan link DO ke PE, lalu populate
+    try:
+        frappe.db.set_value(doc.doctype, doc.name, "delivery_order_towing", do_name)
+        frappe.db.commit()
+        # Reload doc agar field ter-update
+        doc_reloaded = frappe.get_doc(doc.doctype, doc.name)
+        _populate_towing_from_do(doc_reloaded, "delivery_order_towing")
+    except Exception as exc:
+        frappe.log_error(
+            f"[Towing] Error populate via references PE {doc.name}: {exc}",
             "Auto Populate Towing",
         )
 

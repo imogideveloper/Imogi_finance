@@ -32,6 +32,10 @@ import frappe
 
 def after_insert(doc, method=None):
     """Auto-populate Detail Kendaraan Towing jika PI linked ke Delivery Order Towing."""
+    # Skip jika PI dibuat dari commission (tidak ada custom_delivery_order)
+    # atau jika flag ignore_version aktif (artinya sedang dalam proses otomatis)
+    if doc.flags.get("ignore_version"):
+        return
     do_name = doc.get("custom_delivery_order")
     if not do_name:
         return

@@ -230,13 +230,92 @@ frappe.listview_settings["Payment Entry"] = {
 frappe.ui.form.on("Payment Entry", {
     delivery_order_towing(frm) {
         if (frm.doc.delivery_order_towing) {
-            fetch_towing_data_pe(frm);
+            fetch_towing_data_pe(frm, frm.doc.delivery_order_towing);
         } else {
             frm.clear_table("custom_towing_kendaraan");
             frm.refresh_field("custom_towing_kendaraan");
         }
     },
 });
+
+frappe.ui.form.on("Payment Entry", {
+    refresh(frm) {
+        if (frm.doc.docstatus === 0) {
+            frm.add_custom_button(__("Fetch Towing Data"), () => {
+                _resolve_do_from_pe(frm, (do_name) => {
+                    if (!do_name) {
+                        frappe.msgprint(__("Tidak ada Delivery Order yang terhubung ke Payment Entry ini."));
+                        return;
+                    }
+                    fetch_towing_data_pe(frm, do_name);
+                });
+            }, __("Tools"));
+        }
+    },
+});
+
+
+/**
+ * Cari DO dari PE:
+ * 1. Field delivery_order_towing langsung
+ * 2. Via Purchase Invoice di references
+ * 3. Via Purchase Order di references
+ */
+function _resolve_do_from_pe(frm, callback) {
+    // Prioritas 1: field langsung
+    if (frm.doc.delivery_order_towing) {
+        callback(frm.doc.delivery_order_towing);
+        return;
+    }
+
+    // Prioritas 2 & 3: cari dari references
+    const refs = frm.doc.references || [];
+    const pi_ref = refs.find(r => r.reference_doctype === "Purchase Invoice");
+    const po_ref = refs.find(r => r.reference_doctype === "Purchase Order");
+    const ref = pi_ref || po_ref;
+
+    if (!ref) {
+        callback(null);
+        return;
+    }
+
+    frappe.db.get_value(
+        ref.reference_doctype,
+        ref.reference_name,
+        "custom_delivery_order",
+        (r) => callback(r?.custom_delivery_order || null)
+    );
+}
+
+function fetch_towing_data_pe(frm, do_name) {
+    // ✅ Ambil langsung dari DO, bukan via SO
+    frappe.db.get_doc("Delivery Order Towing", do_name)
+        .then((do_doc) => {
+            frappe.db.get_value(
+                "SO Towing Kendaraan",
+                { delivery_order: do_doc.name },
+                "so_item_code",
+                (r) => {
+                    frm.clear_table("custom_towing_kendaraan");
+                    const new_row = frm.add_child("custom_towing_kendaraan");
+                    new_row.so_item_code = r?.so_item_code || "";
+                    new_row.nomor_rangka = do_doc.nomor_rangka || "";
+                    new_row.nomor_polisi = do_doc.nomor_polisi || "";
+                    new_row.tipe_model   = do_doc.tipe_kendaraan || "";
+                    new_row.nomor_mesin  = do_doc.nomor_mesin || "";
+                    frm.refresh_field("custom_towing_kendaraan");
+                    frm.dirty();
+                    frappe.show_alert({
+                        message: __("Detail Kendaraan diambil dari DO {0}", [do_doc.name]),
+                        indicator: "green",
+                    });
+                }
+            );
+        })
+        .catch(() => {
+            frappe.msgprint(__("Delivery Order Towing tidak ditemukan."));
+        });
+}
 
 // Extend existing refresh — tambah tombol Fetch Towing Data
 const _orig_pe_refresh = frappe.ui.form.on("Payment Entry", {});

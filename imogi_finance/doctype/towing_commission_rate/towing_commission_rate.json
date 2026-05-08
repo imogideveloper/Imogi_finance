@@ -1,0 +1,195 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:TCR-{item}-{####}",
+ "creation": "2026-05-07 17:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 0,
+ "engine": "InnoDB",
+ "field_order": [
+  "section_route",
+  "item",
+  "lokasi_pickup",
+  "column_route",
+  "lokasi_tujuan",
+  "section_rate",
+  "rate_type",
+  "rate_value",
+  "column_rate",
+  "currency",
+  "section_validity",
+  "effective_from",
+  "effective_to",
+  "column_validity",
+  "is_active",
+  "section_notes",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_route",
+   "fieldtype": "Section Break",
+   "label": "Rute"
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Item (Rute)",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "item.custom_lokasi_pickup",
+   "fieldname": "lokasi_pickup",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Lokasi Pickup",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_route",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "item.custom_lokasi_tujuan",
+   "fieldname": "lokasi_tujuan",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Lokasi Tujuan",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_rate",
+   "fieldtype": "Section Break",
+   "label": "Komisi"
+  },
+  {
+   "default": "Flat",
+   "fieldname": "rate_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Tipe",
+   "options": "Flat\nPercent",
+   "reqd": 1
+  },
+  {
+   "description": "Flat: nominal Rp per trip. Percent: % dari Harga Jasa di DO.",
+   "fieldname": "rate_value",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Nilai",
+   "non_negative": 1,
+   "precision": "2",
+   "reqd": 1,
+   "options": "currency"
+  },
+  {
+   "fieldname": "column_rate",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "IDR",
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency"
+  },
+  {
+   "fieldname": "section_validity",
+   "fieldtype": "Section Break",
+   "label": "Masa Berlaku"
+  },
+  {
+   "default": "Today",
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Berlaku Dari",
+   "reqd": 1
+  },
+  {
+   "fieldname": "effective_to",
+   "fieldtype": "Date",
+   "label": "Berlaku Sampai"
+  },
+  {
+   "fieldname": "column_validity",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Aktif"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_notes",
+   "fieldtype": "Section Break",
+   "label": "Catatan"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Catatan"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-05-07 17:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Imogi Finance",
+ "name": "Towing Commission Rate",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 0,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts User",
+   "share": 0,
+   "write": 0
+  }
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "item,lokasi_pickup,lokasi_tujuan",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "item",
+ "track_changes": 1,
+ "custom": 1
+}

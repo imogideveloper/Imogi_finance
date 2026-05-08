@@ -1,0 +1,152 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-05-07 17:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "delivery_order_towing",
+  "tanggal_do",
+  "nomor_polisi",
+  "nomor_rangka",
+  "kendaraan_towing",
+  "so_item_code",
+  "lokasi_pickup",
+  "lokasi_tujuan",
+  "harga_jasa",
+  "rate_source",
+  "rate_type",
+  "rate_value",
+  "komisi_amount",
+  "manual_override",
+  "notes"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "delivery_order_towing",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "DO Towing",
+   "options": "Delivery Order Towing",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "delivery_order_towing.tanggal_do",
+   "fieldname": "tanggal_do",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Tgl DO",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "delivery_order_towing.nomor_polisi",
+   "fieldname": "nomor_polisi",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "No. Polisi",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "delivery_order_towing.nomor_rangka",
+   "fieldname": "nomor_rangka",
+   "fieldtype": "Data",
+   "label": "No. Rangka",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "delivery_order_towing.kendaraan_towing",
+   "fieldname": "kendaraan_towing",
+   "fieldtype": "Data",
+   "label": "Kendaraan",
+   "read_only": 1
+  },
+  {
+   "fieldname": "so_item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Rute (Item)",
+   "options": "Item",
+   "read_only": 1
+  },
+  {
+   "fieldname": "lokasi_pickup",
+   "fieldtype": "Data",
+   "label": "Lokasi Pickup",
+   "read_only": 1
+  },
+  {
+   "fieldname": "lokasi_tujuan",
+   "fieldtype": "Data",
+   "label": "Lokasi Tujuan",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "delivery_order_towing.harga_jasa",
+   "fieldname": "harga_jasa",
+   "fieldtype": "Currency",
+   "label": "Harga Jasa",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "rate_source",
+   "fieldtype": "Link",
+   "label": "Rate Source",
+   "options": "Towing Commission Rate",
+   "read_only": 1
+  },
+  {
+   "fieldname": "rate_type",
+   "fieldtype": "Select",
+   "label": "Tipe",
+   "options": "\nFlat\nPercent",
+   "read_only": 1
+  },
+  {
+   "fieldname": "rate_value",
+   "fieldtype": "Float",
+   "label": "Nilai",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "komisi_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Komisi",
+   "non_negative": 1,
+   "options": "currency",
+   "read_only_depends_on": "eval:!doc.manual_override"
+  },
+  {
+   "default": "0",
+   "fieldname": "manual_override",
+   "fieldtype": "Check",
+   "label": "Override Manual"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Data",
+   "label": "Catatan"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-05-07 17:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Imogi Finance",
+ "name": "Driver Commission Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "custom": 1
+}

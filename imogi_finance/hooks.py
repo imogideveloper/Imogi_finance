@@ -83,6 +83,9 @@ fixtures = [
    {"doctype": "DocType", "filters": [["name", "in", [
         "Delivery Order Towing",
         "DO Towing Kondisi Item",
+        "Towing Commission Rate",
+        "Driver Commission",
+        "Driver Commission Item",
         # "SO Towing Kendaraan",  # temporary disabled to avoid deploy conflict
     ]]]},
     
@@ -395,6 +398,7 @@ doc_events = {
             "imogi_finance.sales_order_payment_status.update_from_payment_entry",
             "imogi_finance.imogi_finance.doctype.expense_request.expense_request.update_er_status_on_payment",
             "imogi_finance.overrides.delivery_order_towing.update_do_payment_status",
+            "imogi_finance.doctype.driver_commission.driver_commission.mark_paid_on_payment_submit",
         ],
         "on_update_after_submit": [
             "imogi_finance.events.payment_entry.on_update_after_submit",
@@ -411,6 +415,7 @@ doc_events = {
             "imogi_finance.events.sales_order.update_sales_order_outstanding_from_payment",
             "imogi_finance.sales_order_payment_status.update_from_payment_entry",
             "imogi_finance.imogi_finance.doctype.expense_request.expense_request.revert_er_status_on_payment_cancel",
+            "imogi_finance.doctype.driver_commission.driver_commission.revert_paid_on_payment_cancel",
         ],
         "before_delete": "imogi_finance.events.payment_entry.before_delete",
         "on_trash": [
