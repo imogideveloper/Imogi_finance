@@ -13,7 +13,10 @@ app_include_css = "/assets/imogi_finance/css/custom.css"
 
 # include js in doctype views
 doctype_js = {
-    "Sales Order": "public/js/sales_order.js",
+    "Sales Order": [
+        "public/js/sales_order.js",
+        "public/js/delivery_order_towing.js",
+    ],
     "Tax Invoice OCR Upload": "public/js/tax_invoice_ocr_upload_form.js",
     "VAT OUT Batch": "public/js/vat_out_batch_form.js",
     "Bank Transaction": "public/js/bank_transaction.js",
@@ -30,6 +33,7 @@ doctype_js = {
         "public/js/purchase_invoice_tax_invoice.js",
         "public/js/payment_reconciliation_helper.js",
         "public/js/purchase_invoice_amortization.js",
+        "public/js/purchase_invoice_towing.js",
     ],
     "Expense Claim": [
         "public/js/expense_claim.js",
@@ -44,15 +48,13 @@ doctype_js = {
     ],
     "Delivery Order Towing": "public/js/delivery_order_towing.js",
     "Purchase Order": "public/js/purchase_order_towing.js",
-    "Purchase Invoice": "public/js/purchase_invoice_towing.js",
-    "Sales Order": "public/js/delivery_order_towing.js",  # ← tambahkan ini
 }
 
 app_include_js = "/assets/imogi_finance/js/imogi_finance.js"
 
 
 doctype_list_js = {
-    "Sales Order": "public/js/sales_order_list.js",  # ← duplikat dihapus
+    "Sales Order": "public/js/sales_order_list.js",
     "Bank CSV Import": "imogi_finance/imogi_finance/doctype/bank_csv_import/bank_csv_import_list.js",
     "Administrative Payment Voucher": "imogi_finance/doctype/administrative_payment_voucher/administrative_payment_voucher_list.js",
     "Expense Request": "imogi_finance/doctype/expense_request/expense_request_list.js",
@@ -77,7 +79,6 @@ before_install = "imogi_finance.install.before_install"
 # after_install = "imogi_finance.utils.ensure_coretax_export_doctypes"
 
 # Fixtures
-# Fixtures — tidak ada perubahan yang diperlukan
 fixtures = [
     # 1. DocTypes
    {"doctype": "DocType", "filters": [["name", "in", [
@@ -152,7 +153,10 @@ doc_events = {
         "after_insert": "imogi_finance.events.purchase_invoice.after_insert",
         "on_submit": "imogi_finance.events.purchase_invoice.on_submit",
         "on_update_after_submit": "imogi_finance.events.purchase_invoice.sync_expense_request_status_from_pi",
-        "before_cancel": "imogi_finance.events.purchase_invoice.before_cancel",
+        "before_cancel": [
+            "imogi_finance.overrides.delivery_order_towing.before_cancel_pi_auto_cancel_pe",
+            "imogi_finance.events.purchase_invoice.before_cancel",
+        ],
         "on_cancel": "imogi_finance.events.purchase_invoice.on_cancel",
         "before_delete": "imogi_finance.events.purchase_invoice.before_delete",
         "on_trash": "imogi_finance.events.purchase_invoice.on_trash",
@@ -477,8 +481,8 @@ after_migrate = [
     "imogi_finance.utils.ensure_advances_allow_on_submit",
     "imogi_finance.imogi_finance.utils.ensure_budget_control_settings",
     "imogi_finance.setup.set_workspace_order",
-    "imogi_finance.utils.patch_round_floats_compatibility",  # ← tambahkan ini
-    "imogi_finance.setup.install_towing_doctypes",  # ← tambahkan
+    "imogi_finance.utils.patch_round_floats_compatibility",
+    "imogi_finance.setup.install_towing_doctypes",
     "imogi_finance.setup.ensure_towing_workflow_consistency",
 ]
 
@@ -496,8 +500,6 @@ override_whitelisted_methods = {
         "imogi_finance.overrides.listview.get_list_settings",
     "frappe.desk.desktop.get_desktop_page":
         "imogi_finance.overrides.desktop.get_desktop_page",
-    "erpnext.accounts.doctype.bank_reconciliation_tool.bank_reconciliation_tool.create_journal_entry_bts":
-        "imogi_finance.overrides.bank_reconciliation_tool.create_journal_entry_bts",
     "erpnext.accounts.doctype.bank_reconciliation_tool.bank_reconciliation_tool.create_journal_entry_bts":
         "imogi_finance.overrides.bank_reconciliation_tool.create_journal_entry_bts",
     "erpnext.accounts.doctype.bank_statement_import.bank_statement_import.start_import": 

@@ -1,3 +1,6 @@
+// File  : imogi_finance/public/js/sales_order.js
+// Fungsi: Generate Detail Kendaraan Towing + tombol Cancel SO custom
+
 frappe.ui.form.on("Sales Order", {
     refresh(frm) {
         relocate_generate_detail_button(frm);
@@ -5,8 +8,84 @@ frappe.ui.form.on("Sales Order", {
         [250, 700, 1400].forEach((ms) => {
             setTimeout(() => relocate_generate_detail_button(frm), ms);
         });
+
+        // ─────────────────────────────────────────────────────────────
+        // Tombol Cancel SO Towing (skip dialog "Cancel All Documents")
+        // Muncul kalau:
+        //   - SO sudah Submitted (docstatus=1)
+        //   - SO punya child table custom_towing_kendaraan (artinya SO Towing)
+        // ─────────────────────────────────────────────────────────────
+        if (frm.doc.docstatus === 1 && has_towing_kendaraan(frm)) {
+            frm.add_custom_button(__("Cancel SO Towing"), () => {
+                cancel_so_towing_custom(frm);
+            }).addClass("btn-danger");
+        }
     },
 });
+
+
+function has_towing_kendaraan(frm) {
+    const kendaraan = frm.doc.custom_towing_kendaraan || [];
+    return kendaraan.length > 0;
+}
+
+
+// ════════════════════════════════════════════════════════════════════
+// CANCEL SO TOWING dengan cleanup link DO duluan
+// (skip dialog "Cancel All Documents" Frappe)
+// ════════════════════════════════════════════════════════════════════
+
+function cancel_so_towing_custom(frm) {
+    frappe.confirm(
+        __("Yakin ingin cancel Sales Order ini?<br><br>" +
+           "<b>Catatan:</b><br>" +
+           "• Delivery Order Towing yang ter-link akan ikut di-cancel<br>" +
+           "• Kalau ada DO yang punya turunan (PO/PI/PE/dll) <b>aktif</b>, akan diblokir<br>" +
+           "• Anda harus cancel turunan DO tersebut terlebih dahulu"),
+        function() {
+            frappe.dom.freeze(__("Membatalkan Sales Order..."));
+
+            frappe.call({
+                method: "imogi_finance.overrides.delivery_order_towing.cancel_so_with_cleanup",
+                args: {
+                    so_name: frm.doc.name
+                },
+                callback: function(r) {
+                    frappe.dom.unfreeze();
+
+                    if (r.message && r.message.success) {
+                        let msg = __("✅ Sales Order {0} berhasil di-cancel.", [r.message.so_name]);
+
+                        if (r.message.cancelled_dos && r.message.cancelled_dos.length > 0) {
+                            msg += "<br><br><b>" + __("Delivery Order Towing yang ikut di-cancel:") + "</b><br>";
+                            r.message.cancelled_dos.forEach(function(do_name) {
+                                msg += "• " + do_name + "<br>";
+                            });
+                        }
+
+                        frappe.msgprint({
+                            title: __("SO Towing Cancelled"),
+                            message: msg,
+                            indicator: "orange"
+                        });
+
+                        // Reload form supaya status update
+                        frm.reload_doc();
+                    }
+                },
+                error: function(err) {
+                    frappe.dom.unfreeze();
+                    // Frappe akan otomatis tampilkan error message dari frappe.throw()
+                }
+            });
+        }
+    );
+}
+
+
+// ════════════════════════════════════════════════════════════════════
+// EXISTING FUNCTIONS (tidak diubah)
+// ════════════════════════════════════════════════════════════════════
 
 function relocate_generate_detail_button(frm) {
     const grid_field = frm.fields_dict?.custom_towing_kendaraan;
