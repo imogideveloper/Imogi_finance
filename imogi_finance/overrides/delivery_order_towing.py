@@ -948,3 +948,535 @@ def get_towing_kendaraan_from_do(do_name: str) -> dict:
         "tipe_model"  : do.tipe_kendaraan or "",
         "nomor_mesin" : do.nomor_mesin or "",
     }
+
+# ══════════════════════════════════════════════════════════════════════════
+# CANCEL CASCADE: Sales Order ↔ DO Towing ↔ PO Uang Jalan ↔ PI ↔ PE
+# ══════════════════════════════════════════════════════════════════════════
+#
+# 3 hook utama (registered di hooks.py):
+#   1. before_cancel SO → cancel_do_from_sales_order()
+#   2. before_cancel DO → before_cancel_do_towing()
+#   3. before_cancel PO → before_cancel_po_uang_jalan()  [defensive layer]
+#
+# 1 whitelist API (untuk tombol custom JS):
+#   • cancel_po_uang_jalan_with_cleanup(po_name)
+#     → dipanggil dari tombol "Cancel PO Uang Jalan" di form PO
+#     → clear link DO dulu, baru cancel PO (skip dialog Frappe)
+#
+# Pattern Cancel:
+#   • Child Draft tanpa turunan apapun → auto-cascade-cancel
+#   • Child Submitted ATAU child punya turunan aktif → BLOCK
+#   • Sebelum cancel: clear link di parent (anti Frappe link checker)
+# ══════════════════════════════════════════════════════════════════════════
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# HOOK 1: SALES ORDER → before_cancel
+# ──────────────────────────────────────────────────────────────────────────
+
+def cancel_do_from_sales_order(doc, method=None):
+    """Hook: before_cancel pada Sales Order. Cascade cancel DO Towing ter-link."""
+    kendaraan_list = doc.get("custom_towing_kendaraan", [])
+    if not kendaraan_list:
+        return
+
+    do_names = []
+    seen = set()
+    for kendaraan in kendaraan_list:
+        do_name = kendaraan.get("delivery_order")
+        if do_name and do_name not in seen:
+            seen.add(do_name)
+            do_names.append(do_name)
+
+    if not do_names:
+        return
+
+    blocked = []
+    cancellable = []
+
+    for do_name in do_names:
+        if not frappe.db.exists("Delivery Order Towing", do_name):
+            continue
+
+        do_status = frappe.db.get_value("Delivery Order Towing", do_name, "docstatus")
+        if do_status == 2:
+            continue
+
+        active_links = _get_active_linked_docs_for_do(do_name, include_po_draft=True)
+
+        if active_links:
+            blocked.append((do_name, active_links))
+        else:
+            cancellable.append((do_name, do_status))
+
+    if blocked:
+        msg_lines = [
+            _("❌ Sales Order tidak bisa di-cancel karena ada Delivery Order Towing "
+              "yang masih punya dokumen turunan aktif."),
+            "",
+            _("Silakan <b>cancel dokumen turunan terlebih dahulu</b>, "
+              "lalu cancel SO ini lagi:"),
+            "",
+        ]
+        for do_name, links in blocked:
+            do_link = frappe.utils.get_link_to_form("Delivery Order Towing", do_name)
+            msg_lines.append(f"<b>📋 DO: {do_link}</b>")
+            for link_desc in links:
+                msg_lines.append(f"&nbsp;&nbsp;&nbsp;&nbsp;• {link_desc}")
+            msg_lines.append("")
+
+        frappe.throw("<br>".join(msg_lines), title=_("Cancel Diblokir: Ada Turunan Aktif"))
+
+    cancelled_dos = []
+    failed_dos = []
+
+    for do_name, do_status in cancellable:
+        try:
+            _clear_so_link_to_do(do_name)
+
+            if do_status == 0:
+                frappe.db.set_value(
+                    "Delivery Order Towing", do_name,
+                    {"docstatus": 2, "status": "Cancelled"}
+                )
+            else:
+                do_doc = frappe.get_doc("Delivery Order Towing", do_name)
+                do_doc.flags.ignore_permissions = True
+                do_doc.flags.skip_cancel_check = True
+                do_doc.cancel()
+
+            cancelled_dos.append(do_name)
+
+        except Exception as e:
+            failed_dos.append((do_name, str(e)))
+            frappe.log_error(
+                f"Gagal cancel DO Towing {do_name} dari SO {doc.name}: {e}",
+                "DO Towing Auto-Cancel Error"
+            )
+
+    if cancelled_dos:
+        do_links = "<br>".join(
+            f"• {frappe.utils.get_link_to_form('Delivery Order Towing', name)}"
+            for name in cancelled_dos
+        )
+        frappe.msgprint(
+            _("✅ {0} Delivery Order Towing berhasil di-cancel:<br>{1}").format(
+                len(cancelled_dos), do_links
+            ),
+            title=_("DO Towing Auto-Cancelled"),
+            indicator="orange"
+        )
+
+    if failed_dos:
+        err_lines = [f"• <b>{name}</b>: {err}" for name, err in failed_dos]
+        frappe.throw(
+            _("⚠️ {0} DO gagal di-cancel:<br>{1}<br><br>"
+              "SO cancel di-rollback. Cek Error Log untuk detail.").format(
+                len(failed_dos), "<br>".join(err_lines)
+            ),
+            title=_("DO Cancel Gagal")
+        )
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# HOOK 2: DELIVERY ORDER TOWING → before_cancel
+# ──────────────────────────────────────────────────────────────────────────
+
+def before_cancel_do_towing(doc, method=None):
+    """
+    Hook: before_cancel pada Delivery Order Towing.
+    PO Draft → CASCADE auto-cancel | PO Submitted/PI/PE/dll → BLOCK
+    """
+    if doc.flags.get("skip_cancel_check"):
+        return
+
+    blocking_links = _get_active_linked_docs_for_do(doc.name, include_po_draft=False)
+
+    if blocking_links:
+        msg_lines = [
+            _("❌ Delivery Order Towing <b>{0}</b> tidak bisa di-cancel "
+              "karena masih punya dokumen turunan aktif.").format(doc.name),
+            "",
+            _("Silakan <b>cancel dokumen turunan terlebih dahulu</b>, "
+              "lalu cancel DO ini lagi:"),
+            "",
+        ]
+        for link_desc in blocking_links:
+            msg_lines.append(f"&nbsp;&nbsp;&nbsp;&nbsp;• {link_desc}")
+
+        frappe.throw("<br>".join(msg_lines), title=_("Cancel Diblokir: Ada Turunan Aktif"))
+
+    cancelled_pos = _cancel_po_draft_for_do(doc.name)
+    _clear_so_link_to_do(doc.name)
+
+    if cancelled_pos:
+        po_links = "<br>".join(
+            f"• {frappe.utils.get_link_to_form('Purchase Order', name)}"
+            for name in cancelled_pos
+        )
+        frappe.msgprint(
+            _("✅ {0} Purchase Order Uang Jalan (Draft) ikut di-cancel:<br>{1}").format(
+                len(cancelled_pos), po_links
+            ),
+            title=_("PO Uang Jalan Auto-Cancelled"),
+            indicator="orange"
+        )
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# HOOK 3: PURCHASE ORDER → before_cancel (defensive layer)
+# ──────────────────────────────────────────────────────────────────────────
+
+def before_cancel_po_uang_jalan(doc, method=None):
+    """
+    Hook: before_cancel pada Purchase Order.
+    HANYA aktif untuk PO Uang Jalan (yang punya custom_delivery_order).
+
+    Behavior:
+      • PI Draft → CASCADE auto-cancel
+      • PI Submitted / PE aktif → BLOCK
+      • Clear link `purchase_order_uang_jalan` di DO
+      • Reset uang_jalan_status ke "Belum Diajukan"
+    """
+    if doc.flags.get("skip_cancel_check"):
+        return
+
+    do_name = doc.get("custom_delivery_order")
+    if not do_name:
+        return  # bukan PO Uang Jalan towing, skip
+
+    blocking_links = _get_active_linked_docs_for_po(doc.name, include_pi_draft=False)
+
+    if blocking_links:
+        msg_lines = [
+            _("❌ Purchase Order <b>{0}</b> tidak bisa di-cancel "
+              "karena masih punya dokumen turunan aktif.").format(doc.name),
+            "",
+            _("Silakan <b>cancel dokumen turunan terlebih dahulu</b>, "
+              "lalu cancel PO ini lagi:"),
+            "",
+        ]
+        for link_desc in blocking_links:
+            msg_lines.append(f"&nbsp;&nbsp;&nbsp;&nbsp;• {link_desc}")
+
+        frappe.throw("<br>".join(msg_lines), title=_("Cancel Diblokir: Ada Turunan Aktif"))
+
+    cancelled_pis = _cancel_pi_draft_for_po(doc.name)
+    _clear_do_link_to_po(do_name, doc.name)
+
+    if cancelled_pis:
+        pi_links = "<br>".join(
+            f"• {frappe.utils.get_link_to_form('Purchase Invoice', name)}"
+            for name in cancelled_pis
+        )
+        frappe.msgprint(
+            _("✅ {0} Purchase Invoice (Draft) ikut di-cancel:<br>{1}").format(
+                len(cancelled_pis), pi_links
+            ),
+            title=_("Purchase Invoice Auto-Cancelled"),
+            indicator="orange"
+        )
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# WHITELIST API: Untuk tombol custom "Cancel PO Uang Jalan" di JS
+# ──────────────────────────────────────────────────────────────────────────
+
+@frappe.whitelist()
+def cancel_po_uang_jalan_with_cleanup(po_name: str):
+    """
+    Cancel PO Uang Jalan dengan cleanup link DO duluan, supaya Frappe tidak
+    munculin dialog "Cancel All Documents". Dipanggil dari tombol custom JS.
+
+    Flow:
+      1. Validasi PO ada & docstatus=1 (submitted)
+      2. Validasi PO benar-benar PO Uang Jalan towing (punya custom_delivery_order)
+      3. Cek turunan PI Submitted/PE aktif → THROW kalau ada
+      4. Cancel PI Draft yang ter-link
+      5. Clear link `purchase_order_uang_jalan` di DO + reset status
+      6. Cancel PO
+    """
+    if not frappe.db.exists("Purchase Order", po_name):
+        frappe.throw(_("Purchase Order {0} tidak ditemukan.").format(po_name))
+
+    po_doc = frappe.get_doc("Purchase Order", po_name)
+
+    if po_doc.docstatus == 2:
+        frappe.throw(_("Purchase Order {0} sudah Cancelled.").format(po_name))
+
+    if po_doc.docstatus == 0:
+        frappe.throw(_("Purchase Order {0} masih Draft, tidak perlu cancel via tombol ini. "
+                      "Hapus saja langsung.").format(po_name))
+
+    do_name = po_doc.get("custom_delivery_order")
+    if not do_name:
+        frappe.throw(_("Purchase Order {0} bukan PO Uang Jalan towing "
+                      "(tidak punya field custom_delivery_order). "
+                      "Pakai tombol Cancel default.").format(po_name))
+
+    # Cek turunan yang harus block
+    blocking_links = _get_active_linked_docs_for_po(po_name, include_pi_draft=False)
+    if blocking_links:
+        msg_lines = [
+            _("❌ Purchase Order <b>{0}</b> tidak bisa di-cancel "
+              "karena masih punya dokumen turunan aktif.").format(po_name),
+            "",
+            _("Silakan <b>cancel dokumen turunan terlebih dahulu</b>:"),
+            "",
+        ]
+        for link_desc in blocking_links:
+            msg_lines.append(f"&nbsp;&nbsp;&nbsp;&nbsp;• {link_desc}")
+
+        frappe.throw("<br>".join(msg_lines), title=_("Cancel Diblokir: Ada Turunan Aktif"))
+
+    # Cancel PI Draft duluan
+    cancelled_pis = _cancel_pi_draft_for_po(po_name)
+
+    # Clear link DO + reset status (SEBELUM cancel PO supaya Frappe tidak munculin dialog)
+    _clear_do_link_to_po(do_name, po_name)
+
+    # Cancel PO (skip re-check di before_cancel hook karena sudah di-cek di sini)
+    try:
+        po_doc.flags.ignore_permissions = True
+        po_doc.flags.skip_cancel_check = True
+        po_doc.cancel()
+    except Exception as e:
+        frappe.log_error(
+            f"Gagal cancel PO Uang Jalan {po_name}: {e}",
+            "PO Uang Jalan Cancel Error"
+        )
+        frappe.throw(_("Gagal cancel Purchase Order {0}: {1}").format(po_name, str(e)))
+
+    return {
+        "success": True,
+        "po_name": po_name,
+        "cancelled_pis": cancelled_pis,
+        "do_name": do_name,
+    }
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# HELPER FUNCTIONS — CANCEL CASCADE
+# ══════════════════════════════════════════════════════════════════════════
+
+def _cancel_po_draft_for_do(do_name: str) -> list:
+    """Cancel semua PO Uang Jalan yang masih Draft (docstatus=0) ter-link ke DO."""
+    cancelled = []
+
+    if not _field_exists("Purchase Order", "custom_delivery_order"):
+        return cancelled
+
+    pos = frappe.get_all(
+        "Purchase Order",
+        filters={"custom_delivery_order": do_name, "docstatus": 0},
+        fields=["name"]
+    )
+
+    for po in pos:
+        try:
+            frappe.db.set_value(
+                "Purchase Order", po.name,
+                {"docstatus": 2, "status": "Cancelled"}
+            )
+            cancelled.append(po.name)
+        except Exception as e:
+            frappe.log_error(
+                f"Gagal cancel PO Draft {po.name} dari DO {do_name}: {e}",
+                "PO Uang Jalan Auto-Cancel Error"
+            )
+
+    return cancelled
+
+
+def _cancel_pi_draft_for_po(po_name: str) -> list:
+    """Cancel semua PI Draft (docstatus=0) yang ter-link ke PO via PI Item.purchase_order."""
+    cancelled = []
+
+    pi_names = frappe.db.sql_list("""
+        SELECT DISTINCT pi.name
+        FROM `tabPurchase Invoice` pi
+        INNER JOIN `tabPurchase Invoice Item` pii ON pii.parent = pi.name
+        WHERE pii.purchase_order = %s
+          AND pi.docstatus = 0
+    """, (po_name,))
+
+    for pi_name in pi_names:
+        try:
+            frappe.db.set_value(
+                "Purchase Invoice", pi_name,
+                {"docstatus": 2, "status": "Cancelled"}
+            )
+            cancelled.append(pi_name)
+        except Exception as e:
+            frappe.log_error(
+                f"Gagal cancel PI Draft {pi_name} dari PO {po_name}: {e}",
+                "PI Auto-Cancel Error"
+            )
+
+    return cancelled
+
+
+def _clear_so_link_to_do(do_name: str):
+    """Clear field `delivery_order` di SO Towing Kendaraan yang nunjuk ke DO ini."""
+    frappe.db.sql("""
+        UPDATE `tabSO Towing Kendaraan`
+        SET delivery_order = NULL
+        WHERE delivery_order = %s
+    """, (do_name,))
+    frappe.db.commit()
+
+
+def _clear_do_link_to_po(do_name: str, po_name: str):
+    """Clear field purchase_order_uang_jalan di DO + reset status uang jalan."""
+    if not frappe.db.exists("Delivery Order Towing", do_name):
+        return
+
+    current_po = frappe.db.get_value(
+        "Delivery Order Towing", do_name, "purchase_order_uang_jalan"
+    )
+
+    if current_po == po_name:
+        frappe.db.sql("""
+            UPDATE `tabDelivery Order Towing`
+            SET purchase_order_uang_jalan = NULL,
+                uang_jalan_status = 'Belum Diajukan',
+                uang_jalan_amount = 0
+            WHERE name = %s
+        """, (do_name,))
+        frappe.db.commit()
+
+
+def _get_active_linked_docs_for_do(do_name: str, include_po_draft: bool = True) -> list:
+    """Cek dokumen turunan dari DO yang masih aktif (docstatus<2)."""
+    active_links = []
+
+    # 1. Purchase Order (Uang Jalan)
+    if _field_exists("Purchase Order", "custom_delivery_order"):
+        po_filters = {"custom_delivery_order": do_name, "docstatus": ["<", 2]}
+        if not include_po_draft:
+            po_filters["docstatus"] = 1
+
+        pos = frappe.get_all(
+            "Purchase Order",
+            filters=po_filters,
+            fields=["name", "docstatus", "workflow_state", "status"]
+        )
+        for po in pos:
+            state = po.get("workflow_state") or po.get("status") or _docstatus_label(po["docstatus"])
+            link = frappe.utils.get_link_to_form("Purchase Order", po["name"])
+            active_links.append(f"Purchase Order (Uang Jalan): {link} [{state}]")
+
+    # 2. Purchase Invoice
+    if _field_exists("Purchase Invoice", "custom_delivery_order"):
+        pis = frappe.get_all(
+            "Purchase Invoice",
+            filters={"custom_delivery_order": do_name, "docstatus": ["<", 2]},
+            fields=["name", "docstatus", "status"]
+        )
+        for pi in pis:
+            state = pi.get("status") or _docstatus_label(pi["docstatus"])
+            link = frappe.utils.get_link_to_form("Purchase Invoice", pi["name"])
+            active_links.append(f"Purchase Invoice: {link} [{state}]")
+
+    # 3. Payment Entry
+    if _field_exists("Payment Entry", "delivery_order_towing"):
+        pes = frappe.get_all(
+            "Payment Entry",
+            filters={"delivery_order_towing": do_name, "docstatus": ["<", 2]},
+            fields=["name", "docstatus", "status"]
+        )
+        for pe in pes:
+            state = pe.get("status") or _docstatus_label(pe["docstatus"])
+            link = frappe.utils.get_link_to_form("Payment Entry", pe["name"])
+            active_links.append(f"Payment Entry: {link} [{state}]")
+
+    # 4. Sales Invoice
+    if _field_exists("Sales Invoice", "custom_delivery_order"):
+        sis = frappe.get_all(
+            "Sales Invoice",
+            filters={"custom_delivery_order": do_name, "docstatus": ["<", 2]},
+            fields=["name", "docstatus", "status"]
+        )
+        for si in sis:
+            state = si.get("status") or _docstatus_label(si["docstatus"])
+            link = frappe.utils.get_link_to_form("Sales Invoice", si["name"])
+            active_links.append(f"Sales Invoice: {link} [{state}]")
+
+    # 5. Expense Claim
+    if _field_exists("Expense Claim", "custom_delivery_order"):
+        ecs = frappe.get_all(
+            "Expense Claim",
+            filters={"custom_delivery_order": do_name, "docstatus": ["<", 2]},
+            fields=["name", "docstatus", "status"]
+        )
+        for ec in ecs:
+            state = ec.get("status") or _docstatus_label(ec["docstatus"])
+            link = frappe.utils.get_link_to_form("Expense Claim", ec["name"])
+            active_links.append(f"Expense Claim: {link} [{state}]")
+
+    # 6. Driver Commission
+    try:
+        dc_parents = frappe.get_all(
+            "Driver Commission Item",
+            filters={"delivery_order_towing": do_name},
+            fields=["parent"]
+        )
+        seen_dc = set()
+        for row in dc_parents:
+            parent = row.get("parent")
+            if not parent or parent in seen_dc:
+                continue
+            seen_dc.add(parent)
+
+            dc_status = frappe.db.get_value(
+                "Driver Commission", parent, ["docstatus", "status"], as_dict=True
+            )
+            if dc_status and dc_status.get("docstatus", 2) < 2:
+                state = dc_status.get("status") or _docstatus_label(dc_status["docstatus"])
+                link = frappe.utils.get_link_to_form("Driver Commission", parent)
+                active_links.append(f"Driver Commission: {link} [{state}]")
+    except Exception:
+        pass
+
+    return active_links
+
+
+def _get_active_linked_docs_for_po(po_name: str, include_pi_draft: bool = True) -> list:
+    """Cek dokumen turunan dari PO yang masih aktif."""
+    active_links = []
+
+    # 1. Purchase Invoice
+    pi_filter_docstatus = "pi.docstatus < 2" if include_pi_draft else "pi.docstatus = 1"
+    pis = frappe.db.sql(f"""
+        SELECT DISTINCT pi.name, pi.docstatus, pi.status
+        FROM `tabPurchase Invoice` pi
+        INNER JOIN `tabPurchase Invoice Item` pii ON pii.parent = pi.name
+        WHERE pii.purchase_order = %s
+          AND {pi_filter_docstatus}
+    """, (po_name,), as_dict=True)
+
+    for pi in pis:
+        state = pi.get("status") or _docstatus_label(pi["docstatus"])
+        link = frappe.utils.get_link_to_form("Purchase Invoice", pi["name"])
+        active_links.append(f"Purchase Invoice: {link} [{state}]")
+
+    # 2. Payment Entry
+    pes = frappe.db.sql("""
+        SELECT DISTINCT pe.name, pe.docstatus, pe.status
+        FROM `tabPayment Entry` pe
+        INNER JOIN `tabPayment Entry Reference` per ON per.parent = pe.name
+        WHERE per.reference_doctype = 'Purchase Order'
+          AND per.reference_name = %s
+          AND pe.docstatus < 2
+    """, (po_name,), as_dict=True)
+
+    for pe in pes:
+        state = pe.get("status") or _docstatus_label(pe["docstatus"])
+        link = frappe.utils.get_link_to_form("Payment Entry", pe["name"])
+        active_links.append(f"Payment Entry: {link} [{state}]")
+
+    return active_links
+
+
+def _docstatus_label(docstatus: int) -> str:
+    return {0: "Draft", 1: "Submitted", 2: "Cancelled"}.get(docstatus, "Unknown")

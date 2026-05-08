@@ -194,6 +194,9 @@ doc_events = {
             "imogi_finance.sales_order_payment_status.update_from_sales_order",
             "imogi_finance.overrides.delivery_order_towing.create_do_from_sales_order",
         ],
+        "before_cancel": [
+            "imogi_finance.overrides.delivery_order_towing.cancel_do_from_sales_order",
+        ],
         "on_cancel": [
             "imogi_finance.sales_order_payment_status.update_from_sales_order",
         ],
@@ -428,11 +431,13 @@ doc_events = {
         "after_save": "imogi_finance.overrides.delivery_order_towing.after_save",
         "on_update_after_submit": "imogi_finance.overrides.delivery_order_towing.on_update_after_submit",
         "on_submit": "imogi_finance.overrides.delivery_order_towing.on_submit",
+        "before_cancel": "imogi_finance.overrides.delivery_order_towing.before_cancel_do_towing",
     },
     "Purchase Order": {
         "after_insert": "imogi_finance.events.purchase_order_towing.after_insert",
         "on_update": "imogi_finance.overrides.delivery_order_towing.update_do_from_po",
         "on_submit": "imogi_finance.overrides.delivery_order_towing.update_do_from_po",
+        "before_cancel": "imogi_finance.overrides.delivery_order_towing.before_cancel_po_uang_jalan",
         "on_cancel": "imogi_finance.overrides.delivery_order_towing.update_do_from_po",
     },
 }
