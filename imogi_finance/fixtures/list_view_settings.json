@@ -54,5 +54,19 @@
   "modified": "2026-05-05 00:00:00.000000",
   "name": "Payroll Entry",
   "total_fields": "6"
+ },
+ {
+  "allow_edit": 0,
+  "disable_auto_refresh": 0,
+  "disable_automatic_recency_filters": 0,
+  "disable_comment_count": 0,
+  "disable_count": 0,
+  "disable_sidebar_stats": 0,
+  "docstatus": 0,
+  "doctype": "List View Settings",
+  "fields": "[{\"fieldname\": \"driver_nama\", \"label\": \"Nama Driver\"}, {\"fieldname\": \"payment_entry\", \"label\": \"Payment Entry\"}, {\"fieldname\": \"from_date\", \"label\": \"Dari Tanggal\"}, {\"fieldname\": \"to_date\", \"label\": \"Sampai Tanggal\"}, {\"fieldname\": \"status\", \"label\": \"Status\"}]",
+  "modified": "2026-05-08 12:00:00.000000",
+  "name": "Driver Commission",
+  "total_fields": "5"
  }
 ]

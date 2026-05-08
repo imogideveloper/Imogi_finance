@@ -62,13 +62,13 @@ def _ensure_expense_request_reference(doc, expense_request: str | None) -> None:
     if not expense_request or doc.get("imogi_expense_request"):
         return
 
-    if hasattr(doc, "db_set"):
-        try:
-            doc.db_set("imogi_expense_request", expense_request, update_modified=False)
-            return
-        except Exception:
-            pass
-
+    # Gunakan frappe.db.set_value langsung — tidak ubah timestamp PE
+    if doc.name:
+        frappe.db.set_value(
+            "Payment Entry", doc.name,
+            "imogi_expense_request", expense_request,
+            update_modified=False,
+        )
     setattr(doc, "imogi_expense_request", expense_request)
 
 
@@ -209,41 +209,54 @@ def after_insert(doc, method=None):
 
 
 def _populate_towing_from_do(doc, do_field: str):
-    """Helper: ambil data kendaraan langsung dari DO (bukan dari SO)."""
+    """Helper: ambil data kendaraan langsung dari DO — Raw SQL, no .save()."""
     do_name = doc.get(do_field)
     if not do_name:
         return
     try:
-        do = frappe.get_doc("Delivery Order Towing", do_name)
+        do = frappe.db.get_value(
+            "Delivery Order Towing", do_name,
+            ["nomor_rangka", "nomor_polisi", "tipe_kendaraan", "nomor_mesin"],
+            as_dict=True
+        )
+        if not do:
+            return
 
-        # Ambil so_item_code dari SO Towing Kendaraan yang linked ke DO ini
         item_code = frappe.db.get_value(
             "SO Towing Kendaraan",
             {"delivery_order": do_name},
             "so_item_code"
-        )
+        ) or ""
 
-        rows = [{
-            "so_item_code": item_code or "",
-            "nomor_rangka": do.nomor_rangka or "",
-            "nomor_polisi": do.nomor_polisi or "",
-            "tipe_model"  : do.tipe_kendaraan or "",
-            "nomor_mesin" : do.nomor_mesin or "",
-        }]
+        # Hapus child rows lama via SQL — tidak trigger save PE
+        frappe.db.sql("""
+            DELETE FROM `tabPayment Entry Detail Kendaraan`
+            WHERE parent = %s AND parenttype = %s AND parentfield = 'custom_towing_kendaraan'
+        """, (doc.name, doc.doctype))
 
-        linked = frappe.get_doc(doc.doctype, doc.name)
-        linked.set("custom_towing_kendaraan", [])
-        for row in rows:
-            linked.append("custom_towing_kendaraan", {
-                "so_item_code": row["so_item_code"],
-                "nomor_rangka": row["nomor_rangka"],
-                "nomor_polisi": row["nomor_polisi"],
-                "tipe_model"  : row["tipe_model"],
-                "nomor_mesin" : row["nomor_mesin"],
-            })
-        linked.save(ignore_permissions=True)
+        # Insert baru via SQL langsung — tidak ubah timestamp PE
+        import uuid
+        row_name = str(uuid.uuid4()).replace("-", "")[:10]
+        frappe.db.sql("""
+            INSERT INTO `tabPayment Entry Detail Kendaraan`
+                (name, parent, parenttype, parentfield, idx,
+                 so_item_code, nomor_rangka, nomor_polisi, tipe_model, nomor_mesin,
+                 creation, modified, modified_by, owner, docstatus)
+            VALUES (%s, %s, %s, 'custom_towing_kendaraan', 1,
+                    %s, %s, %s, %s, %s,
+                    NOW(), NOW(), %s, %s, 0)
+        """, (
+            row_name, doc.name, doc.doctype,
+            item_code,
+            do.get("nomor_rangka") or "",
+            do.get("nomor_polisi") or "",
+            do.get("tipe_kendaraan") or "",
+            do.get("nomor_mesin") or "",
+            frappe.session.user, frappe.session.user,
+        ))
+        frappe.db.commit()
         frappe.logger().info(
-            f"[Towing] {doc.doctype} {doc.name}: 1 baris diisi dari DO {do_name}"
+            f"[Towing] {doc.doctype} {doc.name}: 1 baris diisi dari DO {do_name} via Raw SQL"
         )
     except Exception as exc:
         frappe.log_error(
