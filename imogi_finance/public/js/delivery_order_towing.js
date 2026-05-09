@@ -5,11 +5,18 @@
 // Event handler untuk child table SO Towing Kendaraan
 frappe.ui.form.on('Sales Order', {
     refresh: function(frm) {
-         if (frm.doc.docstatus === 0) {
+        if (frm.doc.docstatus === 0) {
             frm.add_custom_button(__('Generate Detail Kendaraan'), function() {
                 _generate_detail_kendaraan(frm);
             }, __('Towing'));
         }
+
+        // Sembunyikan tombol Cancel bawaan ERPNext saat SO sudah submit
+        // agar user pakai tombol "Cancel SO Towing" yang sudah ada validasinya
+        if (frm.doc.docstatus === 1) {
+            _hide_native_cancel_btn(frm);
+        }
+
         _inject_generate_button_on_items_grid(frm);
         [250, 700, 1400].forEach(function(ms) {
             setTimeout(function() {
@@ -23,6 +30,17 @@ frappe.ui.form.on('Sales Order', {
         );
     }
 });
+
+// Sembunyikan tombol "Cancel" bawaan Frappe/ERPNext
+function _hide_native_cancel_btn(frm) {
+    [100, 400, 800].forEach(function(ms) {
+        setTimeout(function() {
+            frm.page.wrapper.find('.page-actions .btn').filter(function() {
+                return $(this).text().trim() === __('Cancel');
+            }).hide();
+        }, ms);
+    });
+}
 
 function _generate_detail_kendaraan(frm) {
     var towing_items = (frm.doc.items || []).filter(function(item) {
@@ -186,54 +204,123 @@ frappe.ui.form.on('Delivery Order Towing', {
     render_custom_buttons: function(frm) {
         if (frm.is_new()) return;
 
-        const status = frm.doc.status;
-        const roles  = frappe.user_roles;
-        const isKoor = roles.includes('Towing Koordinator') || roles.includes('Sales Manager');
-        const isDrvr = roles.includes('Towing Driver');
+        const status       = frm.doc.status;
+        const roles        = frappe.user_roles;
+        const isKoor       = roles.includes('Sales Manager') || roles.includes('Admin Towing');
+        const isDrvr       = roles.includes('Towing Driver');
+        const isDriverOnly = isDrvr && !isKoor;
+
+        // ══════════════════════════════════════════════════════
+        // MODE DRIVER (Towing Driver, bukan Admin/Koordinator)
+        // Aturan:
+        //  • Status Draft           → TIDAK ADA tombol
+        //  • Belum di-assign driver → TIDAK ADA tombol
+        //  • Sudah assigned, TAPI bukan driver tujuan DO ini → TIDAK ADA tombol
+        //  • Sudah assigned DAN driver tujuan              → tampilkan aksi
+        // ══════════════════════════════════════════════════════
+        if (isDriverOnly) {
+            // Hanya tampilkan "Lihat Invoice" jika ada
+            if (frm.doc.sales_invoice) {
+                frm.add_custom_button(__('Lihat Invoice'), () => {
+                    frappe.set_route('Form', 'Sales Invoice', frm.doc.sales_invoice);
+                });
+            }
+
+            // Status Draft atau belum ada driver → tidak ada tombol aksi
+            if (status === 'Draft' || !frm.doc.driver) return;
+
+            // Cek apakah user yang login adalah driver yang di-assign ke DO ini
+            frappe.db.get_value('Driver', frm.doc.driver, 'user', function(r) {
+                if (!r || r.user !== frappe.session.user) {
+                    // Bukan driver tujuan → tidak tampilkan tombol aksi
+                    return;
+                }
+
+                // Driver tujuan yang benar — tampilkan tombol sesuai status
+                if (status === 'Assigned') {
+                    frm.add_custom_button(__('Konfirmasi Pick Up'), () => {
+                        frm.trigger('action_pickup');
+                    }, __('Aksi')).addClass('btn-primary');
+                }
+                if (status === 'Pick Up') {
+                    frm.add_custom_button(__('Konfirmasi Delivered'), () => {
+                        frm.trigger('action_delivered');
+                    }, __('Aksi')).addClass('btn-primary');
+                }
+                // Delivered → driver selesaikan DO (ubah ke Awaiting Dokumen)
+                // Setelah Awaiting Dokumen, hanya Admin Towing yg bisa Konfirmasi Dokumen
+                if (status === 'Delivered') {
+                    frm.add_custom_button(__('Selesaikan DO'), () => {
+                        frappe.confirm(
+                            __('Tandai DO <b>{0}</b> sebagai selesai?<br>'
+                               + '<small>Status akan berubah ke <b>Awaiting Dokumen</b>. '
+                               + 'Konfirmasi dokumen selanjutnya dilakukan oleh Admin Towing.</small>',
+                               [frm.doc.name]),
+                            function() {
+                                frm.set_value('status', 'Awaiting Dokument');
+                                frm.save().then(() => {
+                                    frappe.show_alert({
+                                        message: __('Status DO diupdate ke Awaiting Dokumen'),
+                                        indicator: 'orange'
+                                    }, 5);
+                                });
+                            }
+                        );
+                    }, __('Aksi')).addClass('btn-success');
+                }
+                // Status Awaiting Dokument → tidak ada tombol untuk driver
+            });
+            return; // Stop — driver tidak perlu lihat tombol Koordinator
+        }
+
+        // ══════════════════════════════════════════════════════
+        // MODE KOORDINATOR / ADMIN TOWING
+        // ══════════════════════════════════════════════════════
+        if (!isKoor) return;
 
         // ─ Draft: Assign & Submit
-        if (status === 'Draft' && isKoor) {
+        if (status === 'Draft') {
             frm.add_custom_button(__('Assign Driver & Submit'), () => {
                 frm.trigger('action_assign_submit');
             }, __('Aksi'));
         }
 
-        // ─ Assigned: Buat Uang Jalan via Finance Imogi
-        if (status === 'Assigned' && isKoor && !frm.doc.expense_claim) {
+        // ─ Assigned: Buat Uang Jalan
+        if (status === 'Assigned' && !frm.doc.expense_claim) {
             frm.add_custom_button(__('Buat Uang Jalan (Finance Imogi)'), () => {
                 frm.trigger('action_create_uang_jalan');
             }, __('Aksi'));
         }
 
         // ─ Assigned: Konfirmasi Pick Up
-        if (status === 'Assigned' && (isDrvr || isKoor)) {
+        if (status === 'Assigned') {
             frm.add_custom_button(__('Konfirmasi Pick Up'), () => {
                 frm.trigger('action_pickup');
             }, __('Aksi')).addClass('btn-primary');
         }
 
         // ─ Pick Up: Konfirmasi Delivered
-        if (status === 'Pick Up' && (isDrvr || isKoor)) {
+        if (status === 'Pick Up') {
             frm.add_custom_button(__('Konfirmasi Delivered'), () => {
                 frm.trigger('action_delivered');
             }, __('Aksi')).addClass('btn-primary');
         }
 
-        // ─ Delivered: Done + Auto Invoice ke Finance Imogi
-        if (status === 'Delivered' && isKoor) {
+        // ─ Delivered: Selesaikan & Buat Invoice
+        if (status === 'Delivered') {
             frm.add_custom_button(__('Selesaikan & Buat Invoice'), () => {
                 frm.trigger('action_done_and_invoice');
             }, __('Aksi')).addClass('btn-success');
         }
 
-        // ─ Done tanpa invoice: tombol buat invoice manual
-        if (status === 'Done' && isKoor && !frm.doc.sales_invoice) {
+        // ─ Done tanpa invoice: buat invoice manual
+        if (status === 'Done' && !frm.doc.sales_invoice) {
             frm.add_custom_button(__('Buat Invoice ke Finance Imogi'), () => {
                 frm.trigger('action_create_invoice_only');
             }, __('Aksi')).addClass('btn-warning');
         }
 
-        // ─ Link ke Sales Invoice Finance Imogi
+        // ─ Link ke Sales Invoice
         if (frm.doc.sales_invoice) {
             frm.add_custom_button(__('Lihat Invoice'), () => {
                 frappe.set_route('Form', 'Sales Invoice', frm.doc.sales_invoice);
@@ -251,8 +338,8 @@ frappe.ui.form.on('Delivery Order Towing', {
     // ── READ-ONLY BERDASARKAN ROLE ────────────────────────────
     set_field_readonly_by_role: function(frm) {
         const isDrvrOnly = frappe.user_roles.includes('Towing Driver') &&
-                           !frappe.user_roles.includes('Towing Koordinator') &&
-                           !frappe.user_roles.includes('Sales Manager');
+                           !frappe.user_roles.includes('Sales Manager') &&
+                           !frappe.user_roles.includes('Admin Towing');
         if (isDrvrOnly) {
             const editable = ['catatan_driver', 'foto_kendaraan', 'foto_delivered', 'kondisi_tabel'];
             frm.fields.forEach(f => {

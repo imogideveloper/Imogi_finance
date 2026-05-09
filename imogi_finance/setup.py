@@ -93,6 +93,16 @@ def ensure_towing_workflow_consistency():
     status_fieldname = "status"
     awaiting_state = "Awaiting Dokument"
 
+    # Pastikan role towing tersedia sebelum workflow diproses
+    for role_name in ["Admin Towing", "Towing Driver"]:
+        if not frappe.db.exists("Role", role_name):
+            role = frappe.new_doc("Role")
+            role.role_name = role_name
+            role.desk_access = 1
+            role.insert(ignore_permissions=True)
+            frappe.db.commit()
+            print(f"[setup] Created role: {role_name}")
+
     # Force reload DocType model
     frappe.reload_doc("imogi_finance", "doctype", "delivery_order_towing", force=True)
 
@@ -235,45 +245,68 @@ def ensure_towing_workflow_consistency():
                 wf.remove(t)
                 changed = True
 
-        # Pastikan Draft → Assigned ada untuk Sales Manager & Sales User
-        for role in ["Sales Manager", "Sales User"]:
-            has = any(
-                t.state == "Draft"
-                and t.next_state == "Assigned"
-                and t.action == "Assign Driver"
-                and t.allowed == role
+        # Hapus semua transition dengan role yang tidak ada di database
+        for t in list(wf.transitions):
+            if t.allowed and not frappe.db.exists("Role", t.allowed):
+                print(f"[setup] Removed invalid role transition: {t.state} → {t.next_state} [{t.allowed}]")
+                wf.remove(t)
+                changed = True
+
+        # Hapus transisi System Manager — semua aksi DO Towing dikontrol
+        # via role spesifik (Admin Towing, Sales Manager, Towing Driver)
+        for t in list(wf.transitions):
+            if t.allowed == "System Manager":
+                print(f"[setup] Removed System Manager transition: {t.state} → {t.next_state}")
+                wf.remove(t)
+                changed = True
+
+        # Definisi transisi yang harus ada (role spesifik, tanpa System Manager)
+        required_transitions = [
+            # Draft → Assigned (hanya Admin/Manager, BUKAN Driver)
+            {"state": "Draft",     "action": "Assign Driver",       "next_state": "Assigned",         "allowed": "Admin Towing"},
+            {"state": "Draft",     "action": "Assign Driver",       "next_state": "Assigned",         "allowed": "Sales Manager"},
+            # Assigned → Pick Up (Admin + Driver)
+            {"state": "Assigned",  "action": "Konfirmasi Pick Up",  "next_state": "Pick Up",          "allowed": "Admin Towing"},
+            {"state": "Assigned",  "action": "Konfirmasi Pick Up",  "next_state": "Pick Up",          "allowed": "Sales Manager"},
+            {"state": "Assigned",  "action": "Konfirmasi Pick Up",  "next_state": "Pick Up",          "allowed": "Towing Driver"},
+            # Pick Up → Delivered (Admin + Driver)
+            {"state": "Pick Up",   "action": "Konfirmasi Delivered","next_state": "Delivered",        "allowed": "Admin Towing"},
+            {"state": "Pick Up",   "action": "Konfirmasi Delivered","next_state": "Delivered",        "allowed": "Sales Manager"},
+            {"state": "Pick Up",   "action": "Konfirmasi Delivered","next_state": "Delivered",        "allowed": "Towing Driver"},
+            # Delivered → Awaiting Dokument (Admin + Driver, BUKAN hanya Admin)
+            {"state": "Delivered", "action": "Selesaikan DO",       "next_state": "Awaiting Dokument","allowed": "Admin Towing"},
+            {"state": "Delivered", "action": "Selesaikan DO",       "next_state": "Awaiting Dokument","allowed": "Sales Manager"},
+            {"state": "Delivered", "action": "Selesaikan DO",       "next_state": "Awaiting Dokument","allowed": "Towing Driver"},
+            # Awaiting Dokument → Done (hanya Admin, BUKAN Driver)
+            {"state": "Awaiting Dokument", "action": "Konfirmasi Dokumen", "next_state": "Done",     "allowed": "Admin Towing"},
+            {"state": "Awaiting Dokument", "action": "Konfirmasi Dokumen", "next_state": "Done",     "allowed": "Sales Manager"},
+            # Cancel (hanya Admin)
+            {"state": "Assigned",  "action": "Cancel",              "next_state": "Cancelled",        "allowed": "Admin Towing"},
+            {"state": "Assigned",  "action": "Cancel",              "next_state": "Cancelled",        "allowed": "Sales Manager"},
+        ]
+
+        for req in required_transitions:
+            # Skip jika role tidak ada di DB
+            if not frappe.db.exists("Role", req["allowed"]):
+                continue
+            exists = any(
+                t.state == req["state"]
+                and t.next_state == req["next_state"]
+                and t.action == req["action"]
+                and t.allowed == req["allowed"]
                 for t in wf.transitions
             )
-            if not has:
+            if not exists:
                 wf.append("transitions", {
-                    "state": "Draft",
-                    "action": "Assign Driver",
-                    "next_state": "Assigned",
-                    "allowed": role,
+                    "state": req["state"],
+                    "action": req["action"],
+                    "next_state": req["next_state"],
+                    "allowed": req["allowed"],
                     "allow_self_approval": 1,
                     "send_email_to_creator": 0,
                 })
                 changed = True
-                print(f"[setup] Added: Draft → Assigned [{role}]")
-
-        # Pastikan Awaiting Dokument → Done ada
-        has_konfirmasi = any(
-            t.state == "Awaiting Dokument"
-            and t.next_state == "Done"
-            and t.action == "Konfirmasi Dokumen"
-            for t in wf.transitions
-        )
-        if not has_konfirmasi:
-            wf.append("transitions", {
-                "state": "Awaiting Dokument",
-                "action": "Konfirmasi Dokumen",
-                "next_state": "Done",
-                "allowed": "Sales Manager",
-                "allow_self_approval": 1,
-                "send_email_to_creator": 0,
-            })
-            changed = True
-            print("[setup] Added: Awaiting Dokument → Done [Sales Manager]")
+                print(f"[setup] Added: {req['state']} → {req['next_state']} [{req['allowed']}]")
 
         if changed:
             wf.save(ignore_permissions=True)

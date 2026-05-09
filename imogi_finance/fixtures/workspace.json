@@ -23229,7 +23229,7 @@
   "is_hidden": 0,
   "label": "Towing Imogi",
   "links": [],
-  "modified": "2026-05-08 00:00:00.000000",
+  "modified": "2026-05-09 00:00:00.000000",
   "module": "Imogi Finance",
   "name": "Towing Imogi",
   "number_cards": [],
@@ -23237,7 +23237,13 @@
   "public": 1,
   "quick_lists": [],
   "restrict_to_domain": null,
-  "roles": [],
+  "roles": [
+   {"role": "Admin Towing"},
+   {"role": "Sales Manager"},
+   {"role": "Finance Manager"},
+   {"role": "Accounts Manager"},
+   {"role": "System Manager"}
+  ],
   "sequence_id": -1.0,
   "shortcuts": [
    {
@@ -23531,5 +23537,51 @@
    }
   ],
   "title": "Towing Imogi"
+ },
+ {
+  "charts": [],
+  "content": "[{\"id\": \"hdr_do\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Delivery Order Towing</b></span>\", \"col\": 12}}, {\"id\": \"s_dot\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Delivery Order Towing\", \"col\": 6}}]",
+  "custom_blocks": [],
+  "docstatus": 0,
+  "doctype": "Workspace",
+  "for_user": null,
+  "hide_custom": 0,
+  "icon": "truck",
+  "indicator_color": "orange",
+  "is_hidden": 0,
+  "label": "Towing Driver",
+  "links": [],
+  "modified": "2026-05-09 00:00:00.000000",
+  "module": "Imogi Finance",
+  "name": "Towing Driver",
+  "number_cards": [],
+  "parent_page": "",
+  "public": 1,
+  "quick_lists": [],
+  "restrict_to_domain": null,
+  "roles": [
+   {"role": "Towing Driver"}
+  ],
+  "sequence_id": -0.9,
+  "shortcuts": [
+   {
+    "color": "Blue",
+    "doc_view": "",
+    "format": null,
+    "icon": "truck",
+    "kanban_board": null,
+    "label": "Delivery Order Towing",
+    "link_to": "Delivery Order Towing",
+    "parent": "Towing Driver",
+    "parentfield": "shortcuts",
+    "parenttype": "Workspace",
+    "report_ref_doctype": null,
+    "restrict_to_domain": null,
+    "stats_filter": null,
+    "type": "DocType",
+    "url": null
+   }
+  ],
+  "title": "Towing Driver"
  }
 ]

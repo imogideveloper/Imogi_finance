@@ -13,6 +13,7 @@ app_include_css = "/assets/imogi_finance/css/custom.css"
 
 # include js in doctype views
 doctype_js = {
+    "User": "public/js/towing_admin_tools.js",
     "Sales Order": [
         "public/js/sales_order.js",
         "public/js/delivery_order_towing.js",
@@ -118,6 +119,9 @@ fixtures = [
     {"doctype": "Report"},
     {"doctype": "Print Format", "filters": [["module", "=", "Imogi Finance"]]},
     {"doctype": "Workspace"},
+
+    # 6. Roles (khusus towing)
+    {"doctype": "Role", "filters": [["name", "in", ["Admin Towing", "Towing Driver"]]]},
 ]
 # DocType Class
 override_doctype_class = {
@@ -453,6 +457,7 @@ doc_events = {
         "on_update_after_submit": "imogi_finance.overrides.delivery_order_towing.on_update_after_submit",
         "on_submit": "imogi_finance.overrides.delivery_order_towing.on_submit",
         "before_cancel": "imogi_finance.overrides.delivery_order_towing.before_cancel_do_towing",
+        "on_trash": "imogi_finance.overrides.delivery_order_towing.on_trash_do_towing",
     },
     "Purchase Order": {
         "validate": "imogi_finance.events.transaction_price_lock.validate_no_price_change",
@@ -461,6 +466,7 @@ doc_events = {
         "on_submit": "imogi_finance.overrides.delivery_order_towing.update_do_from_po",
         "before_cancel": "imogi_finance.overrides.delivery_order_towing.before_cancel_po_uang_jalan",
         "on_cancel": "imogi_finance.overrides.delivery_order_towing.update_do_from_po",
+        "on_trash": "imogi_finance.overrides.delivery_order_towing.on_trash_po_uang_jalan",
     },
 }
 

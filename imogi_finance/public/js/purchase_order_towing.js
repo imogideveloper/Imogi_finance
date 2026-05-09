@@ -23,6 +23,10 @@ frappe.ui.form.on("Purchase Order", {
             frm.add_custom_button(__("Cancel PO Uang Jalan"), () => {
                 cancel_po_uang_jalan_custom(frm);
             }).addClass("btn-danger");
+
+            // Sembunyikan tombol Cancel bawaan ERPNext
+            // agar user pakai tombol "Cancel PO Uang Jalan" yang sudah ada validasinya
+            _hide_native_cancel_btn_po(frm);
         }
     },
 
@@ -128,4 +132,16 @@ function fetch_towing_data_po(frm) {
         .catch(() => {
             frappe.msgprint(__("Delivery Order Towing tidak ditemukan."));
         });
+}
+
+
+// Sembunyikan tombol "Cancel" bawaan Frappe/ERPNext pada PO
+function _hide_native_cancel_btn_po(frm) {
+    [100, 400, 800].forEach(function(ms) {
+        setTimeout(function() {
+            frm.page.wrapper.find('.page-actions .btn').filter(function() {
+                return $(this).text().trim() === __('Cancel');
+            }).hide();
+        }, ms);
+    });
 }
