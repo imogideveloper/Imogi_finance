@@ -143,8 +143,19 @@ def get_data(filters):
 
         payment_info = paid_dos.get(do.delivery_order_towing)
         if payment_info:
-            status_komisi = "Paid"
-            payment_ref = payment_info.get("payment_entry") or payment_info.get("dc_name", "")
+            # ✅ FIX: Status komisi dibaca dari dc.status, bukan asal ada DC
+            #   - dc.status == "Paid"     → komisi sudah dibayar (PE submitted)
+            #   - dc.status == "Approved" → DC sudah dibuat tapi PE belum/sudah cancel
+            #                                → Unpaid (belum dibayar)
+            dc_status = payment_info.get("status")
+            if dc_status == "Paid":
+                status_komisi = "Paid"
+                payment_ref = payment_info.get("payment_entry") or payment_info.get("dc_name", "")
+            else:
+                # status "Approved" atau lainnya → masih Unpaid
+                status_komisi = "Unpaid"
+                # Tetap tampilkan DC name supaya user tahu DC sudah dibuat
+                payment_ref = payment_info.get("dc_name", "—")
         else:
             status_komisi = "Unpaid"
             payment_ref = "—"

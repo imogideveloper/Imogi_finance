@@ -4,7 +4,7 @@
  "custom_format": 1,
  "default_print_language": "id",
  "disabled": 0,
- "doc_type": "Driver Commission",
+ "doc_type": "Payment Entry",
  "docstatus": 0,
  "doctype": "Print Format",
  "font": "Default",

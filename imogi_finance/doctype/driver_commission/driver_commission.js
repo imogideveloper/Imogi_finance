@@ -23,7 +23,89 @@ frappe.ui.form.on('Driver Commission', {
             frm.add_custom_button(__('Open Payment Entry'), () => {
                 frappe.set_route('Form', 'Payment Entry', frm.doc.payment_entry);
             });
+
+            // ─────────────────────────────────────────────────────────
+            // Tombol "Cancel Payment Entry" — muncul kalau:
+            //   - DC ini sudah Paid (artinya PE sudah submitted)
+            //   - DC docstatus = 1 (Submitted, belum cancel)
+            // Tombol ini guide user ke flow yang benar:
+            //   Cancel PE → DC otomatis kembali "Approved" → bisa cancel DC
+            // ─────────────────────────────────────────────────────────
+            if (frm.doc.docstatus === 1 && frm.doc.status === 'Paid') {
+                frm.dashboard.add_comment(
+                    __('💡 Untuk cancel komisi ini, cancel <b>Payment Entry {0}</b> terlebih dahulu. ' +
+                       'Setelah PE di-cancel, status komisi akan otomatis kembali ke Approved (Unpaid).',
+                       [frm.doc.payment_entry]),
+                    'blue',
+                    true
+                );
+
+                frm.add_custom_button(__('Cancel Payment Entry'), () => {
+                    frm.trigger('do_cancel_payment_entry');
+                }).addClass('btn-danger');
+            }
         }
+    },
+
+    do_cancel_payment_entry(frm) {
+        const pe_name = frm.doc.payment_entry;
+        if (!pe_name) {
+            frappe.msgprint(__('Tidak ada Payment Entry yang ter-link.'));
+            return;
+        }
+
+        frappe.confirm(
+            __('Yakin cancel Payment Entry <b>{0}</b>?<br><br>' +
+               'Setelah cancel:<br>' +
+               '• Status PE akan menjadi <b>Cancelled</b><br>' +
+               '• Status komisi ini akan otomatis kembali ke <b>Approved (Unpaid)</b><br>' +
+               '• Anda baru bisa cancel Driver Commission ini setelah PE di-cancel',
+               [pe_name]),
+            function() {
+                frappe.dom.freeze(__('Membatalkan Payment Entry...'));
+
+                frappe.db.get_doc('Payment Entry', pe_name).then((pe_doc) => {
+                    if (pe_doc.docstatus !== 1) {
+                        frappe.dom.unfreeze();
+                        frappe.msgprint({
+                            title: __('Tidak Bisa Cancel'),
+                            message: __('Payment Entry {0} tidak dalam status Submitted ' +
+                                       '(docstatus saat ini: {1}).', [pe_name, pe_doc.docstatus]),
+                            indicator: 'orange'
+                        });
+                        return;
+                    }
+
+                    // Cancel PE via frappe.client.cancel
+                    frappe.call({
+                        method: 'frappe.client.cancel',
+                        args: {
+                            doctype: 'Payment Entry',
+                            name: pe_name
+                        },
+                        callback: function(r) {
+                            frappe.dom.unfreeze();
+
+                            if (!r.exc) {
+                                frappe.show_alert({
+                                    message: __('✅ Payment Entry {0} berhasil di-cancel. ' +
+                                                'Status komisi otomatis kembali ke Approved.',
+                                                [pe_name]),
+                                    indicator: 'green'
+                                }, 7);
+                                frm.reload_doc();
+                            }
+                        },
+                        error: function() {
+                            frappe.dom.unfreeze();
+                        }
+                    });
+                }).catch(() => {
+                    frappe.dom.unfreeze();
+                    frappe.msgprint(__('Gagal mengambil data Payment Entry.'));
+                });
+            }
+        );
     },
 
     do_generate(frm) {

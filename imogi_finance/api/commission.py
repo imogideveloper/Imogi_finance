@@ -89,13 +89,11 @@ def create_payment_entry_from_report(do_names, supplier, driver_nama, total_komi
     dc.total_komisi = total_komisi
     dc.do_count     = len(do_names)
     dc.flags.ignore_permissions = True
-    dc.flags.ignore_version    = True
     dc.insert(ignore_permissions=True)
     frappe.db.commit()
     # Fetch fresh dari DB sebelum submit
     dc = frappe.get_doc("Driver Commission", dc.name)
     dc.flags.ignore_permissions = True
-    dc.flags.ignore_version    = True
     dc.submit()
     frappe.db.commit()
 
@@ -147,16 +145,14 @@ def create_payment_entry_from_report(do_names, supplier, driver_nama, total_komi
         "expense_account" : expense_account,
         "uom"             : "Nos",
     })
-    pi.flags.ignore_permissions  = True
-    pi.flags.ignore_version      = True
-    pi.flags.ignore_mandatory    = True
+    pi.flags.ignore_permissions = True
+    pi.flags.ignore_mandatory   = True
     pi.insert(ignore_permissions=True)
     frappe.db.commit()
     # Fetch fresh dari DB sebelum submit untuk hindari TimestampMismatch
     pi_name = pi.name
     pi = frappe.get_doc("Purchase Invoice", pi_name)
     pi.flags.ignore_permissions = True
-    pi.flags.ignore_version     = True
     pi.flags.ignore_mandatory   = True
     pi.submit()
     frappe.db.commit()

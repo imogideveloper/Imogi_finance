@@ -281,3 +281,37 @@ def ensure_towing_workflow_consistency():
 
     frappe.clear_cache(doctype=doctype_name)
     frappe.db.commit()
+
+
+def ensure_finance_manager_role():
+    """
+    Pastikan Role 'Finance Manager' ada di sistem.
+    Kalau belum ada → buat baru.
+    Idempotent: aman dipanggil berulang kali.
+    """
+    role_name = "Finance Manager"
+
+    if frappe.db.exists("Role", role_name):
+        # Pastikan role tidak disabled
+        is_disabled = frappe.db.get_value("Role", role_name, "disabled")
+        if is_disabled:
+            frappe.db.set_value("Role", role_name, "disabled", 0)
+            frappe.db.commit()
+            print(f"[Imogi Finance] Re-enabled existing Role: {role_name}")
+        return
+
+    try:
+        role = frappe.new_doc("Role")
+        role.role_name = role_name
+        role.desk_access = 1   # boleh akses ke Frappe Desk
+        role.disabled = 0
+        role.is_custom = 1     # tandai sebagai custom role
+        role.flags.ignore_permissions = True
+        role.insert(ignore_permissions=True)
+        frappe.db.commit()
+        print(f"[Imogi Finance] Created Role: {role_name}")
+    except Exception as e:
+        frappe.log_error(
+            f"Gagal create Role '{role_name}': {e}",
+            "Finance Manager Role Setup Error"
+        )
