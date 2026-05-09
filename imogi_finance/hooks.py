@@ -16,6 +16,7 @@ doctype_js = {
     "Sales Order": [
         "public/js/sales_order.js",
         "public/js/delivery_order_towing.js",
+        "public/js/transaction_price_lock.js",
     ],
     "Tax Invoice OCR Upload": "public/js/tax_invoice_ocr_upload_form.js",
     "VAT OUT Batch": "public/js/vat_out_batch_form.js",
@@ -27,6 +28,7 @@ doctype_js = {
     "Payment Entry": [
         "public/js/payment_entry.js",
         "public/js/payment_entry_djp.js",
+        "public/js/transaction_price_lock.js",
     ],
     "Payment Request": "public/js/payment_request.js",
     "Purchase Invoice": [
@@ -34,6 +36,7 @@ doctype_js = {
         "public/js/payment_reconciliation_helper.js",
         "public/js/purchase_invoice_amortization.js",
         "public/js/purchase_invoice_towing.js",
+        "public/js/transaction_price_lock.js",
     ],
     "Expense Claim": [
         "public/js/expense_claim.js",
@@ -45,9 +48,14 @@ doctype_js = {
     "Sales Invoice": [
         "public/js/sales_invoice_tax_invoice.js",
         "public/js/payment_reconciliation_helper.js",
+        "public/js/transaction_price_lock.js",
     ],
     "Delivery Order Towing": "public/js/delivery_order_towing.js",
-    "Purchase Order": "public/js/purchase_order_towing.js",
+    "Purchase Order": [
+        "public/js/purchase_order_towing.js",
+        "public/js/transaction_price_lock.js",
+    ],
+    "Item Price": "public/js/item_price.js",
 }
 
 app_include_js = "/assets/imogi_finance/js/imogi_finance.js"
@@ -145,6 +153,7 @@ doc_events = {
             "imogi_finance.validators.finance_validator.validate_document_tax_fields",
             "imogi_finance.events.purchase_invoice.manage_ppn_variance_validate",
             "imogi_finance.events.purchase_invoice.manage_direct_pi_ppn_variance",
+            "imogi_finance.events.transaction_price_lock.validate_no_price_change",
         ],
         "before_submit": [
             "imogi_finance.events.purchase_invoice.validate_before_submit",
@@ -167,6 +176,7 @@ doc_events = {
         "validate": [
             "imogi_finance.tax_operations.validate_tax_period_lock",
             "imogi_finance.validators.finance_validator.validate_document_tax_fields",
+            "imogi_finance.events.transaction_price_lock.validate_no_price_change",
         ],
         "before_submit": [
             "imogi_finance.imogi_finance.doctype.tax_period_closing.tax_period_closing.check_period_is_closed",
@@ -189,7 +199,10 @@ doc_events = {
     },
 
     "Sales Order": {
-        "validate": "imogi_finance.events.sales_order.compute_outstanding_amount",
+        "validate": [
+            "imogi_finance.events.sales_order.compute_outstanding_amount",
+            "imogi_finance.events.transaction_price_lock.validate_no_price_change",
+        ],
         "on_update_after_submit": [
             "imogi_finance.events.sales_order.compute_outstanding_amount",
             "imogi_finance.sales_order_payment_status.update_from_sales_order",
@@ -386,6 +399,7 @@ doc_events = {
         "validate": [
             "imogi_finance.receipt_control.payment_entry_hooks.validate_customer_receipt_link",
             "imogi_finance.transfer_application.payment_entry_hooks.validate_transfer_application_link",
+            "imogi_finance.events.transaction_price_lock.validate_no_price_change",
         ],
         "after_insert": [
             "imogi_finance.events.payment_entry.after_insert",
@@ -431,6 +445,9 @@ doc_events = {
     },
 
     "Payroll Entry": {},
+    "Item Price": {
+        "validate": "imogi_finance.events.item_price_lock.validate_no_price_change",
+    },
     "Delivery Order Towing": {
         "after_save": "imogi_finance.overrides.delivery_order_towing.after_save",
         "on_update_after_submit": "imogi_finance.overrides.delivery_order_towing.on_update_after_submit",
@@ -438,6 +455,7 @@ doc_events = {
         "before_cancel": "imogi_finance.overrides.delivery_order_towing.before_cancel_do_towing",
     },
     "Purchase Order": {
+        "validate": "imogi_finance.events.transaction_price_lock.validate_no_price_change",
         "after_insert": "imogi_finance.events.purchase_order_towing.after_insert",
         "on_update": "imogi_finance.overrides.delivery_order_towing.update_do_from_po",
         "on_submit": "imogi_finance.overrides.delivery_order_towing.update_do_from_po",
@@ -484,6 +502,7 @@ after_migrate = [
     "imogi_finance.utils.patch_round_floats_compatibility",
     "imogi_finance.setup.install_towing_doctypes",
     "imogi_finance.setup.ensure_towing_workflow_consistency",
+    "imogi_finance.setup.ensure_finance_manager_role",
 ]
 
 before_job = "imogi_finance.overrides.bank_statement_import.patch_start_import"
