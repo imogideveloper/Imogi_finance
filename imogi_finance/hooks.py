@@ -13,6 +13,7 @@ app_include_css = "/assets/imogi_finance/css/custom.css"
 
 # include js in doctype views
 doctype_js = {
+    "User": "public/js/towing_admin_tools.js",
     "Sales Order": [
         "public/js/sales_order.js",
         "public/js/delivery_order_towing.js",
