@@ -6,23 +6,6 @@
 import frappe
 from frappe import _
 
-# Doctype yang termasuk ekosistem Towing Imogi
-TOWING_DOCTYPES = [
-    "Delivery Order Towing",
-    "Purchase Order",       # hanya yang custom_delivery_order != NULL
-    "Purchase Invoice",     # hanya yang custom_delivery_order != NULL
-    "Payment Entry",        # hanya yang referensi ke PI/PO towing
-    "Sales Order",          # hanya yang ada DO Towing linked
-]
-
-# Tabel Version/Comment/Log Frappe
-HISTORY_TABLES = [
-    ("tabVersion",       "ref_doctype, docname"),
-    ("tabComment",       "reference_doctype, reference_name"),
-    ("tabCommunication", "reference_doctype, reference_name"),
-    ("tabActivity Log",  "reference_doctype, reference_name"),
-]
-
 
 def _only_administrator():
     if frappe.session.user != "Administrator":
@@ -30,222 +13,198 @@ def _only_administrator():
                      frappe.PermissionError)
 
 
-# ─────────────────────────────────────────────────────────────
-# PREVIEW: Hitung berapa record riwayat yang akan dihapus
-# ─────────────────────────────────────────────────────────────
-
-@frappe.whitelist()
-def preview_towing_history():
-    """Hitung riwayat (Version/Comment/Communication/Activity Log) yang akan dihapus."""
-    _only_administrator()
-
-    result = {}
-
-    # 1. Delivery Order Towing
+def _collect_towing_names():
+    """Kumpulkan semua nama dokumen transaksi towing (urutan dari bawah ke atas)."""
     do_names = frappe.db.sql_list("SELECT name FROM `tabDelivery Order Towing`")
-    result["Delivery Order Towing"] = _count_history("Delivery Order Towing", do_names)
 
-    # 2. PO Uang Jalan towing
     po_names = []
     if frappe.db.has_column("Purchase Order", "custom_delivery_order"):
         po_names = frappe.db.sql_list(
-            "SELECT name FROM `tabPurchase Order` WHERE custom_delivery_order IS NOT NULL AND custom_delivery_order != ''"
+            "SELECT name FROM `tabPurchase Order` "
+            "WHERE custom_delivery_order IS NOT NULL AND custom_delivery_order != ''"
         )
-    result["Purchase Order (Towing)"] = _count_history("Purchase Order", po_names)
 
-    # 3. PI dari PO towing
     pi_names = []
     if po_names:
-        pi_names = frappe.db.sql_list("""
+        ph = ", ".join(["%s"] * len(po_names))
+        pi_names = frappe.db.sql_list(f"""
             SELECT DISTINCT pi.name
             FROM `tabPurchase Invoice` pi
             INNER JOIN `tabPurchase Invoice Item` pii ON pii.parent = pi.name
-            WHERE pii.purchase_order IN ({})
-        """.format(", ".join(["%s"] * len(po_names))), po_names)
-    result["Purchase Invoice (Towing)"] = _count_history("Purchase Invoice", pi_names)
+            WHERE pii.purchase_order IN ({ph})
+        """, po_names)
 
-    # 4. PE dari PI towing
     pe_names = []
     if pi_names:
-        pe_names = frappe.db.sql_list("""
+        ph = ", ".join(["%s"] * len(pi_names))
+        pe_names = frappe.db.sql_list(f"""
             SELECT DISTINCT pe.name
             FROM `tabPayment Entry` pe
             INNER JOIN `tabPayment Entry Reference` per ON per.parent = pe.name
             WHERE per.reference_doctype IN ('Purchase Invoice', 'Purchase Order')
-              AND per.reference_name IN ({})
-        """.format(", ".join(["%s"] * len(pi_names))), pi_names)
-    result["Payment Entry (Towing)"] = _count_history("Payment Entry", pe_names)
+              AND per.reference_name IN ({ph})
+        """, pi_names)
 
-    # 5. SO yang punya DO towing
-    so_names = []
-    if do_names:
-        so_names = frappe.db.sql_list("""
-            SELECT DISTINCT sales_order
-            FROM `tabDelivery Order Towing`
-            WHERE sales_order IS NOT NULL AND sales_order != ''
-        """)
-    result["Sales Order (Towing)"] = _count_history("Sales Order", so_names)
+    so_names = frappe.db.sql_list("""
+        SELECT DISTINCT sales_order FROM `tabDelivery Order Towing`
+        WHERE sales_order IS NOT NULL AND sales_order != ''
+    """) if do_names else []
 
-    total = sum(v.get("total", 0) for v in result.values())
-    return {"summary": result, "total": total}
+    # Sales Invoice yang ter-link ke SO towing
+    si_names = []
+    if so_names:
+        ph = ", ".join(["%s"] * len(so_names))
+        si_names = frappe.db.sql_list(f"""
+            SELECT DISTINCT si.name FROM `tabSales Invoice` si
+            INNER JOIN `tabSales Invoice Item` sii ON sii.parent = si.name
+            WHERE sii.sales_order IN ({ph})
+        """, so_names)
 
-
-def _count_history(doctype, names):
-    if not names:
-        return {"total": 0, "version": 0, "comment": 0, "communication": 0, "activity_log": 0}
-
-    placeholders = ", ".join(["%s"] * len(names))
-    counts = {}
-
-    counts["version"] = frappe.db.sql(
-        f"SELECT COUNT(*) FROM `tabVersion` WHERE ref_doctype = %s AND docname IN ({placeholders})",
-        [doctype] + names
-    )[0][0]
-
-    counts["comment"] = frappe.db.sql(
-        f"SELECT COUNT(*) FROM `tabComment` WHERE reference_doctype = %s AND reference_name IN ({placeholders})",
-        [doctype] + names
-    )[0][0]
-
-    counts["communication"] = frappe.db.sql(
-        f"SELECT COUNT(*) FROM `tabCommunication` WHERE reference_doctype = %s AND reference_name IN ({placeholders})",
-        [doctype] + names
-    )[0][0]
-
-    counts["activity_log"] = frappe.db.sql(
-        f"SELECT COUNT(*) FROM `tabActivity Log` WHERE reference_doctype = %s AND reference_name IN ({placeholders})",
-        [doctype] + names
-    )[0][0]
-
-    counts["total"] = sum(counts.values())
-    return counts
+    return {
+        "Payment Entry":         pe_names,
+        "Purchase Invoice":      pi_names,
+        "Purchase Order":        po_names,
+        "Sales Invoice":         si_names,
+        "Delivery Order Towing": do_names,
+        "Sales Order":           so_names,
+    }
 
 
 # ─────────────────────────────────────────────────────────────
-# EKSEKUSI: Hapus riwayat transaksi towing
+# PREVIEW: Hitung dokumen yang akan dihapus
 # ─────────────────────────────────────────────────────────────
 
 @frappe.whitelist()
-def purge_towing_history(confirm="no"):
-    """
-    Hapus riwayat (Version, Comment, Communication, Activity Log)
-    dari semua dokumen yang terhubung ke Towing Imogi.
+def preview_towing_data():
+    """Hitung semua dokumen towing yang akan dihapus."""
+    _only_administrator()
 
-    TIDAK menghapus dokumen aslinya, hanya riwayat/log-nya.
+    groups = _collect_towing_names()
+    summary = {}
+    total = 0
+    for doctype, names in groups.items():
+        summary[doctype] = len(names)
+        total += len(names)
+
+    return {"summary": summary, "total": total}
+
+
+# ─────────────────────────────────────────────────────────────
+# EKSEKUSI: Hapus semua dokumen transaksi towing
+# ─────────────────────────────────────────────────────────────
+
+@frappe.whitelist()
+def purge_towing_data(confirm="no"):
+    """
+    Hapus semua dokumen transaksi towing (PE → PI → PO → SI → DO → SO).
+    Dokumen submitted di-cancel dulu sebelum dihapus.
     Hanya bisa dijalankan oleh Administrator.
     """
     _only_administrator()
 
     if confirm != "HAPUS":
         frappe.throw(
-            _("Konfirmasi tidak valid. Kirim confirm='HAPUS' untuk melanjutkan."),
+            _("Konfirmasi tidak valid. Ketik 'HAPUS' untuk melanjutkan."),
             frappe.ValidationError
         )
 
-    deleted = {}
+    groups = _collect_towing_names()
+    deleted  = {}
+    failed   = {}
 
-    # 1. Kumpulkan semua nama dokumen towing
-    do_names = frappe.db.sql_list("SELECT name FROM `tabDelivery Order Towing`")
+    # Urutan hapus: dari dokumen paling bawah ke atas
+    delete_order = [
+        "Payment Entry",
+        "Purchase Invoice",
+        "Purchase Order",
+        "Sales Invoice",
+        "Delivery Order Towing",
+        "Sales Order",
+    ]
 
-    po_names = []
-    if frappe.db.has_column("Purchase Order", "custom_delivery_order"):
-        po_names = frappe.db.sql_list(
-            "SELECT name FROM `tabPurchase Order` WHERE custom_delivery_order IS NOT NULL AND custom_delivery_order != ''"
-        )
-
-    pi_names = []
-    if po_names:
-        pi_names = frappe.db.sql_list("""
-            SELECT DISTINCT pi.name
-            FROM `tabPurchase Invoice` pi
-            INNER JOIN `tabPurchase Invoice Item` pii ON pii.parent = pi.name
-            WHERE pii.purchase_order IN ({})
-        """.format(", ".join(["%s"] * len(po_names))), po_names)
-
-    pe_names = []
-    if pi_names:
-        pe_names = frappe.db.sql_list("""
-            SELECT DISTINCT pe.name
-            FROM `tabPayment Entry` pe
-            INNER JOIN `tabPayment Entry Reference` per ON per.parent = pe.name
-            WHERE per.reference_doctype IN ('Purchase Invoice', 'Purchase Order')
-              AND per.reference_name IN ({})
-        """.format(", ".join(["%s"] * len(pi_names))), pi_names)
-
-    so_names = frappe.db.sql_list("""
-        SELECT DISTINCT sales_order
-        FROM `tabDelivery Order Towing`
-        WHERE sales_order IS NOT NULL AND sales_order != ''
-    """) if do_names else []
-
-    doc_groups = {
-        "Delivery Order Towing": do_names,
-        "Purchase Order":        po_names,
-        "Purchase Invoice":      pi_names,
-        "Payment Entry":         pe_names,
-        "Sales Order":           so_names,
-    }
-
-    # 2. Hapus riwayat per doctype
-    for doctype, names in doc_groups.items():
-        if not names:
-            deleted[doctype] = 0
-            continue
-
-        placeholders = ", ".join(["%s"] * len(names))
-        args = [doctype] + names
-        count = 0
-
-        # Hitung dulu, lalu hapus — frappe.db.sql DELETE mengembalikan tuple bukan int
-        count += frappe.db.sql(
-            f"SELECT COUNT(*) FROM `tabVersion` WHERE ref_doctype = %s AND docname IN ({placeholders})",
-            args
-        )[0][0]
-        frappe.db.sql(
-            f"DELETE FROM `tabVersion` WHERE ref_doctype = %s AND docname IN ({placeholders})",
-            args
-        )
-
-        count += frappe.db.sql(
-            f"SELECT COUNT(*) FROM `tabComment` WHERE reference_doctype = %s AND reference_name IN ({placeholders})",
-            args
-        )[0][0]
-        frappe.db.sql(
-            f"DELETE FROM `tabComment` WHERE reference_doctype = %s AND reference_name IN ({placeholders})",
-            args
-        )
-
-        count += frappe.db.sql(
-            f"SELECT COUNT(*) FROM `tabCommunication` WHERE reference_doctype = %s AND reference_name IN ({placeholders})",
-            args
-        )[0][0]
-        frappe.db.sql(
-            f"DELETE FROM `tabCommunication` WHERE reference_doctype = %s AND reference_name IN ({placeholders})",
-            args
-        )
-
-        count += frappe.db.sql(
-            f"SELECT COUNT(*) FROM `tabActivity Log` WHERE reference_doctype = %s AND reference_name IN ({placeholders})",
-            args
-        )[0][0]
-        frappe.db.sql(
-            f"DELETE FROM `tabActivity Log` WHERE reference_doctype = %s AND reference_name IN ({placeholders})",
-            args
-        )
-
-        deleted[doctype] = count
+    for doctype in delete_order:
+        names = groups.get(doctype, [])
+        ok, fail = _force_delete_docs(doctype, names)
+        deleted[doctype] = ok
+        if fail:
+            failed[doctype] = fail
 
     frappe.db.commit()
 
     total = sum(deleted.values())
     frappe.log_error(
-        f"[Towing Admin] Administrator menghapus {total} riwayat transaksi towing.\nDetail: {deleted}",
-        "Towing History Purge"
+        f"[Towing Admin] Administrator menghapus {total} dokumen towing.\n"
+        f"Berhasil: {deleted}\nGagal: {failed}",
+        "Towing Data Purge"
     )
 
     return {
         "success": True,
         "total_deleted": total,
         "detail": deleted,
-        "message": f"Berhasil menghapus {total} record riwayat dari semua dokumen towing."
+        "failed": failed,
     }
+
+
+def _force_delete_docs(doctype, names):
+    """Cancel (jika submitted) lalu delete. Return (ok_count, failed_list)."""
+    ok = 0
+    fail = []
+
+    for name in names:
+        try:
+            docstatus = frappe.db.get_value(doctype, name, "docstatus")
+            if docstatus is None:
+                continue  # sudah tidak ada
+
+            if docstatus == 1:
+                # Submitted → cancel dulu
+                doc = frappe.get_doc(doctype, name)
+                doc.flags.ignore_permissions   = True
+                doc.flags.ignore_links         = True
+                doc.flags.skip_cancel_check    = True
+                doc.flags.ignore_on_update     = True
+                doc.cancel()
+                frappe.db.commit()
+
+            # Hapus semua riwayat dulu agar tidak ada link error
+            _delete_doc_history(doctype, name)
+
+            frappe.delete_doc(
+                doctype, name,
+                ignore_permissions=True,
+                force=True,
+                ignore_on_trash=True,
+            )
+            frappe.db.commit()
+            ok += 1
+
+        except Exception as e:
+            frappe.db.rollback()
+            fail.append({"name": name, "error": str(e)})
+            frappe.log_error(
+                f"Gagal hapus {doctype} {name}: {e}",
+                "Towing Purge Error"
+            )
+
+    return ok, fail
+
+
+def _delete_doc_history(doctype, name):
+    """Hapus Version/Comment/Communication/Activity Log untuk satu dokumen."""
+    frappe.db.sql(
+        "DELETE FROM `tabVersion` WHERE ref_doctype = %s AND docname = %s",
+        (doctype, name)
+    )
+    frappe.db.sql(
+        "DELETE FROM `tabComment` WHERE reference_doctype = %s AND reference_name = %s",
+        (doctype, name)
+    )
+    frappe.db.sql(
+        "DELETE FROM `tabCommunication` WHERE reference_doctype = %s AND reference_name = %s",
+        (doctype, name)
+    )
+    frappe.db.sql(
+        "DELETE FROM `tabActivity Log` WHERE reference_doctype = %s AND reference_name = %s",
+        (doctype, name)
+    )
