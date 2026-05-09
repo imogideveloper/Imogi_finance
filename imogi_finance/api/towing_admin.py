@@ -80,9 +80,9 @@ def preview_towing_history():
     so_names = []
     if do_names:
         so_names = frappe.db.sql_list("""
-            SELECT DISTINCT sales_order_referensi
+            SELECT DISTINCT sales_order
             FROM `tabDelivery Order Towing`
-            WHERE sales_order_referensi IS NOT NULL AND sales_order_referensi != ''
+            WHERE sales_order IS NOT NULL AND sales_order != ''
         """)
     result["Sales Order (Towing)"] = _count_history("Sales Order", so_names)
 
@@ -173,9 +173,9 @@ def purge_towing_history(confirm="no"):
         """.format(", ".join(["%s"] * len(pi_names))), pi_names)
 
     so_names = frappe.db.sql_list("""
-        SELECT DISTINCT sales_order_referensi
+        SELECT DISTINCT sales_order
         FROM `tabDelivery Order Towing`
-        WHERE sales_order_referensi IS NOT NULL AND sales_order_referensi != ''
+        WHERE sales_order IS NOT NULL AND sales_order != ''
     """) if do_names else []
 
     doc_groups = {
