@@ -61,5 +61,32 @@
   "name": "Done",
   "style": "Success",
   "workflow_state_name": "Done"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2026-05-06 22:10:00.000000",
+  "name": "Awaiting Dokument",
+  "style": "Warning",
+  "workflow_state_name": "Awaiting Dokument"
+ },
+ {
+  "doctype": "Workflow State",
+  "name": "Pending Approval",
+  "workflow_state_name": "Pending Approval",
+  "style": "Warning"
+ },
+ {
+  "doctype": "Workflow State",
+  "name": "Approved",
+  "workflow_state_name": "Approved",
+  "style": "Success"
+ },
+ {
+  "doctype": "Workflow State",
+  "name": "Rejected",
+  "workflow_state_name": "Rejected",
+  "style": "Danger"
  }
 ]

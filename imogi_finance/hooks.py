@@ -13,7 +13,12 @@ app_include_css = "/assets/imogi_finance/css/custom.css"
 
 # include js in doctype views
 doctype_js = {
-    "Sales Order": "public/js/sales_order.js",
+    "User": "public/js/towing_admin_tools.js",
+    "Sales Order": [
+        "public/js/sales_order.js",
+        "public/js/delivery_order_towing.js",
+        "public/js/transaction_price_lock.js",
+    ],
     "Tax Invoice OCR Upload": "public/js/tax_invoice_ocr_upload_form.js",
     "VAT OUT Batch": "public/js/vat_out_batch_form.js",
     "Bank Transaction": "public/js/bank_transaction.js",
@@ -24,12 +29,15 @@ doctype_js = {
     "Payment Entry": [
         "public/js/payment_entry.js",
         "public/js/payment_entry_djp.js",
+        "public/js/transaction_price_lock.js",
     ],
     "Payment Request": "public/js/payment_request.js",
     "Purchase Invoice": [
         "public/js/purchase_invoice_tax_invoice.js",
         "public/js/payment_reconciliation_helper.js",
         "public/js/purchase_invoice_amortization.js",
+        "public/js/purchase_invoice_towing.js",
+        "public/js/transaction_price_lock.js",
     ],
     "Expense Claim": [
         "public/js/expense_claim.js",
@@ -41,16 +49,21 @@ doctype_js = {
     "Sales Invoice": [
         "public/js/sales_invoice_tax_invoice.js",
         "public/js/payment_reconciliation_helper.js",
+        "public/js/transaction_price_lock.js",
     ],
     "Delivery Order Towing": "public/js/delivery_order_towing.js",
-    "Sales Order": "public/js/delivery_order_towing.js",  # ← tambahkan ini
+    "Purchase Order": [
+        "public/js/purchase_order_towing.js",
+        "public/js/transaction_price_lock.js",
+    ],
+    "Item Price": "public/js/item_price.js",
 }
 
 app_include_js = "/assets/imogi_finance/js/imogi_finance.js"
 
 
 doctype_list_js = {
-    "Sales Order": "public/js/sales_order_list.js",  # ← duplikat dihapus
+    "Sales Order": "public/js/sales_order_list.js",
     "Bank CSV Import": "imogi_finance/imogi_finance/doctype/bank_csv_import/bank_csv_import_list.js",
     "Administrative Payment Voucher": "imogi_finance/doctype/administrative_payment_voucher/administrative_payment_voucher_list.js",
     "Expense Request": "imogi_finance/doctype/expense_request/expense_request_list.js",
@@ -75,12 +88,14 @@ before_install = "imogi_finance.install.before_install"
 # after_install = "imogi_finance.utils.ensure_coretax_export_doctypes"
 
 # Fixtures
-# Fixtures — tidak ada perubahan yang diperlukan
 fixtures = [
     # 1. DocTypes
    {"doctype": "DocType", "filters": [["name", "in", [
         "Delivery Order Towing",
         "DO Towing Kondisi Item",
+        "Towing Commission Rate",
+        "Driver Commission",
+        "Driver Commission Item",
         # "SO Towing Kendaraan",  # temporary disabled to avoid deploy conflict
     ]]]},
     
@@ -88,22 +103,25 @@ fixtures = [
     {"doctype": "Custom Field"},
     {"doctype": "Property Setter"},
     {"doctype": "Client Script", "filters": [["enabled", "=", 1]]},
-    {"doctype": "List View Settings", "filters": [["name", "in", ["Sales Order", "Expense Request", "Delivery Order Towing"]]]},
+    {"doctype": "List View Settings", "filters": [["name", "in", ["Sales Order", "Expense Request", "Delivery Order Towing", "Driver Commission"]]]},
     
     # 3. Master Data
     {"doctype": "Item", "filters": [["name", "=", "JASA-TOWING-001"]]},
     
     # 4. Workflow (urutan penting!)
     {"doctype": "Workflow State", "filters": [["workflow_state_name", "in", 
-        ["Draft", "Submitted", "Assigned", "Pick Up", "Delivered", "Done", "Cancelled"]]]},
+        ["Draft", "Submitted", "Assigned", "Pick Up", "Delivered", "Done", "Awaiting Dokument", "Cancelled"]]]},
     {"doctype": "Workflow Action Master", "filters": [["workflow_action_name", "in", 
-        ["Assign Driver", "Konfirmasi Pick Up", "Konfirmasi Delivered", "Selesaikan DO", "Cancel"]]]},
+        ["Assign Driver", "Konfirmasi Pick Up", "Konfirmasi Delivered", "Selesaikan DO", "Awaiting Dokument", "Cancel"]]]},
     {"doctype": "Workflow", "filters": [["name", "=", "DO Towing Workflow"]]},
     
     # 5. Reports & UI
     {"doctype": "Report"},
     {"doctype": "Print Format", "filters": [["module", "=", "Imogi Finance"]]},
     {"doctype": "Workspace"},
+
+    # 6. Roles (khusus towing)
+    {"doctype": "Role", "filters": [["name", "in", ["Admin Towing", "Towing Driver"]]]},
 ]
 # DocType Class
 override_doctype_class = {
@@ -139,14 +157,19 @@ doc_events = {
             "imogi_finance.validators.finance_validator.validate_document_tax_fields",
             "imogi_finance.events.purchase_invoice.manage_ppn_variance_validate",
             "imogi_finance.events.purchase_invoice.manage_direct_pi_ppn_variance",
+            "imogi_finance.events.transaction_price_lock.validate_no_price_change",
         ],
         "before_submit": [
             "imogi_finance.events.purchase_invoice.validate_before_submit",
             "imogi_finance.imogi_finance.doctype.tax_period_closing.tax_period_closing.check_period_is_closed",
         ],
+        "after_insert": "imogi_finance.events.purchase_invoice.after_insert",
         "on_submit": "imogi_finance.events.purchase_invoice.on_submit",
         "on_update_after_submit": "imogi_finance.events.purchase_invoice.sync_expense_request_status_from_pi",
-        "before_cancel": "imogi_finance.events.purchase_invoice.before_cancel",
+        "before_cancel": [
+            "imogi_finance.overrides.delivery_order_towing.before_cancel_pi_auto_cancel_pe",
+            "imogi_finance.events.purchase_invoice.before_cancel",
+        ],
         "on_cancel": "imogi_finance.events.purchase_invoice.on_cancel",
         "before_delete": "imogi_finance.events.purchase_invoice.before_delete",
         "on_trash": "imogi_finance.events.purchase_invoice.on_trash",
@@ -157,6 +180,7 @@ doc_events = {
         "validate": [
             "imogi_finance.tax_operations.validate_tax_period_lock",
             "imogi_finance.validators.finance_validator.validate_document_tax_fields",
+            "imogi_finance.events.transaction_price_lock.validate_no_price_change",
         ],
         "before_submit": [
             "imogi_finance.imogi_finance.doctype.tax_period_closing.tax_period_closing.check_period_is_closed",
@@ -179,7 +203,10 @@ doc_events = {
     },
 
     "Sales Order": {
-        "validate": "imogi_finance.events.sales_order.compute_outstanding_amount",
+        "validate": [
+            "imogi_finance.events.sales_order.compute_outstanding_amount",
+            "imogi_finance.events.transaction_price_lock.validate_no_price_change",
+        ],
         "on_update_after_submit": [
             "imogi_finance.events.sales_order.compute_outstanding_amount",
             "imogi_finance.sales_order_payment_status.update_from_sales_order",
@@ -187,6 +214,9 @@ doc_events = {
         "on_submit": [
             "imogi_finance.sales_order_payment_status.update_from_sales_order",
             "imogi_finance.overrides.delivery_order_towing.create_do_from_sales_order",
+        ],
+        "before_cancel": [
+            "imogi_finance.overrides.delivery_order_towing.cancel_do_from_sales_order",
         ],
         "on_cancel": [
             "imogi_finance.sales_order_payment_status.update_from_sales_order",
@@ -373,6 +403,7 @@ doc_events = {
         "validate": [
             "imogi_finance.receipt_control.payment_entry_hooks.validate_customer_receipt_link",
             "imogi_finance.transfer_application.payment_entry_hooks.validate_transfer_application_link",
+            "imogi_finance.events.transaction_price_lock.validate_no_price_change",
         ],
         "after_insert": [
             "imogi_finance.events.payment_entry.after_insert",
@@ -392,6 +423,7 @@ doc_events = {
             "imogi_finance.sales_order_payment_status.update_from_payment_entry",
             "imogi_finance.imogi_finance.doctype.expense_request.expense_request.update_er_status_on_payment",
             "imogi_finance.overrides.delivery_order_towing.update_do_payment_status",
+            "imogi_finance.doctype.driver_commission.driver_commission.mark_paid_on_payment_submit",
         ],
         "on_update_after_submit": [
             "imogi_finance.events.payment_entry.on_update_after_submit",
@@ -408,6 +440,7 @@ doc_events = {
             "imogi_finance.events.sales_order.update_sales_order_outstanding_from_payment",
             "imogi_finance.sales_order_payment_status.update_from_payment_entry",
             "imogi_finance.imogi_finance.doctype.expense_request.expense_request.revert_er_status_on_payment_cancel",
+            "imogi_finance.doctype.driver_commission.driver_commission.revert_paid_on_payment_cancel",
         ],
         "before_delete": "imogi_finance.events.payment_entry.before_delete",
         "on_trash": [
@@ -416,15 +449,24 @@ doc_events = {
     },
 
     "Payroll Entry": {},
+    "Item Price": {
+        "validate": "imogi_finance.events.item_price_lock.validate_no_price_change",
+    },
     "Delivery Order Towing": {
         "after_save": "imogi_finance.overrides.delivery_order_towing.after_save",
         "on_update_after_submit": "imogi_finance.overrides.delivery_order_towing.on_update_after_submit",
         "on_submit": "imogi_finance.overrides.delivery_order_towing.on_submit",
+        "before_cancel": "imogi_finance.overrides.delivery_order_towing.before_cancel_do_towing",
+        "on_trash": "imogi_finance.overrides.delivery_order_towing.on_trash_do_towing",
     },
     "Purchase Order": {
+        "validate": "imogi_finance.events.transaction_price_lock.validate_no_price_change",
+        "after_insert": "imogi_finance.events.purchase_order_towing.after_insert",
         "on_update": "imogi_finance.overrides.delivery_order_towing.update_do_from_po",
         "on_submit": "imogi_finance.overrides.delivery_order_towing.update_do_from_po",
+        "before_cancel": "imogi_finance.overrides.delivery_order_towing.before_cancel_po_uang_jalan",
         "on_cancel": "imogi_finance.overrides.delivery_order_towing.update_do_from_po",
+        "on_trash": "imogi_finance.overrides.delivery_order_towing.on_trash_po_uang_jalan",
     },
 }
 
@@ -463,8 +505,10 @@ after_migrate = [
     "imogi_finance.utils.ensure_advances_allow_on_submit",
     "imogi_finance.imogi_finance.utils.ensure_budget_control_settings",
     "imogi_finance.setup.set_workspace_order",
-    "imogi_finance.utils.patch_round_floats_compatibility",  # ← tambahkan ini
-    "imogi_finance.setup.install_towing_doctypes",  # ← tambahkan
+    "imogi_finance.utils.patch_round_floats_compatibility",
+    "imogi_finance.setup.install_towing_doctypes",
+    "imogi_finance.setup.ensure_towing_workflow_consistency",
+    "imogi_finance.setup.ensure_finance_manager_role",
 ]
 
 before_job = "imogi_finance.overrides.bank_statement_import.patch_start_import"
@@ -481,8 +525,6 @@ override_whitelisted_methods = {
         "imogi_finance.overrides.listview.get_list_settings",
     "frappe.desk.desktop.get_desktop_page":
         "imogi_finance.overrides.desktop.get_desktop_page",
-    "erpnext.accounts.doctype.bank_reconciliation_tool.bank_reconciliation_tool.create_journal_entry_bts":
-        "imogi_finance.overrides.bank_reconciliation_tool.create_journal_entry_bts",
     "erpnext.accounts.doctype.bank_reconciliation_tool.bank_reconciliation_tool.create_journal_entry_bts":
         "imogi_finance.overrides.bank_reconciliation_tool.create_journal_entry_bts",
     "erpnext.accounts.doctype.bank_statement_import.bank_statement_import.start_import": 

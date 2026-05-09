@@ -1,0 +1,269 @@
+
+
+
+<!--  -->
+
+
+<style>
+  :root {
+    --accent:    #2c5282;
+    --border:    #cbd5e0;
+    --bg-header: #2c5282;
+    --bg-light:  #f7fafc;
+    --text:      #2d3748;
+    --text-light:#718096;
+    --white:     #ffffff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    font-size: 10pt; color: var(--text); line-height: 1.5;
+  }
+  .wrap { width: 100%; max-width: 780px; margin: 0 auto; }
+
+  /* HEADER */
+  .pf-header {
+    background: var(--bg-header); color: var(--white);
+    padding: 20px 28px 18px;
+    display: flex; justify-content: space-between; align-items: flex-start;
+  }
+  .pf-header .co-name  { font-size: 14pt; font-weight: 700; }
+  .pf-header .co-title { font-size: 11pt; opacity: .85; margin-top: 3px; }
+  .pf-header .co-sub   { font-size: 9pt;  opacity: .7;  margin-top: 2px; }
+  .pf-header .no-label { font-size: 8pt; opacity: .7; text-transform: uppercase; letter-spacing: .5px; text-align:right; }
+  .pf-header .no-val   { font-size: 13pt; font-weight: 700; margin-top: 2px; text-align:right; }
+
+  /* INFO GRID */
+  .info-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    border-bottom: 2px solid var(--bg-header);
+  }
+  .info-cell {
+    padding: 14px 20px; background: var(--bg-light);
+    border-right: 1px solid var(--border);
+  }
+  .info-cell:last-child { border-right: none; }
+  .info-cell .lbl { font-size: 8pt; text-transform: uppercase; letter-spacing: .5px; color: var(--text-light); font-weight: 600; margin-bottom: 4px; }
+  .info-cell .val { font-size: 10.5pt; font-weight: 600; }
+  .info-cell .sub { font-size: 9pt; color: var(--text-light); margin-top: 1px; }
+
+  /* SECTION TITLE */
+  .sec-title {
+    font-size: 9pt; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .8px; color: var(--bg-header);
+    padding: 14px 20px 8px; border-bottom: 1px solid var(--border);
+  }
+
+  /* TABLE */
+  .tbl { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+  .tbl thead tr { background: var(--bg-header); color: var(--white); }
+  .tbl thead th { padding: 9px 14px; text-align: left; font-size: 8.5pt; text-transform: uppercase; letter-spacing: .4px; }
+  .tbl thead th.r { text-align: right; }
+  .tbl thead th.c { text-align: center; }
+  .tbl tbody tr { border-bottom: 1px solid var(--border); }
+  .tbl tbody tr:nth-child(even) { background: var(--bg-light); }
+  .tbl tbody td { padding: 9px 14px; }
+  .tbl tbody td.r { text-align: right; }
+  .tbl tbody td.c { text-align: center; }
+  .tbl tfoot tr { background: #ebf4ff; border-top: 2px solid var(--bg-header); }
+  .tbl tfoot td { padding: 10px 14px; font-weight: 700; font-size: 10pt; }
+  .tbl tfoot td.r { text-align: right; color: var(--bg-header); }
+
+  /* PAYMENT INFO */
+  .pay-info {
+    padding: 14px 20px; background: #fff;
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    font-size: 9.5pt;
+  }
+  .pay-info .lbl { font-size: 8pt; text-transform: uppercase; letter-spacing: .5px; color: var(--text-light); font-weight: 600; margin-bottom: 4px; }
+
+  /* NOTES */
+  .notes {
+    padding: 12px 20px; background: #fffbeb;
+    border-top: 1px solid #fbd38d; border-bottom: 1px solid var(--border);
+    font-size: 8.5pt; color: #744210;
+  }
+  .notes b { display: block; margin-bottom: 4px; }
+  .notes ul { padding-left: 14px; }
+  .notes li  { margin-bottom: 2px; }
+
+  /* SIGNATURES */
+  .sign-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    border-top: 2px solid var(--border); margin-top: 20px;
+  }
+  .sign-cell { padding: 16px 20px 28px; border-right: 1px solid var(--border); text-align: center; }
+  .sign-cell:last-child { border-right: none; }
+  .sign-cell .role  { font-size: 8.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--bg-header); margin-bottom: 40px; }
+  .sign-cell .line  { border-top: 1px solid var(--text); margin: 0 10px; }
+  .sign-cell .name  { font-size: 9pt; font-weight: 600; margin-top: 5px; }
+  .sign-cell .date  { font-size: 8.5pt; color: var(--text-light); margin-top: 3px; }
+
+  /* FOOTER */
+  .pf-footer {
+    background: var(--bg-header); color: rgba(255,255,255,.7);
+    font-size: 8pt; text-align: center; padding: 10px 20px;
+  }
+  @media print { body { margin:0; } .wrap { max-width:100%; } }
+</style>
+
+{% set company_doc = frappe.get_doc("Company", doc.company) if doc.company else None %}
+
+{# Cari Driver Commission dari reference_no PE #}
+{% set dc = frappe.get_doc("Driver Commission", doc.reference_no) if doc.reference_no and frappe.db.exists("Driver Commission", doc.reference_no) else None %}
+
+{# Group komisi per rute dari DC #}
+{% set rute_map = {} %}
+{% if dc %}
+  {% for row in dc.commissions %}
+    {% set rute = row.so_item_code or ((row.lokasi_pickup or '') ~ ' - ' ~ (row.lokasi_tujuan or '')) or 'Lainnya' %}
+    {% if rute not in rute_map %}
+      {% set _ = rute_map.update({rute: {"count": 0, "komisi": 0, "rate_type": row.rate_type, "rate_value": row.rate_value}}) %}
+    {% endif %}
+    {% set _ = rute_map[rute].update({
+      "count":      rute_map[rute]["count"] + 1,
+      "komisi":     rute_map[rute]["komisi"] + (row.komisi_amount or 0),
+      "rate_type":  row.rate_type,
+      "rate_value": row.rate_value,
+    }) %}
+  {% endfor %}
+{% endif %}
+
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="pf-header">
+    <div>
+      <div class="co-name">{{ company_doc.company_name if company_doc else doc.company }}</div>
+      <div class="co-title">Dokumen Pembayaran Komisi Driver</div>
+      <div class="co-sub">
+        Divisi Towing &nbsp;|&nbsp;
+        Periode: {{ frappe.format(dc.from_date, {"fieldtype":"Date"}) if dc else "—" }}
+        — {{ frappe.format(dc.to_date, {"fieldtype":"Date"}) if dc else "—" }}
+      </div>
+    </div>
+    <div>
+      <div class="no-label">No. Dokumen</div>
+      <div class="no-val">{{ doc.reference_no if doc.reference_no else doc.name }}</div>
+    </div>
+  </div>
+
+  <!-- INFO GRID -->
+  <div class="info-grid">
+    <div class="info-cell">
+      <div class="lbl">Driver</div>
+      <div class="val">{{ dc.driver_nama if dc else doc.party_name or doc.party }}</div>
+      <div class="sub">{{ dc.driver if dc else doc.party }}</div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">Periode</div>
+      <div class="val">
+        {{ frappe.format(dc.from_date, {"fieldtype":"Date"}) if dc else "—" }}
+        — {{ frappe.format(dc.to_date, {"fieldtype":"Date"}) if dc else "—" }}
+      </div>
+      <div class="sub">Rekap komisi towing</div>
+    </div>
+    <div class="info-cell">
+      <div class="lbl">Tanggal Dibuat</div>
+      <div class="val">{{ frappe.format(doc.posting_date, {"fieldtype":"Date"}) }}</div>
+      <div class="sub">{{ doc.name }}</div>
+    </div>
+  </div>
+
+  <!-- DETAIL TABLE -->
+  {% if dc and rute_map %}
+  <div class="sec-title">Rincian Komisi per Rute</div>
+  <table class="tbl">
+    <thead>
+      <tr>
+        <th style="width:36px">No</th>
+        <th>Nama Rute</th>
+        <th class="c">Jumlah Rit</th>
+        <th class="r">Tarif</th>
+        <th class="r">Total Komisi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% set ns = namespace(idx=1) %}
+      {% for rute, info in rute_map.items() %}
+      <tr>
+        <td>{{ ns.idx }}</td>
+        <td>{{ rute }}</td>
+        <td class="c">{{ info.count }} rit</td>
+        <td class="r">
+          {% if info.rate_type == 'Percent' %}
+            {{ "%.0f"|format(info.rate_value) }}%
+          {% else %}
+            {{ frappe.format(info.rate_value, {"fieldtype":"Currency"}) }}
+          {% endif %}
+        </td>
+        <td class="r">{{ frappe.format(info.komisi, {"fieldtype":"Currency"}) }}</td>
+      </tr>
+      {% set ns.idx = ns.idx + 1 %}
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="2"><b>TOTAL</b></td>
+        <td class="c"><b>{{ dc.do_count or dc.commissions|length }} rit</b></td>
+        <td></td>
+        <td class="r"><b>{{ frappe.format(dc.total_komisi, {"fieldtype":"Currency"}) }}</b></td>
+      </tr>
+    </tfoot>
+  </table>
+  {% else %}
+  <div style="padding:20px;text-align:center;color:#718096;font-size:9.5pt;">
+    Tidak ada data rincian komisi. Pastikan field <b>Reference No</b> di Payment Entry ini terisi nama Driver Commission.
+  </div>
+  {% endif %}
+
+  <!-- PAYMENT INFO -->
+  <div class="pay-info">
+    <div class="lbl">Informasi Pembayaran</div>
+    Jumlah Dibayar: <b>{{ frappe.format(doc.paid_amount, {"fieldtype":"Currency"}) }}</b>
+    &nbsp;·&nbsp; Akun: <b>{{ doc.paid_from or "—" }}</b>
+    {% if doc.reference_no %}
+      &nbsp;·&nbsp; Ref: {{ doc.reference_no }}
+    {% endif %}
+  </div>
+
+  <!-- NOTES -->
+  <div class="notes">
+    <b>Catatan</b>
+    <ul>
+      <li>Dokumen ini adalah bukti pembayaran komisi driver berdasarkan Delivery Order berstatus Delivered.</li>
+      <li>Rate komisi mengacu pada Commission Rate Setting yang berlaku per item/rute.</li>
+    </ul>
+  </div>
+
+  <!-- SIGNATURES -->
+  <div class="sign-grid">
+    <div class="sign-cell">
+      <div class="role">Dibuat oleh</div>
+      <div class="line"></div>
+      <div class="name">Admin Towing</div>
+      <div class="date">Tanggal: ___________</div>
+    </div>
+    <div class="sign-cell">
+      <div class="role">Disetujui oleh</div>
+      <div class="line"></div>
+      <div class="name">Finance Manager</div>
+      <div class="date">Tanggal: ___________</div>
+    </div>
+    <div class="sign-cell">
+      <div class="role">Diterima oleh</div>
+      <div class="line"></div>
+      <div class="name">{{ dc.driver_nama if dc else doc.party_name or doc.party }}</div>
+      <div class="date">Tanggal: ___________</div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="pf-footer">
+    {{ company_doc.company_name if company_doc else doc.company }}
+    &nbsp;·&nbsp; Dokumen Pembayaran Komisi Driver
+    &nbsp;·&nbsp; {{ doc.name }}
+    &nbsp;·&nbsp; Halaman 1 dari 1
+  </div>
+
+</div>

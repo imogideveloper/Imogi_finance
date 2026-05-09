@@ -26,6 +26,92 @@ from imogi_finance.budget_control import utils as budget_utils
 from imogi_finance.budget_control import service as budget_service
 
 
+
+import frappe
+
+
+def after_insert(doc, method=None):
+    """Auto-populate Detail Kendaraan Towing jika PI linked ke Delivery Order Towing.
+    ✅ Data diambil dari DO langsung (1 kendaraan), bukan dari SO (semua kendaraan).
+    ✅ Pakai raw SQL — tidak ada .save() sehingga tidak ada TimestampMismatchError.
+    """
+    if doc.flags.get("ignore_version"):
+        return
+
+    do_name = doc.get("custom_delivery_order")
+    if not do_name:
+        return
+
+    try:
+        do = frappe.get_doc("Delivery Order Towing", do_name)
+
+        # Ambil item_code dari SO Towing Kendaraan yang linked ke DO ini (bukan semua SO)
+        item_code = frappe.db.get_value(
+            "SO Towing Kendaraan",
+            {"delivery_order": do_name},
+            "so_item_code"
+        )
+
+        # Cari nama child doctype dari Custom Field
+        child_doctype = (
+            frappe.db.get_value(
+                "Custom Field",
+                {"dt": "Purchase Invoice", "fieldname": "custom_towing_kendaraan"},
+                "options"
+            )
+            or frappe.db.get_value(
+                "DocField",
+                {"parent": "Purchase Invoice", "fieldname": "custom_towing_kendaraan"},
+                "options"
+            )
+        )
+
+        if not child_doctype:
+            frappe.log_error(
+                "[Towing] custom_towing_kendaraan tidak ditemukan di Purchase Invoice",
+                "Auto Populate Towing"
+            )
+            return
+
+        from frappe.utils import now_datetime
+        now  = now_datetime()
+        user = frappe.session.user or "Administrator"
+
+        # ✅ Hapus existing rows via raw SQL — tidak trigger .save()
+        frappe.db.sql(
+            f"DELETE FROM `tab{child_doctype}` WHERE parent=%s AND parenttype=%s",
+            (doc.name, "Purchase Invoice")
+        )
+
+        # ✅ Insert 1 baris langsung ke DB — tidak ada .save() = tidak ada timestamp conflict
+        frappe.db.sql(
+            f"""INSERT INTO `tab{child_doctype}`
+               (name, parent, parenttype, parentfield, idx,
+                so_item_code, nomor_rangka, nomor_polisi, tipe_model, nomor_mesin,
+                owner, modified_by, creation, modified, docstatus)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+            (
+                frappe.generate_hash(length=10),
+                doc.name, "Purchase Invoice", "custom_towing_kendaraan", 1,
+                item_code             or "",
+                do.nomor_rangka       or "",
+                do.nomor_polisi       or "",
+                do.tipe_kendaraan     or "",
+                do.nomor_mesin        or "",
+                user, user, now, now, 0,
+            )
+        )
+        frappe.db.commit()
+        frappe.logger().info(
+            f"[Towing] PI {doc.name}: 1 baris diisi dari DO {do_name} (nopol: {do.nomor_polisi})"
+        )
+
+    except Exception as exc:
+        frappe.log_error(
+            f"[Towing] Error PI after_insert {doc.name}: {exc}",
+            "Auto Populate Towing"
+        )
+
 def sync_expense_request_status_from_pi(doc, method=None):
     """Sync Expense Request status when Purchase Invoice status changes (e.g., Paid).
 

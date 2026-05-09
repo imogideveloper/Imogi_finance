@@ -58,11 +58,13 @@ def _get_salary_slips(company: str, date_from=None, date_to=None) -> list[dict]:
         order_by="posting_date asc",
     )
 
-    # Filter hanya employee yang has_bpjs = 1
+    # Filter hanya employee yang tidak bebas semua BPJS
     result = []
     for slip in slips:
-        has_bpjs = frappe.db.get_value("Employee", slip["employee"], "has_bpjs")
-        if not has_bpjs:
+        bebas_kesehatan = frappe.db.get_value("Employee", slip["employee"], "bebas_bpjs_kesehatan")
+        bebas_jht = frappe.db.get_value("Employee", slip["employee"], "bebas_bpjs_jht")
+        bebas_jp = frappe.db.get_value("Employee", slip["employee"], "bebas_bpjs_jp")
+        if not all([bebas_kesehatan, bebas_jht, bebas_jp]):
             result.append(slip)
 
     return result

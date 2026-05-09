@@ -1,1 +1,22 @@
-[]
+[
+ {
+  "doctype": "Role",
+  "name": "Admin Towing",
+  "role_name": "Admin Towing",
+  "desk_access": 1,
+  "disabled": 0,
+  "is_custom": 1,
+  "restrict_to_domain": null,
+  "two_factor_auth": 0
+ },
+ {
+  "doctype": "Role",
+  "name": "Towing Driver",
+  "role_name": "Towing Driver",
+  "desk_access": 1,
+  "disabled": 0,
+  "is_custom": 1,
+  "restrict_to_domain": null,
+  "two_factor_auth": 0
+ }
+]
