@@ -193,33 +193,47 @@ def purge_towing_history(confirm="no"):
             continue
 
         placeholders = ", ".join(["%s"] * len(names))
-        total_deleted = 0
+        args = [doctype] + names
+        count = 0
 
-        # Version
-        total_deleted += frappe.db.sql(
+        # Hitung dulu, lalu hapus — frappe.db.sql DELETE mengembalikan tuple bukan int
+        count += frappe.db.sql(
+            f"SELECT COUNT(*) FROM `tabVersion` WHERE ref_doctype = %s AND docname IN ({placeholders})",
+            args
+        )[0][0]
+        frappe.db.sql(
             f"DELETE FROM `tabVersion` WHERE ref_doctype = %s AND docname IN ({placeholders})",
-            [doctype] + names
+            args
         )
 
-        # Comment
-        total_deleted += frappe.db.sql(
+        count += frappe.db.sql(
+            f"SELECT COUNT(*) FROM `tabComment` WHERE reference_doctype = %s AND reference_name IN ({placeholders})",
+            args
+        )[0][0]
+        frappe.db.sql(
             f"DELETE FROM `tabComment` WHERE reference_doctype = %s AND reference_name IN ({placeholders})",
-            [doctype] + names
+            args
         )
 
-        # Communication
-        total_deleted += frappe.db.sql(
+        count += frappe.db.sql(
+            f"SELECT COUNT(*) FROM `tabCommunication` WHERE reference_doctype = %s AND reference_name IN ({placeholders})",
+            args
+        )[0][0]
+        frappe.db.sql(
             f"DELETE FROM `tabCommunication` WHERE reference_doctype = %s AND reference_name IN ({placeholders})",
-            [doctype] + names
+            args
         )
 
-        # Activity Log
-        total_deleted += frappe.db.sql(
+        count += frappe.db.sql(
+            f"SELECT COUNT(*) FROM `tabActivity Log` WHERE reference_doctype = %s AND reference_name IN ({placeholders})",
+            args
+        )[0][0]
+        frappe.db.sql(
             f"DELETE FROM `tabActivity Log` WHERE reference_doctype = %s AND reference_name IN ({placeholders})",
-            [doctype] + names
+            args
         )
 
-        deleted[doctype] = total_deleted
+        deleted[doctype] = count
 
     frappe.db.commit()
 
