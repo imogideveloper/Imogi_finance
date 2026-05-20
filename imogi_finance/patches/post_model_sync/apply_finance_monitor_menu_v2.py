@@ -1,0 +1,1 @@
+from imogi_finance.patches.post_model_sync.setup_finance_monitor_menu import execute

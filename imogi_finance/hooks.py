@@ -41,15 +41,28 @@ doctype_js = {
     "Sales Invoice": [
         "public/js/sales_invoice_tax_invoice.js",
         "public/js/payment_reconciliation_helper.js",
+        "public/js/sales_invoice_down_payment.js",
     ],
     "Delivery Order Towing": "public/js/delivery_order_towing.js",
+    "Workspace UI Settings": "public/js/workspace_ui_settings.js",
 }
 
-app_include_js = "/assets/imogi_finance/js/imogi_finance.js"
+app_include_js = [
+    "/assets/imogi_finance/js/imogi_finance.js",
+    "/assets/imogi_finance/js/workspace_visibility.js",
+    "/assets/imogi_finance/js/finance_monitor_workspace.js",
+    "/assets/imogi_finance/js/imogi_service_item_qty.js",
+]
+
+boot_session = "imogi_finance.workspace_visibility.update_boot_session"
 
 
 doctype_list_js = {
-    "Sales Order": "public/js/sales_order_list.js",  # ← duplikat dihapus
+    "Sales Invoice": "public/js/sales_invoice_list.js",
+    "Sales Order": [
+        "public/js/sales_order_list_toolbar.js",
+        "public/js/sales_order_list.js",
+    ],
     "Bank CSV Import": "imogi_finance/imogi_finance/doctype/bank_csv_import/bank_csv_import_list.js",
     "Administrative Payment Voucher": "imogi_finance/doctype/administrative_payment_voucher/administrative_payment_voucher_list.js",
     "Expense Request": "imogi_finance/doctype/expense_request/expense_request_list.js",
@@ -93,7 +106,7 @@ fixtures = [
     {"doctype": "Custom Field"},
     {"doctype": "Property Setter"},
     {"doctype": "Client Script", "filters": [["enabled", "=", 1]]},
-    {"doctype": "List View Settings", "filters": [["name", "in", ["Sales Order", "Expense Request", "Delivery Order Towing", "Payroll Period", "Payroll Entry"]]]},
+    {"doctype": "List View Settings", "filters": [["name", "in", ["Sales Order", "Sales Invoice", "Expense Request", "Delivery Order Towing", "Payroll Period", "Payroll Entry"]]]},
     
     # 3. Master Data
     {"doctype": "Item", "filters": [["name", "=", "JASA-TOWING-001"]]},
@@ -162,6 +175,8 @@ doc_events = {
         "validate": [
             "imogi_finance.tax_operations.validate_tax_period_lock",
             "imogi_finance.validators.finance_validator.validate_document_tax_fields",
+            "imogi_finance.services.sales_invoice_list_status.sync_imogi_status_and_late_days",
+            "imogi_finance.events.sales_invoice.reapply_imogi_so_down_payment",
         ],
         "before_submit": [
             "imogi_finance.imogi_finance.doctype.tax_period_closing.tax_period_closing.check_period_is_closed",
@@ -417,7 +432,10 @@ doc_events = {
     "Delivery Order Towing": {
         "after_save": "imogi_finance.overrides.delivery_order_towing.after_save",
         "on_update_after_submit": "imogi_finance.overrides.delivery_order_towing.on_update_after_submit",
-    }
+    },
+    "Workspace UI Settings": {
+        "on_update": "imogi_finance.workspace_visibility.clear_workspace_cache",
+    },
 }
 
 if is_payroll_installed():
@@ -434,6 +452,9 @@ scheduler_events = {
     "daily": [
         "imogi_finance.reporting.tasks.run_daily_reporting",
         "imogi_finance.services.tax_invoice_service.sync_pending_tax_invoices",
+    ],
+    "daily_maintenance": [
+        "imogi_finance.services.sales_invoice_list_status.sync_all_submitted_sales_invoices",
     ],
     "monthly": [
         "imogi_finance.reporting.tasks.run_monthly_reconciliation",
@@ -456,6 +477,8 @@ after_migrate = [
     "imogi_finance.imogi_finance.utils.ensure_budget_control_settings",
     "imogi_finance.setup.set_workspace_order",
     "imogi_finance.utils.patch_round_floats_compatibility",  # ← tambahkan ini
+    "imogi_finance.patches.post_model_sync.setup_finance_monitor_menu.execute",
+    "imogi_finance.services.sales_invoice_list_status.sync_all_submitted_sales_invoices",
 ]
 
 before_job = "imogi_finance.overrides.bank_statement_import.patch_start_import"
@@ -472,6 +495,8 @@ override_whitelisted_methods = {
         "imogi_finance.overrides.listview.get_list_settings",
     "frappe.desk.desktop.get_desktop_page":
         "imogi_finance.overrides.desktop.get_desktop_page",
+    "frappe.desk.desktop.get_workspace_sidebar_items":
+        "imogi_finance.overrides.desktop.get_workspace_sidebar_items",
     "erpnext.accounts.doctype.bank_reconciliation_tool.bank_reconciliation_tool.create_journal_entry_bts":
         "imogi_finance.overrides.bank_reconciliation_tool.create_journal_entry_bts",
     "erpnext.accounts.doctype.bank_reconciliation_tool.bank_reconciliation_tool.create_journal_entry_bts":

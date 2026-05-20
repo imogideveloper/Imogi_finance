@@ -7,19 +7,24 @@ Handles outstanding amount computation for Sales Orders.
 from __future__ import annotations
 
 import frappe
+from frappe.utils import flt
 
 
 def compute_outstanding_amount(doc, method=None):
-    """
-    Compute outstanding amount for Sales Order.
-    Outstanding = Grand Total (or Rounded Total) - Advance Paid
-    """
-    grand_total = doc.rounded_total or doc.grand_total or 0
-    advance_paid = doc.advance_paid or 0
-    outstanding = grand_total - advance_paid
+	"""Outstanding = Grand Total SO − total Grand Total Sales Invoice (submitted)."""
+	if doc.docstatus == 2:
+		doc.outstanding_amount = 0
+		return
 
-    # Set the computed value
-    doc.outstanding_amount = max(outstanding, 0)
+	from imogi_finance.sales_order_payment_status import get_sales_order_financial_summary
+
+	if doc.name and frappe.db.exists("Sales Order", doc.name):
+		summary = get_sales_order_financial_summary(doc.name, so_doc=doc)
+	else:
+		so_total = flt(doc.rounded_total or doc.grand_total)
+		summary = {"total_remaining": so_total}
+
+	doc.outstanding_amount = max(flt(summary["total_remaining"]), 0)
 
 
 def update_outstanding_on_payment(sales_order_name: str):

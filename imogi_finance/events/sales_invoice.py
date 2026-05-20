@@ -70,3 +70,15 @@ def fix_rounding_status(doc, method=None):
             "status": "Unpaid"
         })
         print(f"🔥 Fixed {doc.name} → Unpaid")
+
+
+def reapply_imogi_so_down_payment(doc, method=None):
+	"""Re-apply DP line amounts after ERPNext validate recalculates items to full SO value."""
+	from imogi_finance.sales_invoice_from_so import (
+		apply_down_payment_keep_qty_scale_rate,
+		get_si_down_payment_ratio,
+	)
+
+	ratio = get_si_down_payment_ratio(doc)
+	if 0 < ratio < 1:
+		apply_down_payment_keep_qty_scale_rate(doc, ratio)

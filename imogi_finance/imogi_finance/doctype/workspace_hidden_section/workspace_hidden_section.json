@@ -1,0 +1,65 @@
+{
+  "actions": [],
+  "allow_rename": 0,
+  "creation": "2026-05-18 00:00:00.000000",
+  "doctype": "DocType",
+  "editable_grid": 1,
+  "engine": "InnoDB",
+  "field_order": [
+    "workspace",
+    "section_label",
+    "hidden",
+    "hide_card_section",
+    "hide_shortcuts"
+  ],
+  "fields": [
+    {
+      "fieldname": "workspace",
+      "fieldtype": "Link",
+      "in_list_view": 1,
+      "label": "Workspace",
+      "options": "Workspace",
+      "reqd": 1
+    },
+    {
+      "fieldname": "section_label",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "label": "Section / Menu Label",
+      "reqd": 1,
+      "description": "Harus sama persis dengan label di workspace, mis. \"Point of Sale\"."
+    },
+    {
+      "default": "1",
+      "fieldname": "hidden",
+      "fieldtype": "Check",
+      "in_list_view": 1,
+      "label": "Hide"
+    },
+    {
+      "default": "1",
+      "fieldname": "hide_card_section",
+      "fieldtype": "Check",
+      "label": "Hide Card Section",
+      "description": "Sembunyikan kolom card di Reports & Masters."
+    },
+    {
+      "default": "1",
+      "fieldname": "hide_shortcuts",
+      "fieldtype": "Check",
+      "label": "Hide Shortcuts",
+      "description": "Sembunyikan shortcut Quick Access / sidebar workspace dengan label yang sama."
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "istable": 1,
+  "links": [],
+  "modified": "2026-05-18 00:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Imogi Finance",
+  "name": "Workspace Hidden Section",
+  "owner": "Administrator",
+  "permissions": [],
+  "sort_field": "modified",
+  "sort_order": "DESC"
+}

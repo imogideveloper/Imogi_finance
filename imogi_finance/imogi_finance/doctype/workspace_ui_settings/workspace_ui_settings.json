@@ -1,0 +1,67 @@
+{
+  "actions": [],
+  "allow_rename": 0,
+  "creation": "2026-05-18 00:00:00.000000",
+  "default_view": "Form",
+  "doctype": "DocType",
+  "editable_grid": 0,
+  "engine": "InnoDB",
+  "field_order": [
+    "section_help",
+    "enabled",
+    "hidden_sections"
+  ],
+  "fields": [
+    {
+      "fieldname": "section_help",
+      "fieldtype": "Section Break",
+      "label": "Workspace Menu Visibility"
+    },
+    {
+      "default": "1",
+      "fieldname": "enabled",
+      "fieldtype": "Check",
+      "label": "Enable Menu Hiding"
+    },
+    {
+      "fieldname": "hidden_sections",
+      "fieldtype": "Table",
+      "label": "Hidden Sections",
+      "options": "Workspace Hidden Section"
+    }
+  ],
+  "index_web_pages_for_search": 1,
+  "issingle": 1,
+  "links": [],
+  "modified": "2026-05-18 00:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Imogi Finance",
+  "name": "Workspace UI Settings",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "System Manager",
+      "share": 1,
+      "write": 1
+    },
+    {
+      "create": 1,
+      "email": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "Accounts Manager",
+      "share": 1,
+      "write": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "track_changes": 1
+}
