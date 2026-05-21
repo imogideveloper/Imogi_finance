@@ -6,7 +6,14 @@ import frappe
 
 from imogi_finance.workspace_utils import sanitize_workspace_missing_links
 
-WORKSPACES = ("Towing Imogi", "FINANCE IMOGI", "Receivables", "Accounting", "Finance Monitor")
+WORKSPACES = (
+	"Towing Imogi",
+	"FINANCE IMOGI",
+	"Receivables",
+	"Accounting",
+	"Finance Monitor",
+	"Access Studio",
+)
 
 
 def execute():

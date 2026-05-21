@@ -3,6 +3,7 @@ import frappe
 def set_workspace_order():
     """Set urutan sidebar workspace"""
     sequences = {
+        "Access Studio": 0.03,
         "HRIS Imogi": 0.05,
         "FINANCE IMOGI": 0.1,
         "Budget Control": 0.2,
