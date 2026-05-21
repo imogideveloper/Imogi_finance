@@ -15,7 +15,7 @@ frappe.ui.form.on("Workspace UI Settings", {
 
 		frm.set_intro(
 			__(
-				"Setelah Save, tekan Ctrl+Shift+R di halaman workspace (mis. Selling) agar perubahan langsung terlihat."
+				"Isi kolom User di tabel untuk aturan per user (kosong = semua user). Setelah Save, Ctrl+Shift+R di halaman workspace."
 			)
 		);
 
@@ -29,23 +29,6 @@ frappe.ui.form.on("Workspace UI Settings", {
 				setTimeout(() => window.location.reload(), 800);
 			});
 		});
-
-		frm.add_custom_button(__("Example: Hide Selling → Point of Sale"), () => {
-			frappe.call({
-				method: "imogi_finance.workspace_visibility.add_hidden_section",
-				args: {
-					workspace: "Selling",
-					section_label: "Point of Sale",
-				},
-				callback() {
-					frm.reload_doc();
-					frappe.show_alert({
-						message: __("Point of Sale hidden on Selling workspace."),
-						indicator: "green",
-					});
-				},
-			});
-		});
 	},
 });
 
@@ -53,6 +36,13 @@ function open_section_picker(frm) {
 	const dialog = new frappe.ui.Dialog({
 		title: __("Add Hidden Section"),
 		fields: [
+			{
+				fieldname: "user",
+				fieldtype: "Link",
+				label: __("User (opsional)"),
+				options: "User",
+				description: __("Kosongkan = semua user. Isi mis. Yugo = hanya user itu."),
+			},
 			{
 				fieldname: "workspace",
 				fieldtype: "Link",
@@ -70,6 +60,7 @@ function open_section_picker(frm) {
 		],
 		primary_action_label: __("Add Selected"),
 		primary_action() {
+			const user = dialog.get_value("user") || "";
 			const workspace = dialog.get_value("workspace");
 			const selected = [];
 			dialog.$wrapper.find("input.imogi-hide-section:checked").each(function () {
@@ -84,19 +75,17 @@ function open_section_picker(frm) {
 			const calls = selected.map((section_label) =>
 				frappe.call({
 					method: "imogi_finance.workspace_visibility.add_hidden_section",
-					args: { workspace, section_label },
+					args: { workspace, section_label, user: user || null },
 				})
 			);
 
 			Promise.all(calls).then(() => {
 				dialog.hide();
 				frm.reload_doc();
-				frappe.show_alert({
-					message: __("{0} section(s) added. Muat ulang halaman (Ctrl+Shift+R).", [
-						selected.length,
-					]),
-					indicator: "green",
-				});
+				const who = user
+					? __("{0} section(s) untuk user {1}.", [selected.length, user])
+					: __("{0} section(s) untuk semua user.", [selected.length]);
+				frappe.show_alert({ message: who, indicator: "green" });
 			});
 		},
 	});
@@ -104,7 +93,7 @@ function open_section_picker(frm) {
 	dialog.show();
 	dialog.fields_dict.sections_html.$wrapper.html(
 		`<p class="text-muted">${__(
-			"Pilih workspace lalu centang section yang ingin disembunyikan."
+			"Pilih user (opsional), workspace, lalu centang section yang ingin disembunyikan."
 		)}</p>`
 	);
 }

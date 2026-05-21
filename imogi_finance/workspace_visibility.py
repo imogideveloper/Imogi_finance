@@ -56,8 +56,16 @@ def get_workspace_sections(workspace: str) -> list[dict]:
 	return sections
 
 
-def get_hidden_rules(workspace_name: str | None) -> list[dict]:
-	"""Active hide rules for a workspace."""
+def _rule_applies_to_user(row, user: str | None = None) -> bool:
+	"""Row with empty user = global; row with user = only that login."""
+	row_user = (getattr(row, "user", None) or "").strip()
+	if not row_user:
+		return True
+	return row_user == (user or frappe.session.user)
+
+
+def get_hidden_rules(workspace_name: str | None, user: str | None = None) -> list[dict]:
+	"""Active hide rules for a workspace (current session user unless user= passed)."""
 	if not workspace_name:
 		return []
 
@@ -76,6 +84,8 @@ def get_hidden_rules(workspace_name: str | None) -> list[dict]:
 	for row in settings.hidden_sections or []:
 		if not row.hidden:
 			continue
+		if not _rule_applies_to_user(row, user):
+			continue
 		if (row.workspace or "").strip() != workspace_name:
 			continue
 		label = (row.section_label or "").strip()
@@ -92,14 +102,16 @@ def get_hidden_rules(workspace_name: str | None) -> list[dict]:
 	return rules
 
 
-def get_hidden_section_labels(workspace_name: str | None) -> list[str]:
+def get_hidden_section_labels(workspace_name: str | None, user: str | None = None) -> list[str]:
 	"""Labels to hide in workspace content blocks (shortcuts + cards)."""
-	return [rule["label"] for rule in get_hidden_rules(workspace_name)]
+	return [rule["label"] for rule in get_hidden_rules(workspace_name, user)]
 
 
-def filter_workspace_content_blocks(blocks: list, workspace_name: str | None) -> list:
+def filter_workspace_content_blocks(
+	blocks: list, workspace_name: str | None, user: str | None = None
+) -> list:
 	"""Remove card/shortcut blocks from workspace EditorJS content."""
-	rules = get_hidden_rules(workspace_name)
+	rules = get_hidden_rules(workspace_name, user)
 	if not rules:
 		return blocks
 
@@ -118,7 +130,9 @@ def filter_workspace_content_blocks(blocks: list, workspace_name: str | None) ->
 	return filtered
 
 
-def filter_workspace_content_json(content: str | None, workspace_name: str | None) -> str:
+def filter_workspace_content_json(
+	content: str | None, workspace_name: str | None, user: str | None = None
+) -> str:
 	if not content:
 		return content or ""
 	try:
@@ -127,16 +141,19 @@ def filter_workspace_content_json(content: str | None, workspace_name: str | Non
 		return content
 	if not isinstance(blocks, list):
 		return content
-	return json.dumps(filter_workspace_content_blocks(blocks, workspace_name))
+	return json.dumps(filter_workspace_content_blocks(blocks, workspace_name, user))
 
 
-def filter_boot_workspaces(bootinfo) -> None:
+def filter_boot_workspaces(bootinfo, user: str | None = None) -> None:
 	"""Filter workspace layout JSON bundled in desk boot (main workspace page source)."""
+	user = user or getattr(bootinfo, "user", None) or frappe.session.user
 	pages = bootinfo.get("allowed_workspaces") or []
 	for page in pages:
 		workspace_name = page.get("name") or page.get("title")
 		if page.get("content"):
-			page["content"] = filter_workspace_content_json(page["content"], workspace_name)
+			page["content"] = filter_workspace_content_json(
+				page["content"], workspace_name, user
+			)
 
 
 def _label_matches(label: str | None, hidden_keys: set[str]) -> bool:
@@ -153,9 +170,11 @@ def _label_matches(label: str | None, hidden_keys: set[str]) -> bool:
 		return False
 
 
-def filter_workspace_page_data(page_data: dict, workspace_name: str | None) -> dict:
+def filter_workspace_page_data(
+	page_data: dict, workspace_name: str | None, user: str | None = None
+) -> dict:
 	"""Remove hidden cards/shortcuts from get_desktop_page payload."""
-	rules = get_hidden_rules(workspace_name)
+	rules = get_hidden_rules(workspace_name, user)
 	if not rules:
 		page_data["hidden_sections"] = []
 		return page_data
@@ -191,13 +210,15 @@ def filter_workspace_page_data(page_data: dict, workspace_name: str | None) -> d
 
 
 @frappe.whitelist()
-def add_hidden_section(workspace: str, section_label: str) -> dict:
+def add_hidden_section(workspace: str, section_label: str, user: str | None = None) -> dict:
 	"""Quick-add a hidden section row from the settings form."""
+	user = (user or "").strip() or None
 	settings = frappe.get_single("Workspace UI Settings")
 	settings.enabled = 1
 
 	for row in settings.hidden_sections or []:
-		if row.workspace == workspace and row.section_label == section_label:
+		row_user = (getattr(row, "user", None) or "").strip() or None
+		if row.workspace == workspace and row.section_label == section_label and row_user == user:
 			row.hidden = 1
 			row.hide_card_section = 1
 			row.hide_shortcuts = 1
@@ -208,6 +229,7 @@ def add_hidden_section(workspace: str, section_label: str) -> dict:
 	settings.append(
 		"hidden_sections",
 		{
+			"user": user,
 			"workspace": workspace,
 			"section_label": section_label,
 			"hidden": 1,
@@ -220,8 +242,9 @@ def add_hidden_section(workspace: str, section_label: str) -> dict:
 	return {"status": "created"}
 
 
-def get_workspace_hidden_map() -> dict[str, list[str]]:
-	"""Workspace name -> section labels to hide (for desk boot)."""
+def get_workspace_hidden_map(user: str | None = None) -> dict[str, list[str]]:
+	"""Workspace name -> section labels to hide for the given user (desk boot)."""
+	user = user or frappe.session.user
 	if not frappe.db.exists("DocType", "Workspace UI Settings"):
 		return {}
 
@@ -237,6 +260,8 @@ def get_workspace_hidden_map() -> dict[str, list[str]]:
 	for row in settings.hidden_sections or []:
 		if not row.hidden:
 			continue
+		if not _rule_applies_to_user(row, user):
+			continue
 		workspace = (row.workspace or "").strip()
 		label = (row.section_label or "").strip()
 		if not workspace or not label:
@@ -250,8 +275,9 @@ def get_workspace_hidden_map() -> dict[str, list[str]]:
 
 
 def update_boot_session(bootinfo):
-	bootinfo.imogi_workspace_hidden = get_workspace_hidden_map()
-	filter_boot_workspaces(bootinfo)
+	user = getattr(bootinfo, "user", None) or frappe.session.user
+	bootinfo.imogi_workspace_hidden = get_workspace_hidden_map(user)
+	filter_boot_workspaces(bootinfo, user)
 
 
 def clear_workspace_cache(doc=None, method=None):

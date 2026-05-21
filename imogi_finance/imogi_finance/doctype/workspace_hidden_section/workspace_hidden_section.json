@@ -6,6 +6,7 @@
   "editable_grid": 1,
   "engine": "InnoDB",
   "field_order": [
+    "user",
     "workspace",
     "section_label",
     "hidden",
@@ -13,6 +14,14 @@
     "hide_shortcuts"
   ],
   "fields": [
+    {
+      "fieldname": "user",
+      "fieldtype": "Link",
+      "in_list_view": 1,
+      "label": "User",
+      "options": "User",
+      "description": "Kosongkan = berlaku untuk semua user. Isi mis. Yugo agar hanya user tersebut yang section-nya disembunyikan."
+    },
     {
       "fieldname": "workspace",
       "fieldtype": "Link",

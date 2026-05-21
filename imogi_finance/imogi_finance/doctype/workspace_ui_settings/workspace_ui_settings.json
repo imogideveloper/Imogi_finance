@@ -8,6 +8,7 @@
   "engine": "InnoDB",
   "field_order": [
     "section_help",
+    "per_user_help",
     "enabled",
     "hidden_sections"
   ],
@@ -15,7 +16,12 @@
     {
       "fieldname": "section_help",
       "fieldtype": "Section Break",
-      "label": "Workspace Menu Visibility"
+      "label": "Workspace Menu Visibility (per user)"
+    },
+    {
+      "fieldname": "per_user_help",
+      "fieldtype": "HTML",
+      "options": "<p class=\"text-muted\" style=\"margin-bottom:12px\">Di tabel <b>Hidden Sections</b>, isi kolom <b>User</b> (mis. <code>yugo@company.com</code>) agar section hanya hilang untuk user itu. Kosongkan User = berlaku untuk semua user.</p>"
     },
     {
       "default": "1",
