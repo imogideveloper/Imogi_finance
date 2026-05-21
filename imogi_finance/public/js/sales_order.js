@@ -1,5 +1,6 @@
 frappe.ui.form.on("Sales Order", {
     refresh(frm) {
+        imogi_finance.prefer_accounting_breadcrumb("Sales Order");
         relocate_generate_detail_button(frm);
         setup_imogi_sales_invoice_button(frm);
         setup_so_payment_status_indicator(frm);

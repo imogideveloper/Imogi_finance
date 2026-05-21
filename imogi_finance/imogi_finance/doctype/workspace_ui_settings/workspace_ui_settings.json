@@ -10,6 +10,11 @@
     "section_help",
     "per_user_help",
     "enabled",
+    "section_hidden_workspaces",
+    "workspace_help",
+    "hidden_workspaces",
+    "section_hidden_sections",
+    "section_help_sections",
     "hidden_sections"
   ],
   "fields": [
@@ -21,13 +26,39 @@
     {
       "fieldname": "per_user_help",
       "fieldtype": "HTML",
-      "options": "<p class=\"text-muted\" style=\"margin-bottom:12px\">Di tabel <b>Hidden Sections</b>, isi kolom <b>User</b> (mis. <code>yugo@company.com</code>) agar section hanya hilang untuk user itu. Kosongkan User = berlaku untuk semua user.</p>"
+      "options": "<p class=\"text-muted\" style=\"margin-bottom:12px\">Atur menu sidebar per user. Kosongkan kolom <b>User</b> = berlaku untuk semua user. Setelah Save, klik <b>Save &amp; Reload Desk</b> atau Ctrl+Shift+R.</p>"
     },
     {
       "default": "1",
       "fieldname": "enabled",
       "fieldtype": "Check",
       "label": "Enable Menu Hiding"
+    },
+    {
+      "fieldname": "section_hidden_workspaces",
+      "fieldtype": "Section Break",
+      "label": "Hide Entire Workspace"
+    },
+    {
+      "fieldname": "workspace_help",
+      "fieldtype": "HTML",
+      "options": "<p class=\"text-muted\" style=\"margin-bottom:8px\">Workspace yang dicentang <b>Hide Workspace</b> tidak muncul di sidebar (mis. sembunyikan <i>Point of Sale</i> hanya untuk user tertentu).</p>"
+    },
+    {
+      "fieldname": "hidden_workspaces",
+      "fieldtype": "Table",
+      "label": "Hidden Workspaces",
+      "options": "Workspace Hidden Workspace"
+    },
+    {
+      "fieldname": "section_hidden_sections",
+      "fieldtype": "Section Break",
+      "label": "Hide Section Inside Workspace"
+    },
+    {
+      "fieldname": "section_help_sections",
+      "fieldtype": "HTML",
+      "options": "<p class=\"text-muted\" style=\"margin-bottom:8px\">Sembunyikan bagian di dalam workspace (card break / shortcut), bukan seluruh workspace.</p>"
     },
     {
       "fieldname": "hidden_sections",

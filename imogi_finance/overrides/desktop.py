@@ -6,6 +6,7 @@ from frappe.desk.desktop import get_workspace_sidebar_items as frappe_get_worksp
 from frappe.exceptions import DoesNotExistError
 
 from imogi_finance.workspace_visibility import (
+	filter_allowed_workspace_pages,
 	filter_workspace_content_json,
 	filter_workspace_page_data,
 )
@@ -15,6 +16,7 @@ from imogi_finance.workspace_visibility import (
 def get_workspace_sidebar_items():
 	"""Filter workspace layout JSON when sidebar/boot pages are refreshed."""
 	result = frappe_get_workspace_sidebar_items()
+	result["pages"] = filter_allowed_workspace_pages(result.get("pages") or [])
 	for page in result.get("pages") or []:
 		workspace_name = page.get("name") or page.get("title")
 		if page.get("content"):

@@ -13,6 +13,21 @@ def _normalize_label(label: str | None) -> str:
 
 
 @frappe.whitelist()
+def get_pickable_workspaces() -> list[dict]:
+	"""Public workspaces for the hide-workspace picker (System Manager / settings form)."""
+	if not frappe.has_permission("Workspace UI Settings", "write"):
+		frappe.throw(_("Not permitted"), frappe.PermissionError)
+
+	return frappe.get_all(
+		"Workspace",
+		filters={"public": 1},
+		fields=["name", "title", "module"],
+		order_by="title asc, name asc",
+		limit_page_length=0,
+	)
+
+
+@frappe.whitelist()
 def get_workspace_sections(workspace: str) -> list[dict]:
 	"""Return card breaks, shortcuts, and content blocks for a workspace (picker)."""
 	if not workspace or not frappe.db.exists("Workspace", workspace):
@@ -62,6 +77,45 @@ def _rule_applies_to_user(row, user: str | None = None) -> bool:
 	if not row_user:
 		return True
 	return row_user == (user or frappe.session.user)
+
+
+def get_hidden_workspace_names(user: str | None = None) -> set[str]:
+	"""Workspace names to remove entirely from desk sidebar for this user."""
+	user = user or frappe.session.user
+	if not frappe.db.exists("DocType", "Workspace UI Settings"):
+		return set()
+
+	try:
+		settings = frappe.get_cached_doc("Workspace UI Settings")
+	except frappe.DoesNotExistError:
+		return set()
+
+	if not settings.enabled:
+		return set()
+
+	hidden: set[str] = set()
+	for row in getattr(settings, "hidden_workspaces", None) or []:
+		if not row.hidden:
+			continue
+		if not _rule_applies_to_user(row, user):
+			continue
+		name = (row.workspace or "").strip()
+		if name:
+			hidden.add(name)
+	return hidden
+
+
+def filter_allowed_workspace_pages(pages: list | None, user: str | None = None) -> list:
+	"""Drop pages whose workspace name is in hidden_workspaces."""
+	pages = list(pages or [])
+	hidden = get_hidden_workspace_names(user)
+	if not hidden:
+		return pages
+	return [
+		page
+		for page in pages
+		if (page.get("name") or page.get("title") or "").strip() not in hidden
+	]
 
 
 def get_hidden_rules(workspace_name: str | None, user: str | None = None) -> list[dict]:
@@ -147,7 +201,8 @@ def filter_workspace_content_json(
 def filter_boot_workspaces(bootinfo, user: str | None = None) -> None:
 	"""Filter workspace layout JSON bundled in desk boot (main workspace page source)."""
 	user = user or getattr(bootinfo, "user", None) or frappe.session.user
-	pages = bootinfo.get("allowed_workspaces") or []
+	pages = filter_allowed_workspace_pages(bootinfo.get("allowed_workspaces") or [], user)
+	bootinfo.allowed_workspaces = pages
 	for page in pages:
 		workspace_name = page.get("name") or page.get("title")
 		if page.get("content"):
@@ -207,6 +262,33 @@ def filter_workspace_page_data(
 
 	page_data["hidden_sections"] = sorted({rule["label"] for rule in rules if rule["label_key"] in content_keys})
 	return page_data
+
+
+@frappe.whitelist()
+def add_hidden_workspace(workspace: str, user: str | None = None) -> dict:
+	"""Quick-add a row to hide an entire workspace from the sidebar."""
+	user = (user or "").strip() or None
+	if not workspace or not frappe.db.exists("Workspace", workspace):
+		frappe.throw(_("Workspace {0} not found.").format(workspace))
+
+	settings = frappe.get_single("Workspace UI Settings")
+	settings.enabled = 1
+
+	for row in getattr(settings, "hidden_workspaces", None) or []:
+		row_user = (getattr(row, "user", None) or "").strip() or None
+		if row.workspace == workspace and row_user == user:
+			row.hidden = 1
+			settings.save(ignore_permissions=True)
+			clear_workspace_cache()
+			return {"status": "updated"}
+
+	settings.append(
+		"hidden_workspaces",
+		{"user": user, "workspace": workspace, "hidden": 1},
+	)
+	settings.save(ignore_permissions=True)
+	clear_workspace_cache()
+	return {"status": "created"}
 
 
 @frappe.whitelist()
@@ -274,10 +356,22 @@ def get_workspace_hidden_map(user: str | None = None) -> dict[str, list[str]]:
 	return hidden_map
 
 
+def _filter_module_wise_workspaces(bootinfo, user: str | None = None) -> None:
+	hidden = get_hidden_workspace_names(user)
+	module_map = bootinfo.get("module_wise_workspaces") or {}
+	if not hidden or not module_map:
+		return
+	for module, names in list(module_map.items()):
+		module_map[module] = [name for name in (names or []) if name not in hidden]
+	bootinfo.module_wise_workspaces = module_map
+
+
 def update_boot_session(bootinfo):
 	user = getattr(bootinfo, "user", None) or frappe.session.user
+	bootinfo.imogi_hidden_workspaces = sorted(get_hidden_workspace_names(user))
 	bootinfo.imogi_workspace_hidden = get_workspace_hidden_map(user)
 	filter_boot_workspaces(bootinfo, user)
+	_filter_module_wise_workspaces(bootinfo, user)
 
 
 def clear_workspace_cache(doc=None, method=None):

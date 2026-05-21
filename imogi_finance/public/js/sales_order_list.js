@@ -90,6 +90,7 @@ frappe.listview_settings["Sales Order"] = {
 	},
 
 	onload(listview) {
+		imogi_finance.prefer_accounting_breadcrumb("Sales Order");
 		patch_sales_order_listview_settings();
 		inject_so_status_styles();
 		setup_so_outstanding_list(listview);

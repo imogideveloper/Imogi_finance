@@ -9,13 +9,17 @@ frappe.ui.form.on("Workspace UI Settings", {
 			return;
 		}
 
+		frm.add_custom_button(__("Add Hidden Workspace"), () => {
+			open_workspace_picker(frm);
+		});
+
 		frm.add_custom_button(__("Load Sections from Workspace"), () => {
 			open_section_picker(frm);
 		});
 
 		frm.set_intro(
 			__(
-				"Isi kolom User di tabel untuk aturan per user (kosong = semua user). Setelah Save, Ctrl+Shift+R di halaman workspace."
+				"Sembunyikan seluruh workspace (tabel Hidden Workspaces) atau section di dalam workspace (Hidden Sections). Kolom User kosong = semua user. Setelah Save, gunakan Save & Reload Desk."
 			)
 		);
 
@@ -31,6 +35,93 @@ frappe.ui.form.on("Workspace UI Settings", {
 		});
 	},
 });
+
+function open_workspace_picker(frm) {
+	const dialog = new frappe.ui.Dialog({
+		title: __("Add Hidden Workspace"),
+		fields: [
+			{
+				fieldname: "user",
+				fieldtype: "Link",
+				label: __("User (opsional)"),
+				options: "User",
+				description: __("Kosongkan = semua user. Isi mis. Yugo = hanya user itu."),
+			},
+			{
+				fieldname: "workspaces_html",
+				fieldtype: "HTML",
+			},
+		],
+		primary_action_label: __("Add Selected"),
+		primary_action() {
+			const user = dialog.get_value("user") || "";
+			const selected = [];
+			dialog.$wrapper.find("input.imogi-hide-workspace:checked").each(function () {
+				selected.push($(this).data("name"));
+			});
+
+			if (!selected.length) {
+				frappe.msgprint(__("Centang minimal satu workspace."));
+				return;
+			}
+
+			const calls = selected.map((workspace) =>
+				frappe.call({
+					method: "imogi_finance.workspace_visibility.add_hidden_workspace",
+					args: { workspace, user: user || null },
+				})
+			);
+
+			Promise.all(calls).then(() => {
+				dialog.hide();
+				frm.reload_doc();
+				const who = user
+					? __("{0} workspace untuk user {1}.", [selected.length, user])
+					: __("{0} workspace untuk semua user.", [selected.length]);
+				frappe.show_alert({ message: who, indicator: "green" });
+			});
+		},
+	});
+
+	dialog.show();
+	load_pickable_workspaces(dialog);
+}
+
+function load_pickable_workspaces(dialog) {
+	const $wrap = dialog.fields_dict.workspaces_html.$wrapper;
+	$wrap.html(`<p class="text-muted">${__("Loading workspaces...")}</p>`);
+
+	frappe.call({
+		method: "imogi_finance.workspace_visibility.get_pickable_workspaces",
+		callback(r) {
+			const rows = r.message || [];
+			if (!rows.length) {
+				$wrap.html(`<p class="text-muted">${__("No workspaces found.")}</p>`);
+				return;
+			}
+
+			let html = `<p class="text-muted">${__(
+				"Pilih user (opsional), lalu centang workspace yang ingin disembunyikan dari sidebar."
+			)}</p>`;
+			html += '<div class="imogi-workspace-list" style="max-height:320px;overflow:auto;">';
+			rows.forEach((row) => {
+				const name = frappe.utils.escape_html(row.name);
+				const title = frappe.utils.escape_html(row.title || row.name);
+				const module = frappe.utils.escape_html(row.module || "");
+				html += `
+					<div class="checkbox" style="margin:6px 0;">
+						<label>
+							<input type="checkbox" class="imogi-hide-workspace" data-name="${name}">
+							<strong>${title}</strong>
+							<span class="text-muted"> — ${module}</span>
+						</label>
+					</div>`;
+			});
+			html += "</div>";
+			$wrap.html(html);
+		},
+	});
+}
 
 function open_section_picker(frm) {
 	const dialog = new frappe.ui.Dialog({

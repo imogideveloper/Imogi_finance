@@ -1,3 +1,29 @@
+frappe.provide("imogi_finance");
+
+/**
+ * Sales Order (modul ERPNext: Selling) default ke workspace Towing Imogi.
+ * Set preferensi breadcrumb ke Accounts → Accounting, selaras Sales Invoice.
+ */
+imogi_finance.prefer_accounting_breadcrumb = function (doctype) {
+	if (doctype !== "Sales Order" || !frappe.breadcrumbs) return;
+	try {
+		frappe.breadcrumbs.set_doctype_module(doctype, "Accounts");
+	} catch (e) {
+		/* ignore */
+	}
+	const route = frappe.get_route_str();
+	const crumbs = frappe.breadcrumbs.all && frappe.breadcrumbs.all[route];
+	if (crumbs && crumbs.doctype === doctype) {
+		crumbs.module = "Accounts";
+		crumbs.workspace = "Accounting";
+		frappe.breadcrumbs.update();
+	}
+};
+
+frappe.ready(function () {
+	imogi_finance.prefer_accounting_breadcrumb("Sales Order");
+});
+
 frappe.after_ajax(function() {
     const _original = frappe.views.ListView.prototype.setup_defaults;
     frappe.views.ListView.prototype.setup_defaults = async function() {

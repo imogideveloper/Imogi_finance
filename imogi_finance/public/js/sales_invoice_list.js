@@ -192,8 +192,6 @@ frappe.listview_settings["Sales Invoice"] = {
 		imogi_late_days: imogi_si_format_late_days,
 	},
 
-	right_column: "grand_total",
-
 	onload: imogi_si_list_onload,
 };
 
@@ -267,7 +265,6 @@ function patch_sales_invoice_listview_settings() {
 	settings.formatters.posting_date = imogi_si_format_posting_date;
 	settings.formatters.grand_total = imogi_si_format_grand_total;
 	settings.formatters.imogi_late_days = imogi_si_format_late_days;
-	settings.right_column = "grand_total";
 
 	if (!settings.__si_imogi_onload_wrapped) {
 		const orig_onload = settings.onload;
@@ -553,11 +550,14 @@ function init_sales_invoice_list_toolbar(listview) {
 			".erg-group-header[data-si-group='Paid'] .erg-group-icon-wrap{background:#d1fae5;color:#059669}" +
 			".erg-group-text{display:flex;flex-direction:column;justify-content:center;gap:1px;min-width:0}" +
 			".erg-group-checkbox-spacer{visibility:hidden;pointer-events:none}" +
-			"[data-page-route^='List/Sales Invoice'] .list-row-head .list-header-subject," +
+			"[data-page-route^='List/Sales Invoice'] .list-row-container>.level.list-row{display:flex!important;align-items:center!important;width:100%!important}" +
 			"[data-page-route^='List/Sales Invoice'] .list-row-container .level-left," +
-			"[data-page-route^='List/Sales Invoice'] .erg-group-header .level-left{justify-content:flex-start!important}" +
-			"[data-page-route^='List/Sales Invoice'] .level-left>.list-row-col{margin-right:8px!important}" +
-			"[data-page-route^='List/Sales Invoice'] .si-col-subject{flex:1 1 0!important;min-width:6rem!important;max-width:none!important;width:auto!important}" +
+			"[data-page-route^='List/Sales Invoice'] .list-row-head .level-left{flex:1 1 0!important;min-width:0!important;max-width:calc(100% - 7.5rem)!important;width:0!important;overflow:hidden!important;padding-right:.35rem!important;justify-content:flex-start!important}" +
+			"[data-page-route^='List/Sales Invoice'] .list-row-container .level-right," +
+			"[data-page-route^='List/Sales Invoice'] .list-row-head .level-right{flex:0 0 7.5rem!important;min-width:7.5rem!important;max-width:7.5rem!important;margin-left:auto!important;justify-content:flex-end!important}" +
+			"[data-page-route^='List/Sales Invoice'] .erg-group-header .level-left{justify-content:flex-start!important;max-width:calc(100% - 7.5rem)!important}" +
+			"[data-page-route^='List/Sales Invoice'] .level-left>.list-row-col:not(.list-subject):not(.tag-col){flex:0 0 auto!important;margin-right:6px!important}" +
+			"[data-page-route^='List/Sales Invoice'] .si-col-subject{flex:1 1 7rem!important;min-width:5rem!important;max-width:10rem!important;width:auto!important}" +
 			"[data-page-route^='List/Sales Invoice'] .si-col-subject .level-item.ellipsis{font-weight:600;color:#1e293b}" +
 			"[data-page-route^='List/Sales Invoice'] .si-col-status{flex:0 0 100px!important;width:100px!important;max-width:100px!important}" +
 			"[data-page-route^='List/Sales Invoice'] .si-col-status.list-row-col{display:flex!important;align-items:center!important}" +
@@ -583,7 +583,8 @@ function init_sales_invoice_list_toolbar(listview) {
 			"[data-page-route^='List/Sales Invoice'] .si-col-posting_date{flex:0 0 100px!important;width:100px!important;max-width:100px!important}" +
 			"[data-page-route^='List/Sales Invoice'] .si-col-name{flex:0 0 128px!important;width:128px!important;max-width:128px!important}" +
 			"[data-page-route^='List/Sales Invoice'] .si-col-imogi_late_days{flex:0 0 108px!important;width:108px!important;max-width:108px!important}" +
-			"[data-page-route^='List/Sales Invoice'] .si-col-grand_total{flex:0 0 152px!important;width:152px!important;max-width:152px!important}" +
+			"[data-page-route^='List/Sales Invoice'] .si-col-grand_total{flex:0 0 9.5rem!important;width:9.5rem!important;max-width:9.5rem!important;text-align:right!important;padding-right:2px!important}" +
+			"[data-page-route^='List/Sales Invoice'] .si-col-grand_total .level-item{width:100%!important;text-align:right!important}" +
 			"[data-page-route^='List/Sales Invoice'] .si-col-imogi_late_days.list-row-col{display:flex!important;align-items:center!important}" +
 			"[data-page-route^='List/Sales Invoice'] .si-late-days-cell{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1}" +
 			"[data-page-route^='List/Sales Invoice'] .si-late-days-cell.si-late-overdue{display:inline-flex!important;align-items:center!important;justify-content:flex-start;gap:5px;line-height:1;vertical-align:middle;background:#fef2f2;border:1px solid #fecaca;border-radius:999px;padding:3px 10px 3px 8px;font-size:11px;font-weight:600;color:#b91c1c;height:22px;box-sizing:border-box}" +
