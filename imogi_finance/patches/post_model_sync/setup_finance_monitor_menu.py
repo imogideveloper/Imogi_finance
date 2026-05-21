@@ -6,6 +6,8 @@ import json
 
 import frappe
 
+from imogi_finance.workspace_utils import sanitize_workspace_missing_links
+
 REPORT_NAME = "Finance Monitor Dashboard"
 WORKSPACE_NAME = "Finance Monitor"
 SHORTCUT_LABEL = REPORT_NAME
@@ -103,6 +105,7 @@ def _create_finance_monitor_workspace():
 			},
 		)
 
+	sanitize_workspace_missing_links(ws)
 	ws.save(ignore_permissions=True)
 
 
@@ -143,6 +146,7 @@ def _add_to_finance_imogi_workspace():
 			},
 		)
 
+	sanitize_workspace_missing_links(ws)
 	ws.save(ignore_permissions=True)
 
 
@@ -188,6 +192,7 @@ def _setup_embedded_shortcuts():
 				"icon": "dashboard",
 			},
 		)
+		sanitize_workspace_missing_links(ws)
 		ws.save(ignore_permissions=True)
 
 	frappe.clear_cache(doctype="Workspace")

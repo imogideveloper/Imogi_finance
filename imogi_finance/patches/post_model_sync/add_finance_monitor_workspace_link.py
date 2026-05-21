@@ -6,6 +6,8 @@ import json
 
 import frappe
 
+from imogi_finance.workspace_utils import sanitize_workspace_missing_links
+
 
 def execute():
 	if not frappe.db.exists("Workspace", "Towing Imogi"):
@@ -42,5 +44,6 @@ def execute():
 			},
 		)
 
+	sanitize_workspace_missing_links(ws)
 	ws.save(ignore_permissions=True)
 	frappe.clear_cache(doctype="Workspace")
