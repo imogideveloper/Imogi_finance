@@ -10,7 +10,7 @@ from imogi_finance.workspace_utils import sanitize_workspace_missing_links
 
 WORKSPACE_NAME = "Access Studio"
 SETTINGS_DOCTYPE = "Workspace UI Settings"
-ALLOWED_ROLES = ("System Manager", "Accounts Manager", "Administrator")
+ALLOWED_ROLES = ("Administrator",)
 
 
 def execute():

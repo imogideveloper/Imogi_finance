@@ -58,7 +58,10 @@ boot_session = "imogi_finance.workspace_visibility.update_boot_session"
 
 
 doctype_list_js = {
-    "Sales Invoice": "public/js/sales_invoice_list.js",
+    "Sales Invoice": [
+        "public/js/sales_invoice_list.js",
+        "public/js/sales_invoice_list_toolbar.js",
+    ],
     "Sales Order": [
         "public/js/sales_order_list_toolbar.js",
         "public/js/sales_order_list.js",
