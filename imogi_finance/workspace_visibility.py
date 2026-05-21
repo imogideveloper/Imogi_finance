@@ -6,10 +6,19 @@ import json
 
 import frappe
 from frappe import _
+from frappe.utils import strip_html
 
 
 def _normalize_label(label: str | None) -> str:
 	return (label or "").strip().casefold()
+
+
+def _header_section_text(data: dict | None) -> str:
+	"""Plain text from EditorJS header block (may contain HTML)."""
+	if not data:
+		return ""
+	text = data.get("text") or ""
+	return strip_html(text).strip()
 
 
 @frappe.whitelist()
@@ -66,6 +75,8 @@ def get_workspace_sections(workspace: str) -> list[dict]:
 				add(data.get("shortcut_name"), "content_shortcut", "content")
 			elif block_type == "card":
 				add(data.get("card_name"), "content_card", "content")
+			elif block_type == "header":
+				add(_header_section_text(data), "header", "content")
 
 	sections.sort(key=lambda row: (row["section_type"], row["label"]))
 	return sections
@@ -164,18 +175,33 @@ def get_hidden_section_labels(workspace_name: str | None, user: str | None = Non
 def filter_workspace_content_blocks(
 	blocks: list, workspace_name: str | None, user: str | None = None
 ) -> list:
-	"""Remove card/shortcut blocks from workspace EditorJS content."""
+	"""Remove hidden sections from workspace EditorJS content (headers, cards, shortcuts)."""
 	rules = get_hidden_rules(workspace_name, user)
 	if not rules:
 		return blocks
 
+	section_keys = {rule["label_key"] for rule in rules}
 	card_keys = {rule["label_key"] for rule in rules if rule["hide_card_section"]}
 	shortcut_keys = {rule["label_key"] for rule in rules if rule["hide_shortcuts"]}
 
 	filtered = []
+	in_hidden_section = False
+
 	for block in blocks:
 		data = block.get("data") or {}
 		block_type = block.get("type")
+
+		if block_type == "header":
+			if _label_matches(_header_section_text(data), section_keys):
+				in_hidden_section = True
+				continue
+			in_hidden_section = False
+			filtered.append(block)
+			continue
+
+		if in_hidden_section:
+			continue
+
 		if block_type == "shortcut" and _label_matches(data.get("shortcut_name"), shortcut_keys):
 			continue
 		if block_type == "card" and _label_matches(data.get("card_name"), card_keys):

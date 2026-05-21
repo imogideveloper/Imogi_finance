@@ -2,6 +2,13 @@ frappe.provide("imogi_finance.workspace_visibility");
 
 const normalize_label = (label) => (label || "").trim().toLowerCase();
 
+const header_section_text = (data) => {
+	const html = (data && data.text) || "";
+	const div = document.createElement("div");
+	div.innerHTML = html;
+	return (div.innerText || div.textContent || "").trim();
+};
+
 imogi_finance.workspace_visibility.get_hidden_labels = function (workspaceName) {
 	const bootMap = frappe.boot.imogi_workspace_hidden || {};
 	const fromBoot = bootMap[workspaceName] || [];
@@ -15,17 +22,37 @@ imogi_finance.workspace_visibility.filter_content = function (content, hiddenLab
 	}
 
 	const hidden = new Set(hiddenLabels.map(normalize_label));
+	const filtered = [];
+	let in_hidden_section = false;
 
-	return content.filter((block) => {
+	for (const block of content) {
 		const data = block.data || {};
-		if (block.type === "shortcut") {
-			return !hidden.has(normalize_label(data.shortcut_name));
+
+		if (block.type === "header") {
+			const section_key = normalize_label(header_section_text(data));
+			if (hidden.has(section_key)) {
+				in_hidden_section = true;
+				continue;
+			}
+			in_hidden_section = false;
+			filtered.push(block);
+			continue;
 		}
-		if (block.type === "card") {
-			return !hidden.has(normalize_label(data.card_name));
+
+		if (in_hidden_section) {
+			continue;
 		}
-		return true;
-	});
+
+		if (block.type === "shortcut" && hidden.has(normalize_label(data.shortcut_name))) {
+			continue;
+		}
+		if (block.type === "card" && hidden.has(normalize_label(data.card_name))) {
+			continue;
+		}
+		filtered.push(block);
+	}
+
+	return filtered;
 };
 
 imogi_finance.workspace_visibility.filter_page_data = function (pageData, hiddenLabels) {
@@ -57,8 +84,8 @@ imogi_finance.workspace_visibility.apply = function (workspaceView) {
 	}
 
 	const workspaceName =
-		(workspaceView._page && workspaceView._page.title) ||
 		workspaceView.page_name ||
+		(workspaceView._page && (workspaceView._page.name || workspaceView._page.title)) ||
 		"";
 
 	const hidden = imogi_finance.workspace_visibility.get_hidden_labels(workspaceName);
@@ -128,6 +155,8 @@ imogi_finance.workspace_visibility.hide_dom_sections = function (workspaceName) 
 		return;
 	}
 	const hiddenSet = new Set(hidden.map(normalize_label));
+
+	// Card-break layout (links-based workspaces)
 	document.querySelectorAll(".widget-group-title").forEach((el) => {
 		const title = normalize_label(el.textContent);
 		if (!hiddenSet.has(title)) {
@@ -136,6 +165,36 @@ imogi_finance.workspace_visibility.hide_dom_sections = function (workspaceName) 
 		const group = el.closest(".widget-group");
 		if (group) {
 			group.style.display = "none";
+		}
+	});
+
+	// EditorJS header layout (FINANCE IMOGI, Finance Monitor, dll.)
+	const root =
+		document.querySelector(".layout-main-section .codex-editor") ||
+		document.querySelector(".layout-main-section");
+	if (!root) {
+		return;
+	}
+
+	const blocks = root.querySelectorAll(".ce-block");
+	blocks.forEach((blockEl) => {
+		const headerEl = blockEl.querySelector(".widget.header");
+		if (headerEl) {
+			const title = normalize_label(headerEl.innerText);
+			if (hiddenSet.has(title)) {
+				let node = blockEl;
+				while (node && node.classList && node.classList.contains("ce-block")) {
+					node.style.display = "none";
+					const next = node.nextElementSibling;
+					if (!next) {
+						break;
+					}
+					if (next.querySelector(".widget.header")) {
+						break;
+					}
+					node = next;
+				}
+			}
 		}
 	});
 };
