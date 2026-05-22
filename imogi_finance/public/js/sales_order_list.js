@@ -9,8 +9,26 @@ function imogi_so_list_route_str() {
 	}
 }
 
+function imogi_is_sales_order_list_view(listview) {
+	if (listview?.doctype === "Sales Order") {
+		return true;
+	}
+	const route = frappe.get_route?.() || [];
+	if (route[0] === "List" && route[1] === "Sales Order") {
+		return true;
+	}
+	const slug = frappe.router?.slug?.("Sales Order");
+	if (slug && (route[0] === slug || imogi_so_list_route_str() === slug)) {
+		return true;
+	}
+	return false;
+}
+
 // Frappe List View Settings: opsi maksimum di UI hanya 4–10 (bukan 14).
 const SO_LIST_MIN_TOTAL_FIELDS = 10;
+
+/** Filter bar atas list — disembunyikan (pakai Group By / Filter Tanggal). */
+const SO_HIDDEN_STANDARD_FILTERS = ["customer_name", "delivery_status", "billing_status"];
 
 const SO_STATUS_COLORS = {
 	Draft: "grey",
@@ -91,8 +109,11 @@ frappe.listview_settings["Sales Order"] = {
 
 	onload(listview) {
 		imogi_finance.prefer_accounting_breadcrumb("Sales Order");
+		imogi_hide_so_standard_filters(listview);
+		setTimeout(() => imogi_hide_so_standard_filters(listview), 0);
 		patch_sales_order_listview_settings();
 		inject_so_status_styles();
+		inject_so_filter_bar_styles();
 		setup_so_outstanding_list(listview);
 		listview.get_indicator_html = imogi_so_list_get_indicator_html;
 		if (imogi_finance.so_list?.init_toolbar) {
@@ -104,6 +125,110 @@ frappe.listview_settings["Sales Order"] = {
 	},
 };
 
+function imogi_hide_so_standard_filters(listview) {
+	if (!imogi_is_sales_order_list_view(listview) || !listview.page) {
+		return;
+	}
+	const $section = listview.page.page_form?.find(".standard-filter-section");
+	SO_HIDDEN_STANDARD_FILTERS.forEach((fieldname) => {
+		const field = listview.page.fields_dict?.[fieldname];
+		if (field) {
+			if (typeof field.set_value === "function") {
+				field.set_value("");
+			}
+			if (field.$wrapper) {
+				field.$wrapper.closest(".form-group, .frappe-control").remove();
+			}
+			delete listview.page.fields_dict[fieldname];
+		}
+		// Fallback DOM (route /app/sales-order, label Customer Name, dll.)
+		if ($section?.length) {
+			$section
+				.find(`.frappe-control[data-fieldname="${fieldname}"]`)
+				.remove();
+			$section
+				.find(`input[data-fieldname="${fieldname}"], select[data-fieldname="${fieldname}"]`)
+				.closest(".frappe-control")
+				.remove();
+		}
+	});
+}
+
+(function imogi_patch_so_list_filters() {
+	function apply_patches() {
+		if (!frappe.views?.ListView?.prototype || frappe.views.ListView.prototype.__imogi_so_filter_patch) {
+			return !!frappe.views?.ListView?.prototype?.__imogi_so_filter_patch;
+		}
+
+		// Customer Name filter = title_field, dibuat sebelum onload — matikan di setup_filter_area
+		const orig_setup_filter = frappe.views.ListView.prototype.setup_filter_area;
+		frappe.views.ListView.prototype.setup_filter_area = function () {
+			let saved_title;
+			if (this.doctype === "Sales Order") {
+				saved_title = this.meta.title_field;
+				this.meta.title_field = null;
+			}
+			const result = orig_setup_filter.call(this);
+			if (this.doctype === "Sales Order") {
+				this.meta.title_field = saved_title;
+				imogi_hide_so_standard_filters(this);
+			}
+			return result;
+		};
+
+		const original_add_field = frappe.ui.Page.prototype.add_field;
+		const hidden = new Set(SO_HIDDEN_STANDARD_FILTERS);
+		frappe.ui.Page.prototype.add_field = function (df, parent) {
+			const $parent = parent ? $(parent) : null;
+			const in_standard =
+				$parent &&
+				($parent.hasClass("standard-filter-section") ||
+					$parent.closest(".standard-filter-section").length);
+			if (
+				df?.fieldname &&
+				hidden.has(df.fieldname) &&
+				in_standard &&
+				(cur_list?.doctype === "Sales Order" || df.doctype === "Sales Order")
+			) {
+				return {
+					$wrapper: $('<div class="imogi-so-filter-hidden" style="display:none !important">'),
+					set_value() {},
+					get_value() {
+						return "";
+					},
+				};
+			}
+			return original_add_field.call(this, df, parent);
+		};
+
+		frappe.views.ListView.prototype.__imogi_so_filter_patch = true;
+		return true;
+	}
+
+	if (!apply_patches()) {
+		frappe.ready(apply_patches);
+	}
+})();
+
+function inject_so_filter_bar_styles() {
+	if (document.getElementById("imogi-so-hide-standard-filters")) {
+		return;
+	}
+	const style = document.createElement("style");
+	style.id = "imogi-so-hide-standard-filters";
+	const routes = ["List/Sales Order", "sales-order", "Sales Order"];
+	const selectors = routes
+		.map(
+			(r) =>
+				`[data-page-route='${r}'] .standard-filter-section .frappe-control[data-fieldname='customer_name'],` +
+				`[data-page-route='${r}'] .standard-filter-section .frappe-control[data-fieldname='delivery_status'],` +
+				`[data-page-route='${r}'] .standard-filter-section .frappe-control[data-fieldname='billing_status']`
+		)
+		.join(",");
+	style.textContent = `${selectors} { display: none !important; width: 0 !important; padding: 0 !important; margin: 0 !important; }`;
+	document.head.appendChild(style);
+}
+
 patch_sales_order_listview_settings();
 if (typeof frappe.ready === "function") {
 	frappe.ready(patch_sales_order_listview_settings);
@@ -111,19 +236,20 @@ if (typeof frappe.ready === "function") {
 	$(patch_sales_order_listview_settings);
 }
 frappe.after_ajax(() => {
-	if (imogi_so_list_route_str() !== "List/Sales Order") return;
+	if (!imogi_is_sales_order_list_view(cur_list)) return;
+	imogi_hide_so_standard_filters(cur_list);
 	patch_sales_order_listview_settings();
 	if (!$("#so-list-toolbar").length) {
 		imogi_so_list_ensure_toolbar(cur_list);
 	}
 });
 $(document).on("page-change", function () {
-	if (imogi_so_list_route_str() === "List/Sales Order") {
-		setTimeout(() => {
-			patch_sales_order_listview_settings();
-			imogi_so_list_ensure_toolbar(cur_list);
-		}, 0);
-	}
+	if (!imogi_is_sales_order_list_view(cur_list)) return;
+	setTimeout(() => {
+		imogi_hide_so_standard_filters(cur_list);
+		patch_sales_order_listview_settings();
+		imogi_so_list_ensure_toolbar(cur_list);
+	}, 0);
 });
 
 function imogi_so_list_ensure_toolbar(listview) {

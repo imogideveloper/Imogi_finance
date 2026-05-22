@@ -398,6 +398,11 @@ def update_boot_session(bootinfo):
 	bootinfo.imogi_workspace_hidden = get_workspace_hidden_map(user)
 	filter_boot_workspaces(bootinfo, user)
 	_filter_module_wise_workspaces(bootinfo, user)
+	# Pastikan desk client membaca setting pajak dari item (sysdefaults)
+	if bootinfo.get("sysdefaults") is not None:
+		bootinfo.sysdefaults["add_taxes_from_item_tax_template"] = frappe.db.get_single_value(
+			"Accounts Settings", "add_taxes_from_item_tax_template"
+		) or 0
 
 
 def clear_workspace_cache(doc=None, method=None):

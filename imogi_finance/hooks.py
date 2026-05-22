@@ -52,6 +52,7 @@ app_include_js = [
     "/assets/imogi_finance/js/workspace_visibility.js",
     "/assets/imogi_finance/js/finance_monitor_workspace.js",
     "/assets/imogi_finance/js/imogi_service_item_qty.js",
+    "/assets/imogi_finance/js/sales_invoice_item_tax.js",
 ]
 
 boot_session = "imogi_finance.workspace_visibility.update_boot_session"
