@@ -13,30 +13,41 @@ from .imogi_finance.utils import ensure_advances_allow_on_submit, ensure_coretax
 
 __all__ = ["ensure_coretax_export_doctypes", "ensure_advances_allow_on_submit"]
 
+_OLD_ROUND_CALL = "self.doc.round_floats_in(item, do_not_round_fields=do_not_round_fields)"
+_NEW_ROUND_CALL = "self.doc.round_floats_in(item)"
+
+
 def patch_round_floats_compatibility(bootinfo=None):
-    """Patch file ERPNext langsung — persistent, tidak hilang saat request."""
-    import os
-    
-    target = os.path.expanduser(
-        "~/frappe-bench/apps/erpnext/erpnext/controllers/taxes_and_totals.py"
-    )
-    
-    with open(target, "r") as f:
-        content = f.read()
-    
-    old = "self.doc.round_floats_in(item, do_not_round_fields=do_not_round_fields)"
-    new = "self.doc.round_floats_in(item)"
-    
-    if old in content:
-        content = content.replace(old, new)
-        with open(target, "w") as f:
-            f.write(content)
-        # Hapus pyc cache
-        pyc = target.replace(".py", ".cpython-310.pyc").replace(
-            "controllers/", "controllers/__pycache__/"
-        )
-        if os.path.exists(pyc):
-            os.remove(pyc)
-        print("✅ Patch applied")
-    else:
-        print("✅ Already patched or not needed")
+	"""One-time ERPNext source patch (after_migrate only — not on login)."""
+	import os
+
+	import frappe
+
+	target = os.path.join(
+		frappe.get_app_path("erpnext"),
+		"controllers",
+		"taxes_and_totals.py",
+	)
+
+	if not os.path.isfile(target):
+		return
+
+	with open(target, encoding="utf-8") as f:
+		content = f.read()
+
+	if _OLD_ROUND_CALL not in content:
+		return
+
+	content = content.replace(_OLD_ROUND_CALL, _NEW_ROUND_CALL)
+	with open(target, "w", encoding="utf-8") as f:
+		f.write(content)
+
+	# Clear stale bytecode if present
+	cache_dir = os.path.join(os.path.dirname(target), "__pycache__")
+	if os.path.isdir(cache_dir):
+		for name in os.listdir(cache_dir):
+			if name.startswith("taxes_and_totals.") and name.endswith(".pyc"):
+				try:
+					os.remove(os.path.join(cache_dir, name))
+				except OSError:
+					pass

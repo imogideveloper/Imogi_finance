@@ -51,6 +51,7 @@ doctype_js = {
 }
 
 app_include_js = [
+    "/assets/imogi_finance/js/payment_entry_allocation_status.js",
     "/assets/imogi_finance/js/imogi_finance.js",
     "/assets/imogi_finance/js/workspace_visibility.js",
     "/assets/imogi_finance/js/finance_monitor_workspace.js",
@@ -395,6 +396,7 @@ doc_events = {
         "validate": [
             "imogi_finance.receipt_control.payment_entry_hooks.validate_customer_receipt_link",
             "imogi_finance.transfer_application.payment_entry_hooks.validate_transfer_application_link",
+            "imogi_finance.payment_entry_status.update_payment_status_on_validate",
         ],
         "after_insert": [
             "imogi_finance.events.payment_entry.after_insert",
@@ -412,10 +414,12 @@ doc_events = {
             "imogi_finance.events.sales_order.update_sales_order_outstanding_from_payment",
             "imogi_finance.sales_order_payment_status.update_from_payment_entry",
             "imogi_finance.imogi_finance.doctype.expense_request.expense_request.update_er_status_on_payment",
+            "imogi_finance.payment_entry_status.update_payment_status_on_submit",
         ],
         "on_update_after_submit": [
             "imogi_finance.events.payment_entry.on_update_after_submit",
             "imogi_finance.sales_order_payment_status.update_from_payment_entry",
+            "imogi_finance.payment_entry_status.update_payment_status_on_submit",
         ],
         "before_cancel": [
             "imogi_finance.events.payment_entry.before_cancel",
@@ -428,6 +432,7 @@ doc_events = {
             "imogi_finance.events.sales_order.update_sales_order_outstanding_from_payment",
             "imogi_finance.sales_order_payment_status.update_from_payment_entry",
             "imogi_finance.imogi_finance.doctype.expense_request.expense_request.revert_er_status_on_payment_cancel",
+            "imogi_finance.payment_entry_status.update_payment_status_on_cancel",
         ],
         "before_delete": "imogi_finance.events.payment_entry.before_delete",
         "on_trash": [
@@ -515,5 +520,3 @@ override_whitelisted_methods = {
 }
 
 ignore_links_on_delete = ["Payment Ledger Entry", "GL Entry"]
-
-on_session_creation = "imogi_finance.utils.patch_round_floats_compatibility"
