@@ -30,6 +30,7 @@ doctype_js = {
         "public/js/purchase_invoice_tax_invoice.js",
         "public/js/payment_reconciliation_helper.js",
         "public/js/purchase_invoice_amortization.js",
+        "public/js/item_tax_mapping.js",  
     ],
     "Expense Claim": [
         "public/js/expense_claim.js",
@@ -42,9 +43,11 @@ doctype_js = {
         "public/js/sales_invoice_tax_invoice.js",
         "public/js/payment_reconciliation_helper.js",
         "public/js/sales_invoice_down_payment.js",
+        "public/js/item_tax_mapping.js",   
     ],
     "Delivery Order Towing": "public/js/delivery_order_towing.js",
     "Workspace UI Settings": "public/js/workspace_ui_settings.js",
+    "Item Tax Mapping": "public/js/item_tax_mapping.js",
 }
 
 app_include_js = [

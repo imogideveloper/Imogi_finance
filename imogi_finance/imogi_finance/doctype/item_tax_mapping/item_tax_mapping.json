@@ -1,0 +1,91 @@
+{
+    "actions": [],
+    "allow_rename": 1,
+    "autoname": "field:title",
+    "creation": "2026-05-22 00:00:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+      "title", "company", "enabled", "transaction_type",
+      "column_break_header", "priority",
+      "section_condition",
+      "item_code", "item_group",
+      "column_break_condition", "customer_group", "notes",
+      "section_taxes", "taxes"
+    ],
+    "fields": [
+      {
+        "fieldname": "title", "fieldtype": "Data", "label": "Title",
+        "reqd": 1, "bold": 1, "in_list_view": 1
+      },
+      {
+        "fieldname": "company", "fieldtype": "Link", "label": "Company",
+        "options": "Company", "reqd": 1, "in_list_view": 1, "in_standard_filter": 1
+      },
+      {
+        "fieldname": "enabled", "fieldtype": "Check", "label": "Enabled",
+        "default": "1", "in_list_view": 1, "in_standard_filter": 1
+      },
+      {
+        "fieldname": "transaction_type", "fieldtype": "Select", "label": "Transaction Type",
+        "options": "Sales\nPurchase\nBoth", "default": "Sales",
+        "reqd": 1, "in_list_view": 1, "in_standard_filter": 1
+      },
+      { "fieldname": "column_break_header", "fieldtype": "Column Break" },
+      {
+        "fieldname": "priority", "fieldtype": "Int", "label": "Priority", "default": "10",
+        "description": "Angka lebih kecil = prioritas lebih tinggi."
+      },
+      {
+        "fieldname": "section_condition", "fieldtype": "Section Break",
+        "label": "Kondisi Matching",
+        "description": "Kosongkan semua untuk berlaku sebagai default/fallback ke semua item."
+      },
+      {
+        "fieldname": "item_code", "fieldtype": "Link", "label": "Item",
+        "options": "Item", "in_list_view": 1, "in_standard_filter": 1
+      },
+      {
+        "fieldname": "item_group", "fieldtype": "Link", "label": "Item Group",
+        "options": "Item Group", "in_list_view": 1, "in_standard_filter": 1
+      },
+      { "fieldname": "column_break_condition", "fieldtype": "Column Break" },
+      {
+        "fieldname": "customer_group", "fieldtype": "Link", "label": "Customer Group",
+        "options": "Customer Group"
+      },
+      { "fieldname": "notes", "fieldtype": "Small Text", "label": "Notes" },
+      {
+        "fieldname": "section_taxes", "fieldtype": "Section Break",
+        "label": "Akun Pajak yang Diterapkan"
+      },
+      {
+        "fieldname": "taxes", "fieldtype": "Table", "label": "Taxes",
+        "options": "Item Tax Mapping Detail", "reqd": 1
+      }
+    ],
+    "istable": 0,
+    "links": [],
+    "modified": "2026-05-22 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Imogi Finance",
+    "name": "Item Tax Mapping",
+    "owner": "Administrator",
+    "permissions": [
+      {
+        "create": 1, "delete": 1, "email": 1, "export": 1, "print": 1,
+        "read": 1, "report": 1, "role": "System Manager", "share": 1, "write": 1
+      },
+      {
+        "create": 1, "delete": 0, "email": 1, "export": 1, "print": 1,
+        "read": 1, "report": 1, "role": "Accounts Manager", "share": 1, "write": 1
+      },
+      {
+        "create": 0, "delete": 0, "read": 1, "report": 1,
+        "role": "Accounts User", "export": 1
+      }
+    ],
+    "sort_field": "priority",
+    "sort_order": "ASC",
+    "track_changes": 1
+  }
