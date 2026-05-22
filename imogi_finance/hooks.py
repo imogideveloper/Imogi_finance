@@ -30,7 +30,7 @@ doctype_js = {
         "public/js/purchase_invoice_tax_invoice.js",
         "public/js/payment_reconciliation_helper.js",
         "public/js/purchase_invoice_amortization.js",
-        "public/js/item_tax_mapping.js",  
+        "public/js/item_tax_mapping.js", 
     ],
     "Expense Claim": [
         "public/js/expense_claim.js",
@@ -47,7 +47,9 @@ doctype_js = {
     ],
     "Delivery Order Towing": "public/js/delivery_order_towing.js",
     "Workspace UI Settings": "public/js/workspace_ui_settings.js",
-    "Item Tax Mapping": "public/js/item_tax_mapping.js",
+    "Quotation":       "public/js/item_tax_mapping.js", 
+    "Purchase Order":  "public/js/item_tax_mapping.js", 
+    "Item Tax Mapping": "public/js/item_tax_mapping.js", 
 }
 
 app_include_js = [
@@ -70,6 +72,7 @@ doctype_list_js = {
     "Sales Order": [
         "public/js/sales_order_list_toolbar.js",
         "public/js/sales_order_list.js",
+        "public/js/item_tax_mapping.js",
     ],
     "Bank CSV Import": "imogi_finance/imogi_finance/doctype/bank_csv_import/bank_csv_import_list.js",
     "Administrative Payment Voucher": "imogi_finance/doctype/administrative_payment_voucher/administrative_payment_voucher_list.js",
