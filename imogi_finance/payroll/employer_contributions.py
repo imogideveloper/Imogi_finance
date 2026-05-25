@@ -23,6 +23,19 @@ def _row_component_and_amount(row) -> tuple[str | None, float]:
 	return getattr(row, "salary_component", None), flt(getattr(row, "amount", 0))
 
 
+BPJS_EMPLOYER_COMPONENTS = {
+	"bpjs kesehatan employer",
+	"bpjs jht employer",
+	"bpjs jp employer",
+	"bpjs jkk employer",
+	"bpjs jkm employer",
+}
+
+
+def _is_bpjs_employer_component(component_name: str | None) -> bool:
+	return (component_name or "").strip().lower() in BPJS_EMPLOYER_COMPONENTS
+
+
 def collect_employer_contribution_rows(doc, source_tables: tuple[str, ...] = ("earnings", "deductions")) -> list[dict]:
 	"""Kumpulkan baris employer dari child table slip/struktur."""
 	rows: list[dict] = []
@@ -66,9 +79,8 @@ def infer_employer_contribution_rows(doc) -> list[dict]:
 	except ImportError:
 		return []
 
-	health_base = max(base, 5_396_761.0)
-	jht_base = min(base, flt(get_bpjs_cap("bpjs_jht_employer_cap")) or base)
-	jp_base = min(base, flt(get_bpjs_cap("bpjs_pension_employer_cap")) or base)
+	health_cap = flt(get_bpjs_cap("bpjs_health_employer_cap")) or base
+	health_base = min(base, health_cap)
 
 	return [
 		{
@@ -77,11 +89,11 @@ def infer_employer_contribution_rows(doc) -> list[dict]:
 		},
 		{
 			"salary_component": "BPJS JHT Employer",
-			"amount": jht_base * flt(get_bpjs_rate("bpjs_jht_employer_rate")) / 100,
+			"amount": base * flt(get_bpjs_rate("bpjs_jht_employer_rate")) / 100,
 		},
 		{
 			"salary_component": "BPJS JP Employer",
-			"amount": jp_base * flt(get_bpjs_rate("bpjs_pension_employer_rate")) / 100,
+			"amount": base * flt(get_bpjs_rate("bpjs_pension_employer_rate")) / 100,
 		},
 		{
 			"salary_component": "BPJS JKK Employer",
@@ -99,9 +111,14 @@ def sync_doc_employer_contributions(doc, target_field: str = "employer_contribut
 	if not doc.meta.has_field(target_field):
 		return
 
+	# BPJS employer harus memakai gaji terdaftar/base bulanan penuh untuk TER.
+	# Jangan copy baris struktur yang bisa sudah ter-prorate oleh payment_days.
+	inferred_bpjs_rows = infer_employer_contribution_rows(doc)
+
 	rows = collect_employer_contribution_rows(doc)
-	if not rows:
-		rows = infer_employer_contribution_rows(doc)
+	custom_rows = [row for row in rows if not _is_bpjs_employer_component(row.get("salary_component"))]
+	rows = [*inferred_bpjs_rows, *custom_rows] if inferred_bpjs_rows else rows
+
 	doc.set(target_field, [])
 	for row in rows:
 		doc.append(target_field, row)
