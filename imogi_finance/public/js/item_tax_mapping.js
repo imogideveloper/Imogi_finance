@@ -22,13 +22,55 @@ imogi_finance.item_tax_mapping.inject = function (frm, tax_rows, child_doctype) 
         child.description    = row.description || row.account_head;
         child.add_deduct_tax = row.add_deduct_tax || "Add";
         child.category       = "Total";
+        existing.push(row.account_head);
         changed = true;
     });
 
     if (changed) {
-        frm.refresh_field("taxes");
-        frm.taxes_and_totals?.calculate_taxes_and_totals?.();
+        imogi_finance.item_tax_mapping.recalculate(frm);
     }
+};
+
+imogi_finance.item_tax_mapping.recalculate = function (frm) {
+    if (!frm) return;
+
+    frm.refresh_field("taxes");
+
+    const calculate = () => {
+        const controller = frm.cscript || cur_frm?.cscript;
+        if (controller?.calculate_taxes_and_totals) {
+            controller.calculate_taxes_and_totals();
+        } else if (frm.trigger) {
+            frm.trigger("calculate_taxes_and_totals");
+        }
+
+        frm.refresh_fields([
+            "taxes",
+            "total_taxes_and_charges",
+            "grand_total",
+            "rounded_total",
+        ]);
+    };
+
+    if (frappe.after_ajax) {
+        frappe.after_ajax(calculate);
+    } else {
+        setTimeout(calculate, 0);
+    }
+};
+
+imogi_finance.item_tax_mapping.apply_all = function (frm, transaction_type, child_doctype) {
+    if (!frm.doc.company || !(frm.doc.items || []).length) return;
+
+    (frm.doc.items || []).forEach((row) => {
+        if (row.item_code) {
+            imogi_finance.item_tax_mapping.apply(
+                frm, row.item_code, transaction_type, child_doctype
+            );
+        }
+    });
+
+    setTimeout(() => imogi_finance.item_tax_mapping.recalculate(frm), 800);
 };
 
 // ─── Core: Fetch dari server lalu inject ──────────────────────────────────────
@@ -63,6 +105,27 @@ frappe.ui.form.on("Sales Invoice Item", {
                 frm, row.item_code, "Sales", "Sales Taxes and Charges"
             );
         }, 300);
+    },
+    qty(frm) {
+        setTimeout(() => imogi_finance.item_tax_mapping.recalculate(frm), 100);
+    },
+    rate(frm) {
+        setTimeout(() => imogi_finance.item_tax_mapping.recalculate(frm), 100);
+    },
+    amount(frm) {
+        setTimeout(() => imogi_finance.item_tax_mapping.recalculate(frm), 100);
+    },
+});
+
+frappe.ui.form.on("Sales Invoice", {
+    refresh(frm) {
+        if (frm.doc.docstatus !== 0) return;
+
+        frm.add_custom_button(__("Apply Item Tax Mapping"), () => {
+            imogi_finance.item_tax_mapping.apply_all(
+                frm, "Sales", "Sales Taxes and Charges"
+            );
+        }, __("Taxes"));
     },
 });
 
@@ -150,7 +213,7 @@ frappe.ui.form.on("Item Tax Mapping", {
                             <b>Item:</b> ${r.message.item_code || "-"} &nbsp;
                             <b>Item Group:</b> ${r.message.item_group || "-"}<br>
                             <b>Customer Group:</b> ${r.message.customer_group || "-"} &nbsp;
-                            <b>Priority:</b> ${r.message.priority}<br><br>
+                            <b>Urutan Aturan:</b> ${r.message.priority}<br><br>
                             <table class="table table-bordered table-sm">
                                 <thead><tr>
                                     <th>Account Head</th>

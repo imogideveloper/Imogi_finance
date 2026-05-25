@@ -49,13 +49,18 @@ doctype_js = {
     "Workspace UI Settings": "public/js/workspace_ui_settings.js",
     "Quotation":       "public/js/item_tax_mapping.js", 
     "Purchase Order":  "public/js/item_tax_mapping.js", 
-    "Item Tax Mapping": "public/js/item_tax_mapping.js", 
+    "Item Tax Mapping": "public/js/item_tax_mapping.js",
+    "Salary Structure Assignment": "public/js/salary_structure_assignment.js",
+    "Salary Structure": "public/js/salary_structure.js",
+    "Salary Slip": "public/js/salary_slip.js",
+    "Payroll Entry": "public/js/payroll_entry.js",
 }
 
 app_include_js = [
     "/assets/imogi_finance/js/payment_entry_allocation_status.js",
     "/assets/imogi_finance/js/imogi_finance.js",
     "/assets/imogi_finance/js/workspace_visibility.js",
+    "/assets/imogi_finance/js/form_field_visibility.js",
     "/assets/imogi_finance/js/finance_monitor_workspace.js",
     "/assets/imogi_finance/js/imogi_service_item_qty.js",
     "/assets/imogi_finance/js/sales_invoice_item_tax.js",
@@ -81,6 +86,7 @@ doctype_list_js = {
     "Payment Entry": "public/js/payment_entry_list.js",
     "Budget": "public/js/budget_list.js",
     "Tax Invoice OCR Upload": "public/js/tax_invoice_ocr_upload_list.js",
+    "Salary Structure Assignment": "public/js/salary_structure_assignment_list.js",
     # "Payroll Entry": "public/js/payroll_entry_list.js",
 }
 
@@ -451,6 +457,29 @@ doc_events = {
     "Workspace UI Settings": {
         "on_update": "imogi_finance.workspace_visibility.clear_workspace_cache",
     },
+    "Salary Structure Assignment": {
+        "validate": (
+            "imogi_finance.payroll.salary_structure_assignment"
+            ".validate_salary_structure_assignment"
+        ),
+    },
+    "Salary Structure": {
+        "validate": (
+            "imogi_finance.payroll.employer_contributions"
+            ".sync_salary_structure_employer_display"
+        ),
+    },
+    "Payroll Entry": {
+        "validate": [
+            "imogi_finance.payroll.payroll_period_integration.validate_payroll_entry",
+            "imogi_finance.payroll.payroll_entry_summary.sync_summary_on_validate",
+        ],
+    },
+    "Payroll Period": {
+        "validate": (
+            "imogi_finance.payroll.payroll_period_integration.validate_payroll_period"
+        ),
+    },
 }
 
 if is_payroll_installed():
@@ -461,7 +490,6 @@ if is_payroll_installed():
             "on_cancel": "imogi_finance.api.payroll_sync.handle_salary_slip_cancel",
         }
     )
-
 # Scheduled Tasks
 scheduler_events = {
     "daily": [

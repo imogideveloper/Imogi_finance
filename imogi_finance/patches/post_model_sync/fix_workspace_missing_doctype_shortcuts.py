@@ -7,7 +7,6 @@ import frappe
 from imogi_finance.workspace_utils import sanitize_workspace_missing_links
 
 WORKSPACES = (
-	"Towing Imogi",
 	"FINANCE IMOGI",
 	"Receivables",
 	"Accounting",

@@ -25,8 +25,8 @@ def _create_access_studio_workspace():
 			"type": "header",
 			"data": {
 				"text": (
-					"<span class='h5'><b>Access Studio</b> — sembunyikan seluruh workspace dari sidebar "
-					"atau section di dalam workspace, per user (mis. hilangkan <i>Point of Sale</i> untuk Yugo)</span>"
+					"<span class='h5'><b>Access Studio</b> — sembunyikan workspace, section di workspace, "
+					"atau field di form DocType, per user</span>"
 				),
 				"col": 12,
 			},
@@ -47,8 +47,9 @@ def _create_access_studio_workspace():
 			"type": "header",
 			"data": {
 				"text": (
-					"<span class='text-muted'>Buka <b>Workspace UI Settings</b>: tabel <b>Hidden Workspaces</b> "
-					"(sembunyikan menu workspace) atau <b>Hidden Sections</b> (sembunyikan bagian di dalam workspace). "
+					"<span class='text-muted'>Buka <b>Workspace UI Settings</b>: "
+					"<b>Hidden Workspaces</b> (sidebar), <b>Hidden Sections</b> (bagian workspace), "
+					"atau <b>Hidden Form Fields</b> (field di form DocType, mis. Variable di Salary Structure Assignment). "
 					"Kolom <b>User</b> kosong = semua user.</span>"
 				),
 				"col": 12,
@@ -107,7 +108,7 @@ def _create_access_studio_workspace():
 			"label": SETTINGS_DOCTYPE,
 			"link_type": "DocType",
 			"link_to": SETTINGS_DOCTYPE,
-			"description": "Sembunyikan workspace dari sidebar atau section di dalam workspace, per user atau global.",
+			"description": "Sembunyikan workspace, section workspace, atau field form DocType, per user atau global.",
 		},
 	)
 	ws.append(

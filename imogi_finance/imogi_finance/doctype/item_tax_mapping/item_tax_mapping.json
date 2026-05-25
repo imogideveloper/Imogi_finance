@@ -33,8 +33,8 @@
       },
       { "fieldname": "column_break_header", "fieldtype": "Column Break" },
       {
-        "fieldname": "priority", "fieldtype": "Int", "label": "Priority", "default": "10",
-        "description": "Angka lebih kecil = prioritas lebih tinggi."
+        "fieldname": "priority", "fieldtype": "Int", "label": "Urutan Aturan", "default": "10",
+        "description": "Angka kecil dipakai lebih dulu. Gunakan 99 untuk aturan default/fallback."
       },
       {
         "fieldname": "section_condition", "fieldtype": "Section Break",

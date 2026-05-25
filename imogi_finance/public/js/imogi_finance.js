@@ -1,7 +1,7 @@
 frappe.provide("imogi_finance");
 
 /**
- * Sales Order (modul ERPNext: Selling) default ke workspace Towing Imogi.
+ * Sales Order breadcrumb → workspace Accounting.
  * Set preferensi breadcrumb ke Accounts → Accounting, selaras Sales Invoice.
  */
 imogi_finance.prefer_accounting_breadcrumb = function (doctype) {

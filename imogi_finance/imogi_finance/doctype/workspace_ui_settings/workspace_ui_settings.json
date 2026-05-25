@@ -15,7 +15,10 @@
     "hidden_workspaces",
     "section_hidden_sections",
     "section_help_sections",
-    "hidden_sections"
+    "hidden_sections",
+    "section_hidden_form_fields",
+    "form_field_help",
+    "hidden_form_fields"
   ],
   "fields": [
     {
@@ -65,6 +68,22 @@
       "fieldtype": "Table",
       "label": "Hidden Sections",
       "options": "Workspace Hidden Section"
+    },
+    {
+      "fieldname": "section_hidden_form_fields",
+      "fieldtype": "Section Break",
+      "label": "Hide Form Fields"
+    },
+    {
+      "fieldname": "form_field_help",
+      "fieldtype": "HTML",
+      "options": "<p class=\"text-muted\" style=\"margin-bottom:8px\">Sembunyikan field di form DocType (mis. <i>Variable</i> dan <i>Leave Encashment Amount Per Day</i> di Salary Structure Assignment). Kolom <b>User</b> kosong = semua user.</p>"
+    },
+    {
+      "fieldname": "hidden_form_fields",
+      "fieldtype": "Table",
+      "label": "Hidden Form Fields",
+      "options": "Workspace Hidden Form Field"
     }
   ],
   "index_web_pages_for_search": 1,

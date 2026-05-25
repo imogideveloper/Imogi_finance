@@ -152,7 +152,7 @@ def _add_to_finance_imogi_workspace():
 
 def _setup_embedded_shortcuts():
 	_placements = [
-		("Towing Imogi", "hdr_keuangan"),
+		("FINANCE IMOGI", "hdr_keuangan"),
 		("Receivables", "vikWSkNm6_"),
 		("Accounting", "vikWSkNm6_"),
 	]

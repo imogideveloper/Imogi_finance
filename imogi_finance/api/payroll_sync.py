@@ -229,7 +229,13 @@ def sync_salary_components_with_gl(doc):
 
 def handle_salary_slip_submit(doc, method=None):
     sync_salary_components_with_gl(doc)
+    from imogi_finance.payroll.payroll_entry_summary import refresh_summary_from_salary_slip
+
+    refresh_summary_from_salary_slip(doc, method)
 
 
 def handle_salary_slip_cancel(doc, method=None):
     sync_salary_components_with_gl(doc)
+    from imogi_finance.payroll.payroll_entry_summary import refresh_summary_from_salary_slip
+
+    refresh_summary_from_salary_slip(doc, method)

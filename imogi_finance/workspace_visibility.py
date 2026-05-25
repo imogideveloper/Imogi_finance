@@ -392,10 +392,110 @@ def _filter_module_wise_workspaces(bootinfo, user: str | None = None) -> None:
 	bootinfo.module_wise_workspaces = module_map
 
 
+def get_hidden_form_fields_map(user: str | None = None) -> dict[str, list[str]]:
+	"""DocType name -> fieldnames to hide on form for the given user."""
+	user = user or frappe.session.user
+	if not frappe.db.exists("DocType", "Workspace UI Settings"):
+		return {}
+
+	try:
+		settings = frappe.get_cached_doc("Workspace UI Settings")
+	except frappe.DoesNotExistError:
+		return {}
+
+	if not settings.enabled:
+		return {}
+
+	hidden_map: dict[str, list[str]] = {}
+	for row in getattr(settings, "hidden_form_fields", None) or []:
+		if not row.hidden:
+			continue
+		if not _rule_applies_to_user(row, user):
+			continue
+		doctype = (row.ref_doctype or "").strip()
+		fieldname = (row.fieldname or "").strip()
+		if not doctype or not fieldname:
+			continue
+		hidden_map.setdefault(doctype, [])
+		if fieldname not in hidden_map[doctype]:
+			hidden_map[doctype].append(fieldname)
+	return hidden_map
+
+
+@frappe.whitelist()
+def get_doctype_form_fields(doctype: str) -> list[dict]:
+	"""Fields available for hiding on a DocType form."""
+	if not frappe.has_permission("Workspace UI Settings", "write"):
+		frappe.throw(_("Not permitted"), frappe.PermissionError)
+	if not doctype or not frappe.db.exists("DocType", doctype):
+		frappe.throw(_("DocType {0} not found.").format(doctype))
+
+	skip_types = {"Section Break", "Column Break", "Tab Break", "HTML", "Button", "Fold"}
+	fields = []
+	for df in frappe.get_meta(doctype).fields:
+		if df.fieldtype in skip_types or not df.fieldname:
+			continue
+		fields.append(
+			{
+				"fieldname": df.fieldname,
+				"label": df.label or df.fieldname,
+				"fieldtype": df.fieldtype,
+			}
+		)
+	fields.sort(key=lambda row: (row["label"] or row["fieldname"]).lower())
+	return fields
+
+
+@frappe.whitelist()
+def add_hidden_form_field(
+	ref_doctype: str, fieldname: str, user: str | None = None, field_label: str | None = None
+) -> dict:
+	"""Quick for hide a form field rule from Access Studio picker."""
+	user = (user or "").strip() or None
+	if not ref_doctype or not fieldname:
+		frappe.throw(_("DocType and fieldname are required."))
+
+	if not field_label:
+		meta = frappe.get_meta(ref_doctype)
+		df = meta.get_field(fieldname)
+		field_label = (df.label if df else None) or fieldname
+
+	settings = frappe.get_single("Workspace UI Settings")
+	settings.enabled = 1
+
+	for row in getattr(settings, "hidden_form_fields", None) or []:
+		row_user = (getattr(row, "user", None) or "").strip() or None
+		if (
+			row.ref_doctype == ref_doctype
+			and row.fieldname == fieldname
+			and row_user == user
+		):
+			row.hidden = 1
+			row.field_label = field_label
+			settings.save(ignore_permissions=True)
+			clear_workspace_cache()
+			return {"status": "updated"}
+
+	settings.append(
+		"hidden_form_fields",
+		{
+			"user": user,
+			"ref_doctype": ref_doctype,
+			"fieldname": fieldname,
+			"field_label": field_label,
+			"hidden": 1,
+		},
+	)
+	settings.save(ignore_permissions=True)
+	clear_workspace_cache()
+	return {"status": "created"}
+
+
 def update_boot_session(bootinfo):
 	user = getattr(bootinfo, "user", None) or frappe.session.user
 	bootinfo.imogi_hidden_workspaces = sorted(get_hidden_workspace_names(user))
 	bootinfo.imogi_workspace_hidden = get_workspace_hidden_map(user)
+	bootinfo.imogi_hidden_form_fields = get_hidden_form_fields_map(user)
 	filter_boot_workspaces(bootinfo, user)
 	_filter_module_wise_workspaces(bootinfo, user)
 	# Pastikan desk client membaca setting pajak dari item (sysdefaults)
