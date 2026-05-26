@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import frappe
 from frappe import _
-from frappe.utils import flt
+from frappe.utils import flt, getdate, today
 
 # Map nama komponen ke field standar/custom SSA (untuk formula slip gaji).
 COMPONENT_FIELD_MAP = {
@@ -12,6 +12,13 @@ COMPONENT_FIELD_MAP = {
 	"tunjangan makan": "meal_allowance",
 	"tunjangan transport": "transport_allowance",
 	"tunjangan operational": "tunjangan_operational",
+}
+
+BPJS_BASE_EXCLUDED_COMPONENTS = {
+	"bonus",
+	"thr",
+	"lembur",
+	"piket",
 }
 
 
@@ -67,6 +74,7 @@ def get_assignment_formula_context(assignment) -> dict:
 
 	context: dict = {}
 	rows = assignment.get("salary_component_amounts") or []
+	bpjs_base = 0.0
 
 	if rows:
 		for row in rows:
@@ -74,6 +82,8 @@ def get_assignment_formula_context(assignment) -> dict:
 				continue
 			amount = flt(row.amount)
 			key = (row.salary_component or "").strip().lower()
+			if key not in BPJS_BASE_EXCLUDED_COMPONENTS:
+				bpjs_base += amount
 			fieldname = COMPONENT_FIELD_MAP.get(key)
 			if fieldname:
 				context[fieldname] = amount
@@ -95,8 +105,76 @@ def get_assignment_formula_context(assignment) -> dict:
 			context[fieldname] = flt(assignment.get(fieldname))
 		context.setdefault(fieldname, 0)
 
+	if not bpjs_base:
+		bpjs_base = (
+			flt(context.get("base"))
+			+ flt(context.get("meal_allowance"))
+			+ flt(context.get("transport_allowance"))
+			+ flt(context.get("tunjangan_operational"))
+		)
+	context["bpjs_base"] = bpjs_base or flt(context.get("base"))
+
 	return context
 
 
 def validate_salary_structure_assignment(doc, method=None):
 	sync_assignment_component_fields(doc)
+	validate_assignment_end_date(doc)
+	sync_assignment_status(doc)
+
+
+def update_submitted_salary_structure_assignment(doc, method=None):
+	validate_assignment_end_date(doc)
+	if not doc.meta.has_field("status"):
+		return
+
+	status = get_assignment_status(doc.get("end_date"))
+	if doc.get("status") != status:
+		frappe.db.set_value(
+			"Salary Structure Assignment",
+			doc.name,
+			"status",
+			status,
+			update_modified=False,
+		)
+
+
+def validate_assignment_end_date(doc):
+	if not (doc.meta.has_field("end_date") and doc.get("end_date") and doc.get("from_date")):
+		return
+	if getdate(doc.end_date) < getdate(doc.from_date):
+		frappe.throw(_("End Date tidak boleh lebih kecil dari From Date."))
+
+
+def get_assignment_status(end_date=None) -> str:
+	if end_date and getdate(end_date) < getdate(today()):
+		return "Expired"
+	return "Active"
+
+
+def sync_assignment_status(doc):
+	if not doc.meta.has_field("status"):
+		return
+	doc.status = get_assignment_status(doc.get("end_date"))
+
+
+def sync_expired_salary_structure_assignments():
+	"""Refresh status SSA supaya list view otomatis menunjukkan Expired setelah end date lewat."""
+	meta = frappe.get_meta("Salary Structure Assignment")
+	if not (meta.has_field("end_date") and meta.has_field("status")):
+		return
+
+	for row in frappe.get_all(
+		"Salary Structure Assignment",
+		filters={"docstatus": ["!=", 2]},
+		fields=["name", "end_date", "status"],
+	):
+		status = get_assignment_status(row.end_date)
+		if row.status != status:
+			frappe.db.set_value(
+				"Salary Structure Assignment",
+				row.name,
+				"status",
+				status,
+				update_modified=False,
+			)

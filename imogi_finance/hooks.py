@@ -87,7 +87,7 @@ doctype_list_js = {
     "Budget": "public/js/budget_list.js",
     "Tax Invoice OCR Upload": "public/js/tax_invoice_ocr_upload_list.js",
     "Salary Structure Assignment": "public/js/salary_structure_assignment_list.js",
-    # "Payroll Entry": "public/js/payroll_entry_list.js",
+    "Payroll Entry": "public/js/payroll_entry_list.js",
 }
 
 # Jinja
@@ -462,6 +462,10 @@ doc_events = {
             "imogi_finance.payroll.salary_structure_assignment"
             ".validate_salary_structure_assignment"
         ),
+        "on_update_after_submit": (
+            "imogi_finance.payroll.salary_structure_assignment"
+            ".update_submitted_salary_structure_assignment"
+        ),
     },
     "Salary Structure": {
         "validate": (
@@ -495,6 +499,7 @@ scheduler_events = {
     "daily": [
         "imogi_finance.reporting.tasks.run_daily_reporting",
         "imogi_finance.services.tax_invoice_service.sync_pending_tax_invoices",
+        "imogi_finance.payroll.salary_structure_assignment.sync_expired_salary_structure_assignments",
     ],
     "daily_maintenance": [
         "imogi_finance.services.sales_invoice_list_status.sync_all_submitted_sales_invoices",
@@ -521,6 +526,9 @@ after_migrate = [
     "imogi_finance.setup.set_workspace_order",
     "imogi_finance.utils.patch_round_floats_compatibility",  # ← tambahkan ini
     "imogi_finance.patches.post_model_sync.setup_finance_monitor_menu.execute",
+    "imogi_finance.patches.post_model_sync.fix_bpjs_base_formula_from_fixed_income.execute",
+    "imogi_finance.patches.post_model_sync.fix_payroll_entry_list_salary_month.execute",
+    "imogi_finance.patches.post_model_sync.fix_payroll_entry_grouping_date_field.execute",
     "imogi_finance.services.sales_invoice_list_status.sync_all_submitted_sales_invoices",
 ]
 

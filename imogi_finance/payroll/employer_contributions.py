@@ -31,6 +31,13 @@ BPJS_EMPLOYER_COMPONENTS = {
 	"bpjs jkm employer",
 }
 
+BPJS_BASE_EXCLUDED_COMPONENTS = {
+	"bonus",
+	"thr",
+	"lembur",
+	"piket",
+}
+
 
 def _is_bpjs_employer_component(component_name: str | None) -> bool:
 	return (component_name or "").strip().lower() in BPJS_EMPLOYER_COMPONENTS
@@ -51,20 +58,50 @@ def collect_employer_contribution_rows(doc, source_tables: tuple[str, ...] = ("e
 
 
 def _resolve_bpjs_base(doc) -> float:
-	"""Gaji pokok / base untuk iuran BPJS (sama seperti formula komponen)."""
+	"""Gaji tetap terdaftar untuk iuran BPJS (base + fixed allowances)."""
+	earnings_base = 0.0
+	for row in doc.get("earnings") or []:
+		sc, _ = _row_component_and_amount(row)
+		key = (sc or "").strip().lower()
+		if sc and key not in BPJS_BASE_EXCLUDED_COMPONENTS:
+			_, amount = _row_component_and_amount(row)
+			earnings_base += flt(amount)
+	if earnings_base > 0:
+		return earnings_base
+
+	ssa = getattr(doc, "_salary_structure_assignment", None) or {}
+	name = None
+	if isinstance(ssa, dict):
+		name = ssa.get("name")
+	elif getattr(ssa, "name", None):
+		name = ssa.name
+	else:
+		name = getattr(doc, "salary_structure_assignment", None)
+
+	if name and frappe.db.exists("Salary Structure Assignment", name):
+		component_rows = frappe.get_all(
+			"Salary Structure Assignment Component",
+			filters={
+				"parent": name,
+				"parenttype": "Salary Structure Assignment",
+			},
+			fields=["salary_component", "amount"],
+			order_by="idx asc",
+		)
+		component_base = sum(
+			flt(row.amount)
+			for row in component_rows
+			if (row.salary_component or "").strip().lower() not in BPJS_BASE_EXCLUDED_COMPONENTS
+		)
+		if component_base > 0:
+			return component_base
+		base = flt(frappe.db.get_value("Salary Structure Assignment", name, "base"))
+		if base > 0:
+			return base
+
 	base = flt(getattr(doc, "base", 0))
 	if base > 0:
 		return base
-	ssa = getattr(doc, "_salary_structure_assignment", None) or {}
-	if isinstance(ssa, dict):
-		base = flt(ssa.get("base"))
-	if base > 0:
-		return base
-	for row in doc.get("earnings") or []:
-		sc, _ = _row_component_and_amount(row)
-		if sc and sc.strip().lower() in ("gaji pokok", "basic", "base"):
-			_, amount = _row_component_and_amount(row)
-			return amount
 	return base
 
 
@@ -79,8 +116,8 @@ def infer_employer_contribution_rows(doc) -> list[dict]:
 	except ImportError:
 		return []
 
-	health_cap = flt(get_bpjs_cap("bpjs_health_employer_cap")) or base
-	health_base = min(base, health_cap)
+	# Formula BPJS Kesehatan di Salary Component memakai minimum UMK, bukan cap maksimum.
+	health_base = max(base, 5_396_761.0)
 
 	return [
 		{

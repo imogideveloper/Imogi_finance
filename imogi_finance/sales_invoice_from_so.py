@@ -264,7 +264,7 @@ def scale_sales_invoice_to_amount(si, target_amount: float) -> None:
 	ratio = flt(target_amount) / current_total
 	apply_down_payment_keep_qty_scale_rate(si, ratio)
 
-	actual = flt(si.grand_total)
+	actual = flt(si.net_total or sum(flt(row.amount) for row in items))
 	if abs(actual - flt(target_amount)) > 1.0:
 		frappe.throw(
 			_("Could not apply down payment. Expected {0}, got {1}.").format(

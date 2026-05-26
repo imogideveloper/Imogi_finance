@@ -24,7 +24,7 @@
     {
       "fieldname": "section_help",
       "fieldtype": "Section Break",
-      "label": "Workspace Menu Visibility (per user)"
+      "label": "Access Studio"
     },
     {
       "fieldname": "per_user_help",
@@ -35,12 +35,12 @@
       "default": "1",
       "fieldname": "enabled",
       "fieldtype": "Check",
-      "label": "Enable Menu Hiding"
+      "label": "Aktifkan Pengaturan Tampilan"
     },
     {
       "fieldname": "section_hidden_workspaces",
       "fieldtype": "Section Break",
-      "label": "Hide Entire Workspace"
+      "label": "Sembunyikan Workspace"
     },
     {
       "fieldname": "workspace_help",
@@ -50,13 +50,13 @@
     {
       "fieldname": "hidden_workspaces",
       "fieldtype": "Table",
-      "label": "Hidden Workspaces",
+      "label": "Workspace yang Disembunyikan",
       "options": "Workspace Hidden Workspace"
     },
     {
       "fieldname": "section_hidden_sections",
       "fieldtype": "Section Break",
-      "label": "Hide Section Inside Workspace"
+      "label": "Sembunyikan Section Workspace"
     },
     {
       "fieldname": "section_help_sections",
@@ -66,23 +66,23 @@
     {
       "fieldname": "hidden_sections",
       "fieldtype": "Table",
-      "label": "Hidden Sections",
+      "label": "Section yang Disembunyikan",
       "options": "Workspace Hidden Section"
     },
     {
       "fieldname": "section_hidden_form_fields",
       "fieldtype": "Section Break",
-      "label": "Hide Form Fields"
+      "label": "Sembunyikan Field Form"
     },
     {
       "fieldname": "form_field_help",
       "fieldtype": "HTML",
-      "options": "<p class=\"text-muted\" style=\"margin-bottom:8px\">Sembunyikan field di form DocType (mis. <i>Variable</i> dan <i>Leave Encashment Amount Per Day</i> di Salary Structure Assignment). Kolom <b>User</b> kosong = semua user.</p>"
+      "options": "<p class=\"text-muted\" style=\"margin-bottom:8px\">Untuk user/admin: klik tombol <b>Pilih Field Form untuk Disembunyikan</b>, pilih DocType, lalu centang label field yang ingin disembunyikan. Tidak perlu mengetik fieldname manual. Kolom <b>User</b> kosong = semua user.</p>"
     },
     {
       "fieldname": "hidden_form_fields",
       "fieldtype": "Table",
-      "label": "Hidden Form Fields",
+      "label": "Field Form yang Disembunyikan",
       "options": "Workspace Hidden Form Field"
     }
   ],

@@ -423,6 +423,18 @@ def get_hidden_form_fields_map(user: str | None = None) -> dict[str, list[str]]:
 
 
 @frappe.whitelist()
+def get_hidden_form_fields_for_doctype(doctype: str) -> list[str]:
+	"""Fresh hidden form fields for a DocType.
+
+	The desk boot payload can be stale until a full reload. This endpoint lets
+	the client re-read Workspace UI Settings when a form opens.
+	"""
+	if not doctype:
+		return []
+	return get_hidden_form_fields_map().get(doctype, [])
+
+
+@frappe.whitelist()
 def get_doctype_form_fields(doctype: str) -> list[dict]:
 	"""Fields available for hiding on a DocType form."""
 	if not frappe.has_permission("Workspace UI Settings", "write"):

@@ -35,7 +35,7 @@
       "in_list_view": 1,
       "label": "Fieldname",
       "reqd": 1,
-      "description": "Nama field di form, mis. variable atau leave_encashment_amount_per_day."
+      "description": "Terisi otomatis dari tombol Pilih Field Form untuk Disembunyikan. User tidak perlu mengetik manual."
     },
     {
       "fieldname": "field_label",

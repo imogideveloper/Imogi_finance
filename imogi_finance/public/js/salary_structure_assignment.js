@@ -24,8 +24,40 @@ frappe.ui.form.on("Salary Structure Assignment", {
 				load_from_salary_structure(frm)
 			);
 		}
+
+		if (frm.fields_dict.status) {
+			frm.set_df_property("status", "read_only", 1);
+		}
+	},
+
+	from_date(frm) {
+		validate_end_date(frm);
+	},
+
+	end_date(frm) {
+		validate_end_date(frm);
+		update_status_preview(frm);
 	},
 });
+
+function validate_end_date(frm) {
+	if (!frm.doc.from_date || !frm.doc.end_date) {
+		return;
+	}
+	if (frappe.datetime.get_diff(frm.doc.end_date, frm.doc.from_date) < 0) {
+		frappe.msgprint(__("End Date tidak boleh lebih kecil dari From Date."));
+		frm.set_value("end_date", "");
+	}
+}
+
+function update_status_preview(frm) {
+	if (!frm.fields_dict.status) {
+		return;
+	}
+	const expired =
+		frm.doc.end_date && frappe.datetime.get_diff(frappe.datetime.get_today(), frm.doc.end_date) > 0;
+	frm.set_value("status", expired ? "Expired" : "Active");
+}
 
 function load_from_salary_structure(frm) {
 	if (!frm.doc.salary_structure) {
