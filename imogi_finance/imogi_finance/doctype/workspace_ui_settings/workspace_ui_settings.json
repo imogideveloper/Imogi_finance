@@ -1,0 +1,123 @@
+{
+  "actions": [],
+  "allow_rename": 0,
+  "creation": "2026-05-18 00:00:00.000000",
+  "default_view": "Form",
+  "doctype": "DocType",
+  "editable_grid": 0,
+  "engine": "InnoDB",
+  "field_order": [
+    "section_help",
+    "per_user_help",
+    "enabled",
+    "section_hidden_workspaces",
+    "workspace_help",
+    "hidden_workspaces",
+    "section_hidden_sections",
+    "section_help_sections",
+    "hidden_sections",
+    "section_hidden_form_fields",
+    "form_field_help",
+    "hidden_form_fields"
+  ],
+  "fields": [
+    {
+      "fieldname": "section_help",
+      "fieldtype": "Section Break",
+      "label": "Access Studio"
+    },
+    {
+      "fieldname": "per_user_help",
+      "fieldtype": "HTML",
+      "options": "<p class=\"text-muted\" style=\"margin-bottom:12px\">Atur menu sidebar per user. Kosongkan kolom <b>User</b> = berlaku untuk semua user. Setelah Save, klik <b>Save &amp; Reload Desk</b> atau Ctrl+Shift+R.</p>"
+    },
+    {
+      "default": "1",
+      "fieldname": "enabled",
+      "fieldtype": "Check",
+      "label": "Aktifkan Pengaturan Tampilan"
+    },
+    {
+      "fieldname": "section_hidden_workspaces",
+      "fieldtype": "Section Break",
+      "label": "Sembunyikan Workspace"
+    },
+    {
+      "fieldname": "workspace_help",
+      "fieldtype": "HTML",
+      "options": "<p class=\"text-muted\" style=\"margin-bottom:8px\">Workspace yang dicentang <b>Hide Workspace</b> tidak muncul di sidebar (mis. sembunyikan <i>Point of Sale</i> hanya untuk user tertentu).</p>"
+    },
+    {
+      "fieldname": "hidden_workspaces",
+      "fieldtype": "Table",
+      "label": "Workspace yang Disembunyikan",
+      "options": "Workspace Hidden Workspace"
+    },
+    {
+      "fieldname": "section_hidden_sections",
+      "fieldtype": "Section Break",
+      "label": "Sembunyikan Section Workspace"
+    },
+    {
+      "fieldname": "section_help_sections",
+      "fieldtype": "HTML",
+      "options": "<p class=\"text-muted\" style=\"margin-bottom:8px\">Sembunyikan bagian di dalam workspace (card break / shortcut), bukan seluruh workspace.</p>"
+    },
+    {
+      "fieldname": "hidden_sections",
+      "fieldtype": "Table",
+      "label": "Section yang Disembunyikan",
+      "options": "Workspace Hidden Section"
+    },
+    {
+      "fieldname": "section_hidden_form_fields",
+      "fieldtype": "Section Break",
+      "label": "Sembunyikan Field Form"
+    },
+    {
+      "fieldname": "form_field_help",
+      "fieldtype": "HTML",
+      "options": "<p class=\"text-muted\" style=\"margin-bottom:8px\">Untuk user/admin: klik tombol <b>Pilih Field Form untuk Disembunyikan</b>, pilih DocType, lalu centang label field yang ingin disembunyikan. Tidak perlu mengetik fieldname manual. Kolom <b>User</b> kosong = semua user.</p>"
+    },
+    {
+      "fieldname": "hidden_form_fields",
+      "fieldtype": "Table",
+      "label": "Field Form yang Disembunyikan",
+      "options": "Workspace Hidden Form Field"
+    }
+  ],
+  "index_web_pages_for_search": 1,
+  "issingle": 1,
+  "links": [],
+  "modified": "2026-05-18 00:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Imogi Finance",
+  "name": "Workspace UI Settings",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "System Manager",
+      "share": 1,
+      "write": 1
+    },
+    {
+      "create": 1,
+      "email": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "Accounts Manager",
+      "share": 1,
+      "write": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "track_changes": 1
+}

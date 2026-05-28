@@ -57,9 +57,15 @@ doctype_js = {
         "public/js/transaction_price_lock.js",
     ],
     "Item Price": "public/js/item_price.js",
+    "Workspace UI Settings": "public/js/workspace_ui_settings.js",
 }
 
-app_include_js = "/assets/imogi_finance/js/imogi_finance.js"
+app_include_js = [
+    "/assets/imogi_finance/js/imogi_finance.js",
+    "/assets/imogi_finance/js/workspace_visibility.js",
+]
+
+boot_session = "imogi_finance.workspace_visibility.update_boot_session"
 
 
 doctype_list_js = {
