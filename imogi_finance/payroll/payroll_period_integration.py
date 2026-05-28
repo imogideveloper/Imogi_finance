@@ -141,6 +141,95 @@ def validate_payroll_entry(doc, method=None):
 		apply_sub_period_to_payroll_entry(doc)
 		if not doc.get("payroll_sub_period"):
 			frappe.throw(_("Pilih Periode Gaji (Bulan) dari Payroll Period."))
+	validate_active_assignment_contracts(doc)
+
+
+def validate_active_assignment_contracts(doc) -> None:
+	"""Stop Payroll Entry if selected employees only have expired SSA for the salary month."""
+	if not doc.get("end_date") or not doc.get("employees"):
+		return
+	if not frappe.db.has_column("Salary Structure Assignment", "end_date"):
+		return
+
+	lookup_date = getdate(doc.get("end_date"))
+	expired = []
+	for row in doc.get("employees") or []:
+		employee = row.get("employee")
+		if not employee:
+			continue
+		assignment = _get_applicable_assignment_contract(employee, lookup_date)
+		if assignment and assignment.get("is_expired"):
+			expired.append(assignment)
+
+	if not expired:
+		return
+
+	lines = []
+	for item in expired:
+		lines.append(
+			_("{0} - {1} (End Date: {2})").format(
+				frappe.bold(item.employee),
+				frappe.bold(item.employee_name or item.employee),
+				frappe.bold(item.end_date),
+			)
+		)
+
+	frappe.throw(
+		_(
+			"Assignment Contract ini sudah habis, silahkan Perbarui kontrak terlebih dahulu."
+		)
+		+ "<br><br>"
+		+ "<br>".join(lines),
+		title=_("Assignment Contract Expired"),
+	)
+
+
+def _get_applicable_assignment_contract(employee: str, lookup_date):
+	fields = ["name", "employee", "from_date", "end_date", "salary_structure"]
+	if frappe.db.has_column("Salary Structure Assignment", "renewed_by_assignment_contract"):
+		fields.append("renewed_by_assignment_contract")
+
+	rows = frappe.get_all(
+		"Salary Structure Assignment",
+		filters={
+			"employee": employee,
+			"from_date": ("<=", lookup_date),
+			"docstatus": 1,
+		},
+		fields=fields,
+		order_by="from_date desc, creation desc",
+	)
+	for row in rows:
+		replacement = row.get("renewed_by_assignment_contract")
+		if replacement and _replacement_assignment_applies(replacement, lookup_date):
+			continue
+
+		row.employee_name = frappe.db.get_value("Employee", employee, "employee_name") or employee
+		if row.get("end_date") and getdate(row.end_date) < lookup_date:
+			row.is_expired = True
+		else:
+			row.is_expired = False
+		return row
+
+	return None
+
+
+def _replacement_assignment_applies(replacement_name: str, lookup_date) -> bool:
+	if not replacement_name or not frappe.db.exists("Salary Structure Assignment", replacement_name):
+		return False
+	replacement = frappe.db.get_value(
+		"Salary Structure Assignment",
+		replacement_name,
+		["from_date", "end_date", "docstatus"],
+		as_dict=True,
+	)
+	if not replacement or replacement.get("docstatus") != 1:
+		return False
+	if replacement.get("from_date") and getdate(replacement.from_date) > getdate(lookup_date):
+		return False
+	if replacement.get("end_date") and getdate(replacement.end_date) < getdate(lookup_date):
+		return False
+	return True
 
 
 def validate_payroll_period(doc, method=None):

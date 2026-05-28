@@ -125,7 +125,7 @@ def create_purchase_invoice_from_ocr(upload_name: str, supplier: str, item_code:
     pi.insert()
 
     # Link OCR back to PI
-    frappe.db.set_value("Tax Invoice OCR Upload", upload_name, "submit_on", frappe.utils.now())
+    frappe.db.set_value("Tax Invoice OCR Upload", upload_name, "submit_on", frappe.utils.now ())
 
     return {
         "purchase_invoice": pi.name,

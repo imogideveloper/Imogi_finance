@@ -20,9 +20,11 @@ imogi_finance.prefer_accounting_breadcrumb = function (doctype) {
 	}
 };
 
-frappe.ready(function () {
-	imogi_finance.prefer_accounting_breadcrumb("Sales Order");
-});
+if (typeof frappe !== "undefined" && typeof frappe.ready === "function") {
+	frappe.ready(function () {
+		imogi_finance.prefer_accounting_breadcrumb("Sales Order");
+	});
+}
 
 frappe.after_ajax(function() {
     const _original = frappe.views.ListView.prototype.setup_defaults;

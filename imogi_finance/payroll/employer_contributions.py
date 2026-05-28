@@ -43,6 +43,37 @@ def _is_bpjs_employer_component(component_name: str | None) -> bool:
 	return (component_name or "").strip().lower() in BPJS_EMPLOYER_COMPONENTS
 
 
+def _get_employee_bpjs_exemptions(doc) -> dict[str, bool]:
+	employee = getattr(doc, "employee", None) or (doc.get("employee") if hasattr(doc, "get") else None)
+	if not employee:
+		return {"kesehatan": False, "jht": False, "jp": False}
+
+	values = frappe.db.get_value(
+		"Employee",
+		employee,
+		["bebas_bpjs_kesehatan", "bebas_bpjs_jht", "bebas_bpjs_jp"],
+		as_dict=True,
+	) or {}
+	return {
+		"kesehatan": bool(values.get("bebas_bpjs_kesehatan")),
+		"jht": bool(values.get("bebas_bpjs_jht")),
+		"jp": bool(values.get("bebas_bpjs_jp")),
+	}
+
+
+def _is_exempted_bpjs_component(component_name: str | None, exemptions: dict[str, bool]) -> bool:
+	name = (component_name or "").strip().lower()
+	if not name or "bpjs" not in name:
+		return False
+	if exemptions.get("kesehatan") and ("kesehatan" in name or "jkk" in name or "jkm" in name):
+		return True
+	if exemptions.get("jht") and "jht" in name:
+		return True
+	if exemptions.get("jp") and "jp" in name:
+		return True
+	return False
+
+
 def collect_employer_contribution_rows(doc, source_tables: tuple[str, ...] = ("earnings", "deductions")) -> list[dict]:
 	"""Kumpulkan baris employer dari child table slip/struktur."""
 	rows: list[dict] = []
@@ -119,7 +150,8 @@ def infer_employer_contribution_rows(doc) -> list[dict]:
 	# Formula BPJS Kesehatan di Salary Component memakai minimum UMK, bukan cap maksimum.
 	health_base = max(base, 5_396_761.0)
 
-	return [
+	exemptions = _get_employee_bpjs_exemptions(doc)
+	rows = [
 		{
 			"salary_component": "BPJS Kesehatan Employer",
 			"amount": health_base * flt(get_bpjs_rate("bpjs_health_employer_rate")) / 100,
@@ -141,6 +173,10 @@ def infer_employer_contribution_rows(doc) -> list[dict]:
 			"amount": base * flt(get_bpjs_rate("bpjs_jkm_rate")) / 100,
 		},
 	]
+	for row in rows:
+		if _is_exempted_bpjs_component(row.get("salary_component"), exemptions):
+			row["amount"] = 0
+	return rows
 
 
 def sync_doc_employer_contributions(doc, target_field: str = "employer_contributions") -> None:

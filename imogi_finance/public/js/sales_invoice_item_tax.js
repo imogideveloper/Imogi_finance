@@ -70,11 +70,13 @@ function imogi_apply_item_tax_patches() {
 	return true;
 }
 
-frappe.ready(function () {
-	if (!imogi_apply_item_tax_patches()) {
-		setTimeout(imogi_apply_item_tax_patches, 500);
-	}
-});
+if (typeof frappe !== "undefined" && typeof frappe.ready === "function") {
+	frappe.ready(function () {
+		if (!imogi_apply_item_tax_patches()) {
+			setTimeout(imogi_apply_item_tax_patches, 500);
+		}
+	});
+}
 
 frappe.ui.form.on("Sales Invoice Item", {
 	item_code(frm, cdt, cdn) {

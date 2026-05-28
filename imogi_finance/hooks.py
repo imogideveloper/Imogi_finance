@@ -64,6 +64,7 @@ app_include_js = [
     "/assets/imogi_finance/js/finance_monitor_workspace.js",
     "/assets/imogi_finance/js/imogi_service_item_qty.js",
     "/assets/imogi_finance/js/sales_invoice_item_tax.js",
+    "/assets/imogi_finance/js/ssa_contract_reminder_toast.js",
 ]
 
 boot_session = "imogi_finance.workspace_visibility.update_boot_session"
@@ -145,6 +146,7 @@ override_doctype_class = {
     "Sales Invoice": "imogi_finance.overrides.sales_invoice.CustomSalesInvoice",
     "Payment Request": "imogi_finance.overrides.payment_request.CustomPaymentRequest",
     "Bank Statement Import": "imogi_finance.overrides.bank_statement_import.CustomBankStatementImport",
+    "Salary Structure Assignment": "imogi_finance.overrides.salary_structure_assignment.CustomSalaryStructureAssignment",
 }
 
 # Document Events
@@ -462,6 +464,10 @@ doc_events = {
             "imogi_finance.payroll.salary_structure_assignment"
             ".validate_salary_structure_assignment"
         ),
+        "on_submit": (
+            "imogi_finance.payroll.salary_structure_assignment"
+            ".handle_salary_structure_assignment_submit"
+        ),
         "on_update_after_submit": (
             "imogi_finance.payroll.salary_structure_assignment"
             ".update_submitted_salary_structure_assignment"
@@ -527,6 +533,7 @@ after_migrate = [
     "imogi_finance.utils.patch_round_floats_compatibility",  # ← tambahkan ini
     "imogi_finance.patches.post_model_sync.setup_finance_monitor_menu.execute",
     "imogi_finance.patches.post_model_sync.fix_bpjs_base_formula_from_fixed_income.execute",
+    "imogi_finance.patches.post_model_sync.enforce_ssa_contract_workflow.execute",
     "imogi_finance.patches.post_model_sync.fix_payroll_entry_list_salary_month.execute",
     "imogi_finance.patches.post_model_sync.fix_payroll_entry_grouping_date_field.execute",
     "imogi_finance.services.sales_invoice_list_status.sync_all_submitted_sales_invoices",
