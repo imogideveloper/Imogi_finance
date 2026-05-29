@@ -15,7 +15,7 @@
    "label": "Name",
    "options": "Salary Component",
    "reqd": 1,
-   "columns": 5
+   "columns": 7
   },
   {
    "fieldname": "amount",

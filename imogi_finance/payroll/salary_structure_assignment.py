@@ -125,8 +125,12 @@ def get_assignment_formula_context(assignment) -> dict:
 	return context
 
 
+CONTRACT_PERIOD_FIELDS = ("from_date", "end_date")
+
+
 def validate_salary_structure_assignment(doc, method=None):
 	validate_submitted_component_contract_unchanged(doc)
+	validate_submitted_contract_period_unchanged(doc)
 	validate_assignment_contract_chain(doc)
 	validate_change_reason_for_contract_change(doc)
 	sync_assignment_component_fields(doc)
@@ -137,6 +141,7 @@ def validate_salary_structure_assignment(doc, method=None):
 
 def update_submitted_salary_structure_assignment(doc, method=None):
 	validate_submitted_component_contract_unchanged(doc)
+	validate_submitted_contract_period_unchanged(doc)
 	validate_change_reason_for_contract_change(doc)
 	validate_assignment_end_date(doc)
 	validate_assignment_period_overlap(doc)
@@ -157,6 +162,34 @@ def update_submitted_salary_structure_assignment(doc, method=None):
 def handle_salary_structure_assignment_submit(doc, method=None):
 	"""Hubungkan contract baru ke contract lama setelah submit."""
 	close_previous_assignment_contract(doc)
+
+
+def validate_submitted_contract_period_unchanged(doc):
+	"""From/End Date pada contract submitted tidak bisa diubah manual."""
+	if doc.get("docstatus") != 1 or doc.is_new():
+		return
+
+	old_doc = doc.get_doc_before_save()
+	if not old_doc or old_doc.get("docstatus") != 1:
+		return
+
+	for fieldname in CONTRACT_PERIOD_FIELDS:
+		if not doc.meta.has_field(fieldname):
+			continue
+		if _assignment_date_value(doc.get(fieldname)) == _assignment_date_value(old_doc.get(fieldname)):
+			continue
+		frappe.throw(
+			_(
+				"{0} pada Assignment Contract yang sudah Submitted tidak bisa diubah. "
+				"Gunakan <b>Buat Contract Baru</b> atau <b>Perpanjang Contract</b> untuk perubahan periode."
+			).format(frappe.bold(doc.meta.get_label(fieldname)))
+		)
+
+
+def _assignment_date_value(value):
+	if not value:
+		return None
+	return getdate(value)
 
 
 def validate_submitted_component_contract_unchanged(doc):
@@ -560,8 +593,6 @@ def get_assignment_contract_history(employee: str, salary_structure: str | None 
 		return []
 
 	filters = {"employee": employee, "docstatus": ["!=", 2]}
-	if salary_structure:
-		filters["salary_structure"] = salary_structure
 
 	fields = [
 		"name",

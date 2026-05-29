@@ -8,7 +8,7 @@ from typing import Any
 
 import frappe
 from frappe import _
-from frappe.utils import add_months, getdate
+from frappe.utils import add_months, getdate, today
 
 
 DEFAULT_CUTOFF_START_DAY = 25
@@ -137,10 +137,15 @@ def apply_sub_period_to_payroll_entry(doc) -> None:
 
 
 def validate_payroll_entry(doc, method=None):
+	from imogi_finance.payroll.payroll_entry import ensure_payroll_entry_defaults
+
+	ensure_payroll_entry_defaults(doc)
 	if doc.get("payroll_period"):
 		apply_sub_period_to_payroll_entry(doc)
 		if not doc.get("payroll_sub_period"):
 			frappe.throw(_("Pilih Periode Gaji (Bulan) dari Payroll Period."))
+		if doc.get("end_date") and not doc.get("posting_date"):
+			doc.posting_date = doc.end_date
 	validate_active_assignment_contracts(doc)
 
 
@@ -307,6 +312,30 @@ def build_cutoff_sub_periods(
 	return result
 
 
+def find_sub_period_for_posting_date(
+	payroll_period: str, posting_date: str | date | None
+) -> dict[str, Any] | None:
+	"""Cocokkan bulan gaji dari posting date ke baris cutoff 25–24."""
+	if not payroll_period or not posting_date:
+		return None
+
+	ref = getdate(posting_date)
+
+	# Prioritas: bulan gaji = bulan posting (mis. posting 30 Apr → gaji Apr = 25 Mar–24 Apr)
+	for row in get_sub_periods(payroll_period):
+		end = getdate(row["end_date"])
+		if end.year == ref.year and end.month == ref.month:
+			return row
+
+	for row in get_sub_periods(payroll_period):
+		start = getdate(row["start_date"])
+		end = getdate(row["end_date"])
+		if start <= ref <= end:
+			return row
+
+	return None
+
+
 @frappe.whitelist()
 def get_payroll_sub_periods(payroll_period: str) -> list[dict[str, Any]]:
 	frappe.has_permission("Payroll Entry", "read", throw=True)
@@ -316,6 +345,74 @@ def get_payroll_sub_periods(payroll_period: str) -> list[dict[str, Any]]:
 		p["start_date"] = str(p["start_date"])
 		p["end_date"] = str(p["end_date"])
 	return periods
+
+
+@frappe.whitelist()
+def get_sub_period_for_posting_date(payroll_period: str, posting_date: str) -> dict[str, Any] | None:
+	"""API: sub-periode cutoff untuk posting date (pola Odoo Cutoff Periode)."""
+	frappe.has_permission("Payroll Entry", "read", throw=True)
+	row = find_sub_period_for_posting_date(payroll_period, posting_date)
+	if not row:
+		return None
+	return {
+		"name": row["name"],
+		"label": row["label"],
+		"start_date": str(row["start_date"]),
+		"end_date": str(row["end_date"]),
+	}
+
+
+def find_payroll_period_for_date(company: str, reference_date: str | date | None) -> str | None:
+	"""Payroll Period tahunan yang mencakup tanggal due/posting (mis. 2026 → Period Slip)."""
+	if not company:
+		return None
+
+	ref = getdate(reference_date or today())
+	periods = frappe.get_all(
+		"Payroll Period",
+		filters={"company": company},
+		fields=["name", "start_date", "end_date"],
+		order_by="start_date desc",
+	)
+	if not periods:
+		return None
+
+	for row in periods:
+		if getdate(row.start_date) <= ref <= getdate(row.end_date):
+			return row.name
+
+	year = ref.year
+	for row in periods:
+		if getdate(row.start_date).year <= year <= getdate(row.end_date).year:
+			return row.name
+
+	return periods[0].name
+
+
+@frappe.whitelist()
+def auto_fill_payroll_entry_period(company: str, posting_date: str | None = None) -> dict[str, Any] | None:
+	"""Isi Payroll Period + Periode Gaji (Bulan) dari due date (posting / hari ini)."""
+	frappe.has_permission("Payroll Entry", "read", throw=True)
+
+	ref_date = posting_date or today()
+	payroll_period = find_payroll_period_for_date(company, ref_date)
+	if not payroll_period:
+		return None
+
+	sub_row = find_sub_period_for_posting_date(payroll_period, ref_date)
+	if not sub_row:
+		return {"payroll_period": payroll_period, "sub_period": None}
+
+	return {
+		"payroll_period": payroll_period,
+		"sub_period": {
+			"name": sub_row["name"],
+			"label": sub_row["label"],
+			"start_date": str(sub_row["start_date"]),
+			"end_date": str(sub_row["end_date"]),
+		},
+		"periode_label": get_payroll_month_label(str(sub_row["end_date"])),
+	}
 
 
 @frappe.whitelist()

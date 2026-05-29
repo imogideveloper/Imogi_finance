@@ -50,8 +50,9 @@ def _add_payroll_entry_fields():
 			"fieldname": "employer_contributions_section",
 			"label": "Tunjangan Ditanggung Perusahaan",
 			"fieldtype": "Section Break",
-			"insert_after": "total_amount",
+			"insert_after": "error_message",
 			"collapsible": 1,
+			"hidden": 1,
 		},
 	)
 	_ensure_custom_field(
@@ -63,6 +64,7 @@ def _add_payroll_entry_fields():
 			"insert_after": "employer_contributions_section",
 			"read_only": 1,
 			"allow_on_submit": 1,
+			"hidden": 1,
 		},
 	)
 	_ensure_custom_field(
@@ -75,6 +77,7 @@ def _add_payroll_entry_fields():
 			"insert_after": "total_employer_contribution",
 			"read_only": 1,
 			"allow_on_submit": 1,
+			"hidden": 1,
 			"description": "Agregat dari Salary Slip terkait payroll entry ini.",
 		},
 	)

@@ -551,6 +551,8 @@ override_whitelisted_methods = {
         "imogi_finance.api.reportview_patch.get_count",
     "frappe.desk.listview.get_list_settings":
         "imogi_finance.overrides.listview.get_list_settings",
+    "hrms.payroll.doctype.payroll_entry.payroll_entry.employee_query":
+        "imogi_finance.payroll.payroll_entry.employee_query",
     "frappe.desk.desktop.get_desktop_page":
         "imogi_finance.overrides.desktop.get_desktop_page",
     "frappe.desk.desktop.get_workspace_sidebar_items":

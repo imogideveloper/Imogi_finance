@@ -1,44 +1,29 @@
 frappe.ui.form.on("Payroll Entry", {
 	onload(frm) {
-		toggle_manual_dates(frm);
-		if (frm.doc.payroll_period) {
-			load_sub_period_options(frm, frm.doc.payroll_sub_period);
+		patch_hrms_payroll_date_handlers(frm);
+		hide_payroll_period_detail_fields(frm);
+		ensure_payroll_frequency_default(frm);
+		toggle_auto_payroll_period_fields(frm);
+		if (frm.is_new() && frm.doc.company) {
+			auto_apply_payroll_period(frm);
+		} else if (frm.doc.payroll_period) {
+			load_sub_period_options(frm, frm.doc.payroll_sub_period, get_reference_date_for_period(frm));
 		}
 	},
 
 	refresh(frm) {
 		set_payroll_period_intro(frm);
-		toggle_manual_dates(frm);
-		if (frm.fields_dict.employer_contributions_summary) {
-			frm.set_df_property("employer_contributions_summary", "cannot_add_rows", true);
-			frm.set_df_property("employer_contributions_summary", "cannot_delete_rows", true);
-		}
-		if (
-			frm.doc.docstatus === 1 &&
-			frm.fields_dict.total_employer_contribution &&
-			!flt(frm.doc.total_employer_contribution) &&
-			frm.doc.salary_slips_submitted
-		) {
-			frappe.call({
-				method:
-					"imogi_finance.payroll.employer_contributions.refresh_payroll_entry_employer_summary",
-				args: { payroll_entry: frm.doc.name },
-				callback(r) {
-					if (!r.message) {
-						return;
-					}
-					frm.set_value(
-						"total_employer_contribution",
-						r.message.total_employer_contribution
-					);
-					frm.reload_doc();
-				},
-			});
+		hide_payroll_period_detail_fields(frm);
+		ensure_payroll_frequency_default(frm);
+		toggle_auto_payroll_period_fields(frm);
+		ensure_sub_period_dates(frm);
+		if (frm.is_new() && frm.doc.company && !frm.doc.payroll_period) {
+			auto_apply_payroll_period(frm);
 		}
 	},
 
 	company(frm) {
-		if (frm.doc.payroll_period) {
+		if (frm.doc.payroll_period && !frm.doc.__auto_applying_payroll_period) {
 			frappe.db.get_value("Payroll Period", frm.doc.payroll_period, "company").then((r) => {
 				if (
 					r.message &&
@@ -54,13 +39,17 @@ frappe.ui.form.on("Payroll Entry", {
 		frm.set_query("payroll_period", () => ({
 			filters: frm.doc.company ? { company: frm.doc.company } : {},
 		}));
+		if (frm.doc.company && frm.doc.docstatus === 0) {
+			auto_apply_payroll_period(frm);
+		}
 	},
 
 	payroll_period(frm) {
-		frm.set_value("payroll_sub_period", "");
-		toggle_manual_dates(frm);
+		if (frm.doc.__syncing_from_payroll_period || frm.doc.__auto_applying_payroll_period) {
+			return;
+		}
 		if (frm.doc.payroll_period) {
-			load_sub_period_options(frm);
+			load_sub_period_options(frm, null, get_reference_date_for_period(frm));
 		} else {
 			clear_sub_period_options(frm);
 			frm.__payroll_period_intro_text = null;
@@ -81,6 +70,12 @@ frappe.ui.form.on("Payroll Entry", {
 		refresh_december_checkbox(frm);
 	},
 
+	payroll_frequency(frm) {
+		if (frm.doc.payroll_period) {
+			ensure_sub_period_dates(frm);
+		}
+	},
+
 	run_payroll_indonesia(frm) {
 		refresh_december_checkbox(frm);
 	},
@@ -90,24 +85,132 @@ frappe.ui.form.on("Payroll Entry", {
 	},
 });
 
+function get_reference_date_for_period(frm) {
+	// Bulan gaji dari tanggal hari ini (bukan dari Posting Date yang bisa diedit user).
+	return frappe.datetime.get_today();
+}
+
+function set_payroll_period_silent(frm, payroll_period) {
+	if (!payroll_period || frm.doc.payroll_period === payroll_period) {
+		return;
+	}
+	frm.doc.payroll_period = payroll_period;
+}
+
+function ensure_payroll_frequency_default(frm) {
+	if (!frm.doc.salary_slip_based_on_timesheet && !frm.doc.payroll_frequency) {
+		frm.doc.payroll_frequency = "Monthly";
+	}
+}
+
+function auto_apply_payroll_period(frm) {
+	if (frm.doc.docstatus > 0 || frm.doc.__auto_applying_payroll_period || !frm.doc.company) {
+		return;
+	}
+
+	frm.doc.__auto_applying_payroll_period = true;
+	frappe.call({
+		method: "imogi_finance.payroll.payroll_period_integration.auto_fill_payroll_entry_period",
+		args: {
+			company: frm.doc.company,
+			posting_date: get_reference_date_for_period(frm),
+		},
+		callback(r) {
+			frm.doc.__auto_applying_payroll_period = false;
+			const data = r.message;
+			if (!data || !data.payroll_period) {
+				frappe.msgprint(
+					__(
+						"Payroll Period untuk company {0} tidak ditemukan. Buat Payroll Period tahun {1} dulu.",
+						[
+							frm.doc.company,
+							frappe.datetime.str_to_obj(get_reference_date_for_period(frm)).getFullYear(),
+						]
+					)
+				);
+				return;
+			}
+
+			const apply_sub = (sub_period) => {
+				if (!sub_period) {
+					frappe.msgprint(
+						__(
+							"Periode gaji (25–24) untuk tanggal {0} tidak ditemukan. "
+								+ "Pastikan Payroll Period tahun {1} sudah dibuat.",
+							[
+								get_reference_date_for_period(frm),
+								frappe.datetime
+									.str_to_obj(get_reference_date_for_period(frm))
+									.getFullYear(),
+							]
+						)
+					);
+					return;
+				}
+				set_payroll_period_silent(frm, data.payroll_period);
+				load_sub_period_options(frm, sub_period.label, get_reference_date_for_period(frm));
+			};
+
+			ensure_payroll_frequency_default(frm);
+			if (data.sub_period) {
+				apply_sub(data.sub_period);
+			} else {
+				set_payroll_period_silent(frm, data.payroll_period);
+			}
+		},
+		error() {
+			frm.doc.__auto_applying_payroll_period = false;
+		},
+	});
+}
+
 function refresh_december_checkbox(frm) {
 	if (frm.fields_dict.run_payroll_indonesia_december) {
 		frm.refresh_field("run_payroll_indonesia_december");
 	}
 }
 
+function patch_hrms_payroll_date_handlers(frm) {
+	if (frm.__payroll_period_handlers_patched) {
+		return;
+	}
+	frm.__payroll_period_handlers_patched = true;
+
+	const original_set_start_end = frm.events.set_start_end_dates;
+	if (original_set_start_end) {
+		frm.events.set_start_end_dates = function (form) {
+			if (form.doc.payroll_period) {
+				ensure_sub_period_dates(form);
+				return Promise.resolve();
+			}
+			return original_set_start_end(form);
+		};
+	}
+
+	const original_set_end = frm.events.set_end_date;
+	if (original_set_end) {
+		frm.events.set_end_date = function (form) {
+			if (form.doc.payroll_period || form.doc.__syncing_from_payroll_period) {
+				return;
+			}
+			return original_set_end(form);
+		};
+	}
+}
+
 function set_payroll_period_intro(frm) {
-	// layout.show_message menambah (append) tanpa clear — refresh berkali-kali = banner dobel
 	if (frm.layout && frm.layout.message) {
 		frm.layout.message.empty().addClass("hidden");
 	}
 
-	if (!frm.doc.payroll_period) {
+	if (!frm.doc.company || frm.doc.docstatus > 0 || !frm.fields_dict.payroll_sub_period) {
 		return;
 	}
 
 	const intro_text = __(
-		"Pilih <b>Payroll Period</b> lalu <b>Periode Gaji (Bulan)</b> (pola 25–24). Start/End Date dan Periode mengikuti pilihan. Centang <b>Run Payroll Indonesia</b> untuk PPh21 TER."
+		"<b>Periode Gaji (Bulan)</b> terisi otomatis dari bulan berjalan (cutoff <b>25–24</b>). "
+			+ "<b>Posting Date</b> default tanggal <b>24</b> akhir periode dan <b>bisa diubah</b> "
+			+ "(tidak harus sama dengan periode gaji)."
 	);
 
 	if (frm.__payroll_period_intro_text === intro_text) {
@@ -118,11 +221,32 @@ function set_payroll_period_intro(frm) {
 	frm.layout.show_message(`<div>${intro_text}</div>`, "blue", true);
 }
 
-function toggle_manual_dates(frm) {
-	const use_pp = !!frm.doc.payroll_period;
-	frm.set_df_property("start_date", "read_only", use_pp ? 1 : 0);
-	frm.set_df_property("end_date", "read_only", use_pp ? 1 : 0);
-	frm.toggle_reqd("payroll_sub_period", use_pp);
+const PAYROLL_PERIOD_DETAIL_FIELDS = [
+	"payroll_frequency",
+	"start_date",
+	"end_date",
+	"column_break_13",
+	"deduct_tax_for_unclaimed_employee_benefits",
+	"deduct_tax_for_unsubmitted_tax_exemption_proof",
+	"employer_contributions_section",
+	"total_employer_contribution",
+	"employer_contributions_summary",
+];
+
+function hide_payroll_period_detail_fields(frm) {
+	[...PAYROLL_PERIOD_DETAIL_FIELDS, "payroll_period"].forEach((fieldname) => {
+		if (frm.fields_dict[fieldname]) {
+			frm.set_df_property(fieldname, "hidden", 1);
+		}
+	});
+}
+
+function toggle_auto_payroll_period_fields(frm) {
+	const auto_mode = frm.doc.docstatus === 0;
+	if (frm.fields_dict.payroll_sub_period) {
+		frm.set_df_property("payroll_sub_period", "read_only", auto_mode ? 1 : 0);
+		frm.toggle_reqd("payroll_sub_period", auto_mode && !!frm.doc.payroll_period);
+	}
 }
 
 function clear_sub_period_options(frm) {
@@ -144,7 +268,46 @@ function resolve_sub_period_row(frm, selected) {
 	return null;
 }
 
-function load_sub_period_options(frm, selected) {
+function find_sub_period_row_for_posting_date(rows, posting_date) {
+	const ref = frappe.datetime.str_to_obj(posting_date);
+	for (const row of rows) {
+		const end = frappe.datetime.str_to_obj(row.end_date);
+		if (end.getFullYear() === ref.getFullYear() && end.getMonth() === ref.getMonth()) {
+			return row;
+		}
+	}
+	for (const row of rows) {
+		if (
+			frappe.datetime.get_diff(row.start_date, posting_date) <= 0 &&
+			frappe.datetime.get_diff(posting_date, row.end_date) <= 0
+		) {
+			return row;
+		}
+	}
+	return null;
+}
+
+function sub_period_dates_match(frm, row) {
+	if (!row) {
+		return true;
+	}
+	return (
+		String(frm.doc.start_date || "") === String(row.start_date || "") &&
+		String(frm.doc.end_date || "") === String(row.end_date || "")
+	);
+}
+
+function ensure_sub_period_dates(frm) {
+	if (!frm.doc.payroll_period || !frm.doc.payroll_sub_period) {
+		return;
+	}
+	const row = resolve_sub_period_row(frm, frm.doc.payroll_sub_period);
+	if (row && !sub_period_dates_match(frm, row)) {
+		sync_sub_period_to_form(frm, row);
+	}
+}
+
+function load_sub_period_options(frm, selected, posting_date) {
 	frappe.call({
 		method: "imogi_finance.payroll.payroll_period_integration.get_payroll_sub_periods",
 		args: { payroll_period: frm.doc.payroll_period },
@@ -173,9 +336,11 @@ function load_sub_period_options(frm, selected) {
 
 			frm.set_df_property("payroll_sub_period", "options", options.join("\n"));
 
-			const row =
-				resolve_sub_period_row(frm, selected) ||
-				(rows.length === 1 ? rows[0] : null);
+			const due = posting_date || get_reference_date_for_period(frm);
+			const from_posting = due ? find_sub_period_row_for_posting_date(rows, due) : null;
+			const from_selected = resolve_sub_period_row(frm, selected);
+			const row = from_selected || from_posting || (rows.length === 1 ? rows[0] : null);
+
 			if (row) {
 				sync_sub_period_to_form(frm, row);
 			} else {
@@ -202,17 +367,22 @@ function sync_sub_period_to_form(frm, row) {
 	}
 
 	frm.doc.__syncing_from_payroll_period = true;
-	frm.set_value("payroll_sub_period", row.label);
-	frm.set_value("start_date", row.start_date);
-	frm.set_value("end_date", row.end_date);
+
+	frm.doc.payroll_sub_period = row.label;
+	frm.doc.start_date = row.start_date;
+	frm.doc.end_date = row.end_date;
+	frm.refresh_fields(["payroll_sub_period", "start_date", "end_date"]);
+
 	set_posting_date_from_end(frm, row.end_date);
+
 	frappe
 		.call({
 			method: "imogi_finance.payroll.payroll_period_integration.get_payroll_month_label",
 			args: { end_date: row.end_date },
 			callback(label_r) {
 				if (label_r.message) {
-					frm.set_value("periode", label_r.message);
+					frm.doc.periode = label_r.message;
+					frm.refresh_field("periode");
 				}
 				frm.doc.__syncing_from_payroll_period = false;
 				refresh_december_checkbox(frm);
@@ -225,12 +395,12 @@ function sync_sub_period_to_form(frm, row) {
 }
 
 function set_posting_date_from_end(frm, end_date) {
-	if (!end_date) {
+	if (!end_date || frm.doc.posting_date) {
 		return;
 	}
-	const end = frappe.datetime.str_to_obj(end_date);
-	const last_day = new Date(end.getFullYear(), end.getMonth() + 1, 0);
-	frm.set_value("posting_date", frappe.datetime.obj_to_str(last_day));
+	// Default saat kosong: tanggal 24 akhir periode cutoff (bukan akhir bulan kalender).
+	frm.doc.posting_date = end_date;
+	frm.refresh_field("posting_date");
 }
 
 function set_field_without_dirty(frm, fieldname, value) {

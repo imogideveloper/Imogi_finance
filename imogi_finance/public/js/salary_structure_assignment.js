@@ -5,6 +5,7 @@ frappe.ui.form.on("Salary Structure Assignment", {
 		}
 		show_contract_message(frm);
 		lock_component_table(frm);
+		lock_contract_period_fields(frm);
 		add_contract_buttons(frm);
 		render_contract_history(frm);
 
@@ -40,9 +41,112 @@ frappe.ui.form.on("Salary Structure Assignment", {
 	},
 
 	salary_structure(frm) {
+		toggle_tracking_fields(frm);
 		render_contract_history(frm);
 	},
 });
+
+function set_contract_history_section_visible(frm, visible) {
+	const hide = visible ? 0 : 1;
+	if (frm.fields_dict.assignment_contract_history_section) {
+		frm.set_df_property("assignment_contract_history_section", "hidden", hide);
+	}
+	if (frm.fields_dict.assignment_contract_history) {
+		frm.set_df_property("assignment_contract_history", "hidden", hide);
+	}
+}
+
+function render_contract_history(frm) {
+	if (!frm.fields_dict.assignment_contract_history) {
+		return;
+	}
+
+	if (!frm.doc.employee) {
+		set_contract_history_section_visible(frm, false);
+		return;
+	}
+
+	frappe.call({
+		method: "imogi_finance.payroll.salary_structure_assignment.get_assignment_contract_history",
+		args: { employee: frm.doc.employee },
+		callback(r) {
+			const rows = r.message || [];
+			const has_history = rows.length > 0;
+			set_contract_history_section_visible(frm, has_history);
+			if (has_history) {
+				frm.fields_dict.assignment_contract_history.$wrapper.html(
+					build_contract_history_html(rows)
+				);
+			}
+		},
+	});
+}
+
+function build_contract_history_html(rows) {
+	const tr = rows.map((row) => {
+		const name = frappe.utils.escape_html(row.name || "");
+		const status = frappe.utils.escape_html(row.status || "");
+		const reason = frappe.utils.escape_html(row.change_reason || "-");
+		const from_date = row.from_date ? frappe.datetime.str_to_user(row.from_date) : "-";
+		const end_date = row.end_date ? frappe.datetime.str_to_user(row.end_date) : __("Tanpa End Date");
+		return `
+			<div class="imogi-ssa-history-row">
+				<div>
+					<div class="text-muted small">${__("Contract")}</div>
+					<a class="font-weight-bold" href="/app/salary-structure-assignment/${encodeURIComponent(name)}">${name}</a>
+				</div>
+				<div>
+					<div class="text-muted small">${__("Periode")}</div>
+					<div>${from_date} - ${end_date}</div>
+				</div>
+				<div>
+					<div class="text-muted small">${__("Status")}</div>
+					<span class="indicator-pill ${get_history_status_class(status)}">${status}</span>
+				</div>
+				<div>
+					<div class="text-muted small">${__("Alasan Perubahan")}</div>
+					<div>${reason}</div>
+				</div>
+			</div>
+		`;
+	}).join("");
+
+	return `
+		<style>
+			.imogi-ssa-history {
+				display: flex;
+				flex-direction: column;
+				gap: 10px;
+				margin-top: 8px;
+			}
+			.imogi-ssa-history-row {
+				display: grid;
+				grid-template-columns: minmax(180px, 1.3fr) minmax(170px, 1fr) minmax(120px, .7fr) minmax(220px, 1.4fr);
+				gap: 14px;
+				padding: 12px 14px;
+				border: 1px solid var(--border-color);
+				border-radius: 8px;
+				background: var(--fg-color);
+			}
+			@media (max-width: 900px) {
+				.imogi-ssa-history-row {
+					grid-template-columns: 1fr;
+				}
+			}
+		</style>
+		<div class="imogi-ssa-history">
+			${tr}
+		</div>
+	`;
+}
+
+function get_history_status_class(status) {
+	const key = (status || "").toLowerCase();
+	if (key === "activate") return "green";
+	if (key === "expired") return "red";
+	if (key === "expired soon") return "orange";
+	return "gray";
+}
 
 function toggle_tracking_fields(frm) {
 	const has_contract_tracking = Boolean(
@@ -71,9 +175,6 @@ function toggle_tracking_fields(frm) {
 	if (frm.fields_dict.change_reason) {
 		frm.set_df_property("change_reason", "hidden", has_contract_tracking ? 0 : 1);
 		frm.set_df_property("change_reason", "reqd", has_contract_tracking ? 1 : 0);
-	}
-	if (frm.fields_dict.assignment_contract_history_section) {
-		frm.set_df_property("assignment_contract_history_section", "hidden", frm.doc.employee ? 0 : 1);
 	}
 }
 
@@ -112,6 +213,15 @@ function show_contract_message(frm) {
 
 	const indicator = status === "Expired" ? "red" : is_expiring_soon(frm) ? "orange" : "blue";
 	frm.layout.show_message(`<div>${__(message)}</div>`, indicator, true);
+}
+
+function lock_contract_period_fields(frm) {
+	const locked = frm.doc.docstatus === 1;
+	["from_date", "end_date"].forEach((fieldname) => {
+		if (frm.fields_dict[fieldname]) {
+			frm.set_df_property(fieldname, "read_only", locked ? 1 : 0);
+		}
+	});
 }
 
 function lock_component_table(frm) {
@@ -191,94 +301,6 @@ function open_new_contract(defaults) {
 			indicator: "green",
 		});
 	});
-}
-
-function render_contract_history(frm) {
-	if (!frm.fields_dict.assignment_contract_history || !frm.doc.employee) {
-		return;
-	}
-
-	frappe.call({
-		method: "imogi_finance.payroll.salary_structure_assignment.get_assignment_contract_history",
-		args: {
-			employee: frm.doc.employee,
-			salary_structure: frm.doc.salary_structure,
-		},
-		callback(r) {
-			const rows = r.message || [];
-			frm.fields_dict.assignment_contract_history.$wrapper.html(build_contract_history_html(rows));
-		},
-	});
-}
-
-function build_contract_history_html(rows) {
-	if (!rows.length) {
-		return `<div class="text-muted">${__("Belum ada riwayat contract.")}</div>`;
-	}
-
-	const tr = rows.map((row) => {
-		const name = frappe.utils.escape_html(row.name || "");
-		const status = frappe.utils.escape_html(row.status || "");
-		const reason = frappe.utils.escape_html(row.change_reason || "-");
-		const from_date = row.from_date ? frappe.datetime.str_to_user(row.from_date) : "-";
-		const end_date = row.end_date ? frappe.datetime.str_to_user(row.end_date) : __("Tanpa End Date");
-		return `
-			<div class="imogi-ssa-history-row">
-				<div>
-					<div class="text-muted small">${__("Contract")}</div>
-					<a class="font-weight-bold" href="/app/salary-structure-assignment/${encodeURIComponent(name)}">${name}</a>
-				</div>
-				<div>
-					<div class="text-muted small">${__("Periode")}</div>
-					<div>${from_date} - ${end_date}</div>
-				</div>
-				<div>
-					<div class="text-muted small">${__("Status")}</div>
-					<span class="indicator-pill ${get_history_status_class(status)}">${status}</span>
-				</div>
-				<div>
-					<div class="text-muted small">${__("Alasan Perubahan")}</div>
-					<div>${reason}</div>
-				</div>
-			</div>
-		`;
-	}).join("");
-
-	return `
-		<style>
-			.imogi-ssa-history {
-				display: flex;
-				flex-direction: column;
-				gap: 10px;
-				margin-top: 8px;
-			}
-			.imogi-ssa-history-row {
-				display: grid;
-				grid-template-columns: minmax(180px, 1.3fr) minmax(170px, 1fr) minmax(120px, .7fr) minmax(220px, 1.4fr);
-				gap: 14px;
-				padding: 12px 14px;
-				border: 1px solid var(--border-color);
-				border-radius: 8px;
-				background: var(--fg-color);
-			}
-			@media (max-width: 900px) {
-				.imogi-ssa-history-row {
-					grid-template-columns: 1fr;
-				}
-			}
-		</style>
-		<div class="imogi-ssa-history">
-			${tr}
-		</div>
-	`;
-}
-
-function get_history_status_class(status) {
-	const key = (status || "").toLowerCase();
-	if (key === "activate") return "green";
-	if (key === "expired") return "red";
-	if (key === "expired soon") return "orange";
-	return "gray";
 }
 
 function validate_end_date(frm) {
