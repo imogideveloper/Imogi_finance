@@ -13,6 +13,34 @@ def _normalize_label(label: str | None) -> str:
 	return (label or "").strip().casefold()
 
 
+def _workspace_aliases(workspace_ref: str | None) -> set[str]:
+	"""Return workspace aliases (name/title) for robust matching."""
+	workspace_ref = (workspace_ref or "").strip()
+	if not workspace_ref:
+		return set()
+
+	aliases = {workspace_ref}
+
+	title = frappe.db.get_value("Workspace", workspace_ref, "title")
+	if title:
+		aliases.add(title.strip())
+		return aliases
+
+	name = frappe.db.get_value("Workspace", {"title": workspace_ref}, "name")
+	if name:
+		aliases.add(name.strip())
+	return aliases
+
+
+def _workspace_matches(rule_workspace: str | None, current_workspace: str | None) -> bool:
+	"""Match workspace by either name or title."""
+	rule_aliases = {_normalize_label(v) for v in _workspace_aliases(rule_workspace)}
+	current_aliases = {_normalize_label(v) for v in _workspace_aliases(current_workspace)}
+	if not rule_aliases or not current_aliases:
+		return False
+	return bool(rule_aliases.intersection(current_aliases))
+
+
 def _header_section_text(data: dict | None) -> str:
 	"""Plain text from EditorJS header block (may contain HTML)."""
 	if not data:
@@ -122,11 +150,23 @@ def filter_allowed_workspace_pages(pages: list | None, user: str | None = None) 
 	hidden = get_hidden_workspace_names(user)
 	if not hidden:
 		return pages
-	return [
-		page
-		for page in pages
-		if (page.get("name") or page.get("title") or "").strip() not in hidden
-	]
+
+	hidden_norm = set()
+	for ref in hidden:
+		for alias in _workspace_aliases(ref):
+			hidden_norm.add(_normalize_label(alias))
+
+	def is_hidden(page: dict) -> bool:
+		page_refs = [
+			(page.get("name") or "").strip(),
+			(page.get("title") or "").strip(),
+		]
+		for page_ref in page_refs:
+			if _normalize_label(page_ref) in hidden_norm:
+				return True
+		return False
+
+	return [page for page in pages if not is_hidden(page)]
 
 
 def get_hidden_rules(workspace_name: str | None, user: str | None = None) -> list[dict]:
@@ -151,7 +191,7 @@ def get_hidden_rules(workspace_name: str | None, user: str | None = None) -> lis
 			continue
 		if not _rule_applies_to_user(row, user):
 			continue
-		if (row.workspace or "").strip() != workspace_name:
+		if not _workspace_matches((row.workspace or "").strip(), workspace_name):
 			continue
 		label = (row.section_label or "").strip()
 		if not label:
@@ -321,6 +361,19 @@ def add_hidden_workspace(workspace: str, user: str | None = None) -> dict:
 def add_hidden_section(workspace: str, section_label: str, user: str | None = None) -> dict:
 	"""Quick-add a hidden section row from the settings form."""
 	user = (user or "").strip() or None
+	workspace = (workspace or "").strip()
+	section_label = (section_label or "").strip()
+	if not workspace or not section_label:
+		frappe.throw(_("Workspace and section label are required."))
+
+	available_sections = {row.get("label") for row in get_workspace_sections(workspace)}
+	if section_label not in available_sections:
+		frappe.throw(
+			_(
+				"Section '{0}' tidak ditemukan di workspace '{1}'. Pilih section melalui picker agar sesuai."
+			).format(section_label, workspace)
+		)
+
 	settings = frappe.get_single("Workspace UI Settings")
 	settings.enabled = 1
 
@@ -376,9 +429,10 @@ def get_workspace_hidden_map(user: str | None = None) -> dict[str, list[str]]:
 			continue
 		if not row.hide_card_section and not row.hide_shortcuts:
 			continue
-		hidden_map.setdefault(workspace, [])
-		if label not in hidden_map[workspace]:
-			hidden_map[workspace].append(label)
+		for alias in _workspace_aliases(workspace):
+			hidden_map.setdefault(alias, [])
+			if label not in hidden_map[alias]:
+				hidden_map[alias].append(label)
 	return hidden_map
 
 

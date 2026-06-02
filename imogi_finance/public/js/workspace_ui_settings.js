@@ -328,7 +328,8 @@ function open_section_picker(frm) {
 			const workspace = dialog.get_value("workspace");
 			const selected = [];
 			dialog.$wrapper.find("input.imogi-hide-section:checked").each(function () {
-				selected.push($(this).data("label"));
+				const encoded = $(this).attr("data-label-encoded") || "";
+				selected.push(decodeURIComponent(encoded));
 			});
 
 			if (!workspace || !selected.length) {
@@ -388,10 +389,11 @@ function load_sections(dialog) {
 			let html = '<div class="imogi-section-list" style="max-height:280px;overflow:auto;">';
 			rows.forEach((row) => {
 				const safe = frappe.utils.escape_html(row.label);
+				const encoded_label = encodeURIComponent(row.label || "");
 				html += `
 					<div class="imogi-section-option" style="padding:8px 10px;border-radius:6px;margin-bottom:4px;">
 						<label style="display:flex;gap:10px;align-items:flex-start;margin:0;cursor:pointer;">
-							<input type="checkbox" class="imogi-hide-section" data-label="${safe}">
+							<input type="checkbox" class="imogi-hide-section" data-label-encoded="${encoded_label}">
 							<span>
 								<strong>${safe}</strong><br>
 								<span class="text-muted small">${frappe.utils.escape_html(row.section_type)}</span>

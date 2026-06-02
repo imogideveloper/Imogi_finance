@@ -63,6 +63,7 @@ doctype_js = {
 app_include_js = [
     "/assets/imogi_finance/js/imogi_finance.js",
     "/assets/imogi_finance/js/workspace_visibility.js",
+    "/assets/imogi_finance/js/form_field_visibility.js",
 ]
 
 boot_session = "imogi_finance.workspace_visibility.update_boot_session"
@@ -474,6 +475,9 @@ doc_events = {
         "on_cancel": "imogi_finance.overrides.delivery_order_towing.update_do_from_po",
         "on_trash": "imogi_finance.overrides.delivery_order_towing.on_trash_po_uang_jalan",
     },
+    "Workspace UI Settings": {
+        "on_update": "imogi_finance.workspace_visibility.clear_workspace_cache",
+    },
 }
 
 if is_payroll_installed():
@@ -531,6 +535,8 @@ override_whitelisted_methods = {
         "imogi_finance.overrides.listview.get_list_settings",
     "frappe.desk.desktop.get_desktop_page":
         "imogi_finance.overrides.desktop.get_desktop_page",
+    "frappe.desk.desktop.get_workspace_sidebar_items":
+        "imogi_finance.overrides.desktop.get_workspace_sidebar_items",
     "erpnext.accounts.doctype.bank_reconciliation_tool.bank_reconciliation_tool.create_journal_entry_bts":
         "imogi_finance.overrides.bank_reconciliation_tool.create_journal_entry_bts",
     "erpnext.accounts.doctype.bank_statement_import.bank_statement_import.start_import": 
