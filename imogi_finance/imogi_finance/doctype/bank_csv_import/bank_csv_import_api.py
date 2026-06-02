@@ -15,7 +15,7 @@ _BANK_STATEMENT_DTYPES = ("Bank Statement", "Bank CSV Import")
 def get_bank_statement_doctype() -> str:
     """Resolve active doctype name (legacy Bank CSV Import vs Bank Statement)."""
     for name in _BANK_STATEMENT_DTYPES:
-        if frappe.db.table_exists(f"tab{name}"):
+        if frappe.db.exists("DocType", name):
             return name
     frappe.throw(_("DocType Bank Statement / Bank CSV Import tidak ditemukan."))
 

@@ -59,6 +59,7 @@ doctype_js = {
 }
 
 app_include_js = [
+    "/assets/imogi_finance/js/bank_statement_form.js",
     "/assets/imogi_finance/js/payment_entry_allocation_status.js",
     "/assets/imogi_finance/js/imogi_finance.js",
     "/assets/imogi_finance/js/workspace_visibility.js",

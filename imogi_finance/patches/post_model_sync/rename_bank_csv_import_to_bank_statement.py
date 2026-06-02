@@ -13,6 +13,7 @@ NEW_DTYPE = "Bank Statement"
 def execute():
 	_rename_doctype_if_needed()
 	_update_workspace_links()
+	_clear_form_meta_cache()
 
 
 def _rename_doctype_if_needed():
@@ -69,3 +70,8 @@ def _update_workspace_links():
 			doc.save(ignore_permissions=True)
 
 	frappe.clear_cache(doctype="Workspace")
+
+
+def _clear_form_meta_cache():
+	for name in (OLD_DTYPE, NEW_DTYPE):
+		frappe.cache.hdel("doctype_form_meta", name)
