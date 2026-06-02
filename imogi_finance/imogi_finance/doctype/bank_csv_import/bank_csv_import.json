@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 0,
- "autoname": "format:BCI-{YYYY}-{MM}-{DD}-{#####}",
+ "autoname": "format:BST-{YYYY}-{MM}-{DD}-{#####}",
  "creation": "2026-04-01 00:00:00.000000",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -13,12 +13,12 @@
   "import_file",
   "section_break_status",
   "status",
-  "import_log",
-  "section_break_result",
-  "total_rows",
-  "created_rows",
-  "skipped_rows",
-  "error_rows"
+  "opening_balance",
+  "closing_balance",
+  "statement_from_date",
+  "statement_to_date",
+  "section_statement_detail",
+  "statement_details"
  ],
  "fields": [
   {
@@ -73,26 +73,30 @@
    "fieldname": "import_log",
    "fieldtype": "Long Text",
    "label": "Import Log",
-   "read_only": 1
+   "read_only": 1,
+   "hidden": 1
   },
   {
    "fieldname": "section_break_result",
    "fieldtype": "Section Break",
-   "label": "Results"
+   "label": "Results",
+   "hidden": 1
   },
   {
    "fieldname": "opening_balance",
    "label": "Opening Balance (dari CSV)",
    "fieldtype": "Currency",
    "read_only": 1,
-   "insert_after": "section_break_result"
+   "insert_after": "status",
+   "in_list_view": 1
   },
   {
    "fieldname": "closing_balance",
    "label": "Closing Balance (dari CSV)",
    "fieldtype": "Currency",
    "read_only": 1,
-   "insert_after": "opening_balance"
+   "insert_after": "opening_balance",
+   "in_list_view": 1
   },
   {
    "fieldname": "statement_from_date",
@@ -112,25 +116,40 @@
    "fieldname": "total_rows",
    "fieldtype": "Int",
    "label": "Total Rows",
-   "read_only": 1
+   "read_only": 1,
+   "hidden": 1
   },
   {
    "fieldname": "created_rows",
    "fieldtype": "Int",
    "label": "Created",
    "read_only": 1,
-   "in_list_view": 1
+   "hidden": 1
   },
   {
    "fieldname": "skipped_rows",
    "fieldtype": "Int",
    "label": "Skipped (Duplicate)",
-   "read_only": 1
+   "read_only": 1,
+   "hidden": 1
   },
   {
    "fieldname": "error_rows",
    "fieldtype": "Int",
    "label": "Errors",
+   "read_only": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "section_statement_detail",
+   "fieldtype": "Section Break",
+   "label": "Statement Detail"
+  },
+  {
+   "fieldname": "statement_details",
+   "fieldtype": "Table",
+   "label": "Statement Detail",
+   "options": "Statement Detail",
    "read_only": 1
   }
  ],
@@ -139,7 +158,7 @@
  "modified": "2026-04-01 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Imogi Finance",
- "name": "Bank CSV Import",
+ "name": "Bank Statement",
  "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [

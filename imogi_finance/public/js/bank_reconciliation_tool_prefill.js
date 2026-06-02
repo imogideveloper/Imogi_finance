@@ -41,7 +41,7 @@ frappe.ui.form.on('Bank Reconciliation Tool', {
                 }
 
                 frappe.show_alert({
-                    message: __('Prefill dari Bank CSV Import selesai'),
+                    message: __('Prefill dari Bank Statement selesai'),
                     indicator: 'green'
                 }, 4);
             };

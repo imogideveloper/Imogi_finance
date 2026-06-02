@@ -11,7 +11,16 @@ const header_section_text = (data) => {
 
 imogi_finance.workspace_visibility.get_hidden_labels = function (workspaceName) {
 	const bootMap = frappe.boot.imogi_workspace_hidden || {};
-	const fromBoot = bootMap[workspaceName] || [];
+	const key = normalize_label(workspaceName);
+	let fromBoot = bootMap[workspaceName] || [];
+	if (!fromBoot.length && key) {
+		for (const mapKey of Object.keys(bootMap)) {
+			if (normalize_label(mapKey) === key) {
+				fromBoot = bootMap[mapKey] || [];
+				break;
+			}
+		}
+	}
 	const fromPage = (frappe.workspace_page_data_hidden || {})[workspaceName] || [];
 	return [...new Set([...fromBoot, ...fromPage])];
 };

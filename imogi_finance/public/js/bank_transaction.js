@@ -15,10 +15,10 @@ frappe.ui.form.on('Bank Transaction', {
     }, __('Actions')).addClass('btn-primary');
 
     frm.add_custom_button(__('🏦 Buka Bank Reconciliation Tool'), function() {
-      // Cari closing balance dari Bank CSV Import terakhir untuk bank account ini
+      // Cari closing balance dari Bank Statement terakhir untuk bank account ini
       // Cari import yang periodenya mencakup tanggal transaksi ini
       const trx_date = frm.doc.date;
-      frappe.db.get_list('Bank CSV Import', {
+      frappe.db.get_list('Bank Statement', {
         filters: {
           bank_account: frm.doc.bank_account,
           status: 'Completed',
@@ -32,7 +32,7 @@ frappe.ui.form.on('Bank Transaction', {
         // Fallback: kalau tidak ada yang cocok periodenya, ambil yang terdekat
         const get_import = results && results.length > 0
           ? Promise.resolve(results)
-          : frappe.db.get_list('Bank CSV Import', {
+          : frappe.db.get_list('Bank Statement', {
               filters: {bank_account: frm.doc.bank_account, status: 'Completed'},
               fields: ['name', 'closing_balance', 'opening_balance', 'statement_from_date', 'statement_to_date'],
               order_by: 'statement_to_date desc',

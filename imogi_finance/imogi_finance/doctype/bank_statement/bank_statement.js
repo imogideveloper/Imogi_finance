@@ -39,7 +39,7 @@ frappe.ui.form.on('Bank Statement', {
                                 frm.reload_doc();
                             }
                         },
-                        error: function(r) { frm.reload_doc(); }
+                        error: function() { frm.reload_doc(); }
                     });
                 });
             }, __('Actions')).addClass('btn-primary');
@@ -48,52 +48,49 @@ frappe.ui.form.on('Bank Statement', {
         if (frm.doc.status === 'Completed') {
             frm.page.set_indicator(__('Completed'), 'green');
 
-            // Tombol buka Bank Reconciliation Tool — selalu tampil saat Completed
-            frm.add_custom_button(__('🏦 Buka Bank Reconciliation Tool'), function() {
-                let closing = frm.doc.closing_balance || 0;
-                let from_date = frm.doc.statement_from_date || frappe.datetime.get_today();
-                let to_date = frm.doc.statement_to_date || frappe.datetime.get_today();
-
-                let msg = closing ? `
-                    <div class="alert alert-info">
-                        <b>Info Saldo dari CSV:</b><br>
-                        Opening Balance: <b>${format_currency(frm.doc.opening_balance)}</b><br>
-                        Closing Balance: <b>${format_currency(closing)}</b><br>
-                        Periode: <b>${from_date} s/d ${to_date}</b>
-                    </div>
-                    <p>Setelah Bank Reconciliation Tool terbuka, masukkan nilai berikut ke field
-                    <b>"Closing Balance as per Bank Statement"</b>:</p>
-                    <h3 style="color: #4CAF50; text-align: center;">${format_currency(closing)}</h3>
-                ` : `
-                    <p>Buka Bank Reconciliation Tool untuk melakukan rekonsiliasi.</p>
-                    <p>Bank Account: <b>${frm.doc.bank_account || '-'}</b></p>
-                `;
-
-                frappe.msgprint({
-                    title: __('Panduan Bank Reconciliation'),
-                    message: msg,
-                    indicator: 'blue',
-                    primary_action: {
-                        label: __('Buka Bank Reconciliation Tool'),
-                        action: function() {
-                            localStorage.setItem('bci_prefill', JSON.stringify({
-                                company: frm.doc.company,
-                                bank_account: frm.doc.bank_account,
-                                from_date: from_date,
-                                to_date: to_date,
-                                closing_balance: closing,
-                            }));
-                            frappe.set_route('Form', 'Bank Reconciliation Tool');
-                        }
+            frm.add_custom_button(__('Auto Reconcile Statement Detail'), function() {
+                frappe.call({
+                    method: 'imogi_finance.imogi_finance.doctype.bank_statement.bank_statement.auto_reconcile_statement_details',
+                    args: { docname: frm.doc.name },
+                    freeze: true,
+                    freeze_message: __('Mencocokkan transaksi statement dengan GL Entry...'),
+                    callback: function(r) {
+                        const info = r.message || {};
+                        frappe.msgprint({
+                            title: __('Auto Reconcile Selesai'),
+                            indicator: 'green',
+                            message: __('Reconciled: {0}<br>Unmatched: {1}<br>Total Row: {2}', [
+                                info.reconciled || 0,
+                                info.unmatched || 0,
+                                info.total || 0
+                            ])
+                        });
+                        frm.reload_doc();
                     }
                 });
-            }, __('Actions'));
-        }
-        else if (frm.doc.status === 'Failed') frm.page.set_indicator(__('Failed'), 'red');
-        else if (frm.doc.status === 'Processing') frm.page.set_indicator(__('Processing'), 'blue');
+            }, __('Actions')).addClass('btn-primary');
 
-        function format_currency(value) {
-            return 'Rp ' + (value || 0).toLocaleString('id-ID', {minimumFractionDigits: 2});
+            frm.add_custom_button(__('Reset Reconcile'), function() {
+                frappe.confirm(__('Reset semua status reconcile pada Statement Detail?'), function() {
+                    frappe.call({
+                        method: 'imogi_finance.imogi_finance.doctype.bank_statement.bank_statement.reset_reconcile_statement_details',
+                        args: { docname: frm.doc.name },
+                        freeze: true,
+                        freeze_message: __('Mereset status reconcile...'),
+                        callback: function(r) {
+                            frappe.show_alert({
+                                message: __('Berhasil reset {0} row reconcile', [r.message?.reset || 0]),
+                                indicator: 'orange'
+                            });
+                            frm.reload_doc();
+                        }
+                    });
+                });
+            }, __('Actions'));
+        } else if (frm.doc.status === 'Failed') {
+            frm.page.set_indicator(__('Failed'), 'red');
+        } else if (frm.doc.status === 'Processing') {
+            frm.page.set_indicator(__('Processing'), 'blue');
         }
     },
 
@@ -107,5 +104,5 @@ frappe.ui.form.on('Bank Statement', {
                 }
             });
         }
-    }
+    },
 });

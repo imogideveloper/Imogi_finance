@@ -177,8 +177,25 @@ def filter_workspace_content_blocks(
 ) -> list:
 	"""Remove hidden sections from workspace EditorJS content (headers, cards, shortcuts)."""
 	rules = get_hidden_rules(workspace_name, user)
-	if not rules:
+	if not blocks:
 		return blocks
+	def normalize_block(block: dict) -> dict:
+		"""Normalize unsupported EditorJS block types for Desk renderer."""
+		if not isinstance(block, dict):
+			return block
+		block_type = block.get("type")
+		if block_type != "text":
+			return block
+		data = block.get("data") or {}
+		text = data.get("text")
+		if not text:
+			return block
+		normalized = dict(block)
+		normalized["type"] = "paragraph"
+		normalized["data"] = {"text": text}
+		return normalized
+	blocks = [normalize_block(block) for block in blocks]
+	if not rules:
 
 	section_keys = {rule["label_key"] for rule in rules}
 	card_keys = {rule["label_key"] for rule in rules if rule["hide_card_section"]}

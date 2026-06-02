@@ -1,5 +1,5 @@
 """
-API untuk Bank CSV Import
+API untuk Bank Statement
 Mendukung semua bank via konfigurasi Bank Statement Bank List
 """
 
@@ -13,36 +13,40 @@ from frappe import _
 @frappe.whitelist()
 def run_import(docname):
     """Jalankan import CSV dan buat Bank Transactions."""
-    doc = frappe.get_doc("Bank CSV Import", docname)
+    doc = frappe.get_doc("Bank Statement", docname)
 
     if doc.status == "Processing":
         frappe.throw(_("Import sudah berjalan."))
 
     # Update status
-    frappe.db.set_value("Bank CSV Import", docname, "status", "Processing")
+    frappe.db.set_value("Bank Statement", docname, "status", "Processing", update_modified=False)
     frappe.db.commit()
 
     try:
         result = _process_import(doc)
 
-        frappe.db.set_value("Bank CSV Import", docname, {
-            "status": "Completed",
-            "total_rows": result["total"],
-            "created_rows": result["created"],
-            "skipped_rows": result["skipped"],
-            "error_rows": result["errors"],
-            "import_log": result["log"],
-            "opening_balance": result.get("opening_balance", 0),
-            "closing_balance": result.get("closing_balance", 0),
-            "statement_from_date": result.get("statement_from_date"),
-            "statement_to_date": result.get("statement_to_date"),
-        })
+        # Reload dokumen terbaru agar tidak terkena TimestampMismatchError.
+        latest_doc = frappe.get_doc("Bank Statement", docname)
+        latest_doc.status = "Completed"
+        latest_doc.total_rows = result["total"]
+        latest_doc.created_rows = result["created"]
+        latest_doc.skipped_rows = result["skipped"]
+        latest_doc.error_rows = result["errors"]
+        latest_doc.import_log = result["log"]
+        latest_doc.opening_balance = result.get("opening_balance", 0)
+        latest_doc.closing_balance = result.get("closing_balance", 0)
+        latest_doc.statement_from_date = result.get("statement_from_date")
+        latest_doc.statement_to_date = result.get("statement_to_date")
+        latest_doc.set("statement_details", [])
+        for row in result.get("statement_details", []):
+            latest_doc.append("statement_details", row)
+        latest_doc.save(ignore_permissions=True)
         frappe.db.commit()
 
         return result
 
     except Exception as e:
-        frappe.db.set_value("Bank CSV Import", docname, {
+        frappe.db.set_value("Bank Statement", docname, {
             "status": "Failed",
             "import_log": str(e),
         })
@@ -57,7 +61,7 @@ def _get_previous_closing_balance(bank_account, current_docname):
     """
     prev = frappe.db.sql("""
         SELECT closing_balance, statement_to_date
-        FROM `tabBank CSV Import`
+        FROM `tabBank Statement`
         WHERE bank_account = %s
           AND status = 'Completed'
           AND name != %s
@@ -73,7 +77,8 @@ def _get_previous_closing_balance(bank_account, current_docname):
 
 
 def _process_import(doc):
-    """Parse CSV dan buat Bank Transactions."""
+    """Parse CSV dan simpan ke Statement Detail."""
+    statement_details = []
     # Load konfigurasi bank
     config = frappe.get_doc("Bank Statement Bank List", doc.bank)
 
@@ -252,50 +257,47 @@ def _process_import(doc):
             total_debit += debit
             total_credit += credit
 
-            # Cek duplikat — cek date + amount saja, description diabaikan
-            existing_count = frappe.db.count('Bank Transaction', {
-                'date': posting_date,
-                'bank_account': doc.bank_account,
-                'deposit': credit,
-                'withdrawal': debit,
-            })
+            # Cek duplikat di sesi import yang sama (date + amount)
             current_session_key = f'{posting_date}|{credit}|{debit}'
             if not hasattr(doc, '_import_session_counts'):
                 doc._import_session_counts = {}
             session_count = doc._import_session_counts.get(current_session_key, 0)
-            if existing_count > session_count:
+            if session_count > 0:
                 log_lines.append(f'Row {row_idx}: Duplikat - {posting_date} {description[:30]}')
                 skipped += 1
+                statement_details.append({
+                    "posting_date": posting_date,
+                    "description": description,
+                    "reference_number": reference_number,
+                    "deposit": credit,
+                    "withdrawal": debit,
+                    "import_status": "Skipped Duplicate",
+                    "import_row_no": row_idx,
+                })
                 continue
             doc._import_session_counts[current_session_key] = session_count + 1
 
-            # Buat Bank Transaction
-            bt = frappe.get_doc({
-                "doctype": "Bank Transaction",
-                "date": posting_date,
-                "bank_account": doc.bank_account,
-                "company": doc.company,
+            created += 1
+            log_lines.append(f"Row {row_idx}: OK - {posting_date} | {description[:40]} | D:{debit} C:{credit}")
+            statement_details.append({
+                "posting_date": posting_date,
                 "description": description,
                 "reference_number": reference_number,
                 "deposit": credit,
                 "withdrawal": debit,
-                "currency": (
-                    frappe.db.get_value("Account",
-                        frappe.db.get_value("Bank Account", doc.bank_account, "account"),
-                        "account_currency"
-                    ) or "IDR"
-                ),
+                "import_status": "Created",
+                "import_row_no": row_idx,
             })
-            bt.insert(ignore_permissions=True)
-            bt.submit()
-
-            created += 1
-            log_lines.append(f"Row {row_idx}: OK - {posting_date} | {description[:40]} | D:{debit} C:{credit}")
 
         except Exception as e:
             errors += 1
             log_lines.append(f"Row {row_idx}: ERROR - {str(e)}")
-            frappe.log_error(f"Bank CSV Import Row {row_idx}: {str(e)}")
+            frappe.log_error(f"Bank Statement Row {row_idx}: {str(e)}")
+            statement_details.append({
+                "description": str(e),
+                "import_status": "Error",
+                "import_row_no": row_idx,
+            })
 
     # ── Kalkulasi From/To Date dari transaksi ──────────────────
     statement_from_date = None
@@ -363,6 +365,7 @@ def _process_import(doc):
         "closing_balance": closing_balance,
         "statement_from_date": statement_from_date,
         "statement_to_date": statement_to_date,
+        "statement_details": statement_details,
     }
 
 
