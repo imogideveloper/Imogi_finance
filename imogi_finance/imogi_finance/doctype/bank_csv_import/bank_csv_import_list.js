@@ -36,3 +36,5 @@ frappe.listview_settings['Bank Statement'] = {
         };
     },
 };
+
+frappe.listview_settings['Bank CSV Import'] = frappe.listview_settings['Bank Statement'];

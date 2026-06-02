@@ -77,3 +77,4 @@ imogi_finance.patches.update_has_bpjs_description
 imogi_finance.patches.remove_duplicate_exempt_from_bpjs
 imogi_finance.patches.populate_payroll_entry_summary
 imogi_finance.patches.remove_has_bpjs_field
+imogi_finance.patches.post_model_sync.rename_bank_csv_import_to_bank_statement

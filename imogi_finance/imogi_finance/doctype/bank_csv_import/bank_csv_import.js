@@ -1,4 +1,4 @@
-frappe.ui.form.on('Bank Statement', {
+frappe.ui.form.on(['Bank Statement', 'Bank CSV Import'], {
     refresh(frm) {
         if (frm.doc.status !== 'Processing') {
             frm.add_custom_button(__('Import CSV'), function() {
