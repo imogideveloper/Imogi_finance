@@ -196,6 +196,7 @@ def filter_workspace_content_blocks(
 		return normalized
 	blocks = [normalize_block(block) for block in blocks]
 	if not rules:
+		return blocks
 
 	section_keys = {rule["label_key"] for rule in rules}
 	card_keys = {rule["label_key"] for rule in rules if rule["hide_card_section"]}
