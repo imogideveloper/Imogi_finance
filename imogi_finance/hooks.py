@@ -43,7 +43,7 @@ doctype_js = {
         "public/js/sales_invoice_tax_invoice.js",
         "public/js/payment_reconciliation_helper.js",
         "public/js/sales_invoice_down_payment.js",
-        "public/js/item_tax_mapping.js",   
+        "public/js/item_tax_mapping.js",
     ],
     "Delivery Order Towing": "public/js/delivery_order_towing.js",
     "Workspace UI Settings": "public/js/workspace_ui_settings.js",

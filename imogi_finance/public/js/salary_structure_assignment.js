@@ -61,6 +61,12 @@ function render_contract_history(frm) {
 		return;
 	}
 
+	if (frm.is_new()) {                                 // ← tambahkan blok ini
+		set_contract_history_section_visible(frm, false);
+		return;
+	}
+
+
 	if (!frm.doc.employee) {
 		set_contract_history_section_visible(frm, false);
 		return;

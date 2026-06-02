@@ -14,13 +14,8 @@ def execute(filters: dict | None = None):
 	filters = frappe._dict(filters or {})
 	validate_filters(filters)
 
-	summary = get_kpi_summary(filters)
-	report_summary = build_report_summary(summary, filters.company)
-	chart = build_cash_chart(summary)
-	columns = get_columns()
-	data = get_detail_rows(filters)
-
-	return columns, data, None, chart, report_summary
+	# Cards-only dashboard: no table, KPI summary, or chart.
+	return [], [], None, None, None
 
 
 def validate_filters(filters: frappe._dict):
@@ -48,16 +43,32 @@ def get_finance_monitor_cards(company: str) -> dict[str, Any]:
 def build_card_payload(summary: dict[str, Any]) -> dict[str, Any]:
 	return {
 		"currency": summary.get("currency"),
-		"unpaid": {
-			"count": summary["unpaid_invoice_count"],
-			"amount": summary["ar_outstanding"],
+		"sales": {
+			"title": _("Customer Invoices"),
+			"doctype": "Sales Invoice",
+			"unpaid": {
+				"count": summary["unpaid_invoice_count"],
+				"amount": summary["ar_outstanding"],
+			},
+			"late": {
+				"count": summary["late_invoice_count"],
+				"amount": summary["late_outstanding"],
+			},
+			"aging_buckets": summary.get("aging_buckets") or {},
 		},
-		"late": {
-			"count": summary["late_invoice_count"],
-			"amount": summary["late_outstanding"],
+		"purchase": {
+			"title": _("Supplier Invoices"),
+			"doctype": "Purchase Invoice",
+			"unpaid": {
+				"count": summary["unpaid_pi_count"],
+				"amount": summary["ap_outstanding"],
+			},
+			"late": {
+				"count": summary["late_pi_count"],
+				"amount": summary["late_ap_outstanding"],
+			},
+			"aging_buckets": summary.get("payable_aging_buckets") or {},
 		},
-		"aging_buckets": summary.get("aging_buckets") or {},
-		"so_partly_billed_count": summary.get("so_partly_billed_count", 0),
 	}
 
 
@@ -67,31 +78,10 @@ def get_kpi_summary(filters: frappe._dict) -> dict[str, Any]:
 	to_date = filters.to_date
 	currency = frappe.get_cached_value("Company", company, "default_currency")
 
-	ar_outstanding = frappe.db.sql(
-		"""
-		SELECT COALESCE(SUM(outstanding_amount), 0) AS total, COUNT(*) AS cnt
-		FROM `tabSales Invoice`
-		WHERE docstatus = 1
-		  AND company = %s
-		  AND IFNULL(outstanding_amount, 0) > 0.005
-		""",
-		company,
-		as_dict=True,
-	)[0]
-
-	late = frappe.db.sql(
-		"""
-		SELECT COALESCE(SUM(outstanding_amount), 0) AS total, COUNT(*) AS cnt
-		FROM `tabSales Invoice`
-		WHERE docstatus = 1
-		  AND company = %s
-		  AND IFNULL(outstanding_amount, 0) > 0.005
-		  AND due_date IS NOT NULL
-		  AND due_date < %s
-		""",
-		(company, today()),
-		as_dict=True,
-	)[0]
+	ar_outstanding = _invoice_outstanding_summary("Sales Invoice", company)
+	late = _invoice_late_summary("Sales Invoice", company)
+	ap_outstanding = _invoice_outstanding_summary("Purchase Invoice", company)
+	late_pi = _invoice_late_summary("Purchase Invoice", company)
 
 	cash_in = frappe.db.sql(
 		"""
@@ -129,10 +119,34 @@ def get_kpi_summary(filters: frappe._dict) -> dict[str, Any]:
 		(company, from_date, to_date),
 	)[0][0]
 
+	purchase_invoiced = frappe.db.sql(
+		"""
+		SELECT COALESCE(SUM(grand_total), 0) AS total
+		FROM `tabPurchase Invoice`
+		WHERE docstatus = 1
+		  AND company = %s
+		  AND is_return = 0
+		  AND posting_date BETWEEN %s AND %s
+		""",
+		(company, from_date, to_date),
+	)[0][0]
+
 	so_partly = frappe.db.sql(
 		"""
 		SELECT COUNT(*) AS cnt
 		FROM `tabSales Order`
+		WHERE docstatus = 1
+		  AND company = %s
+		  AND IFNULL(per_billed, 0) < 99.999
+		  AND status NOT IN ('Closed', 'Cancelled')
+		""",
+		company,
+	)[0][0]
+
+	po_partly = frappe.db.sql(
+		"""
+		SELECT COUNT(*) AS cnt
+		FROM `tabPurchase Order`
 		WHERE docstatus = 1
 		  AND company = %s
 		  AND IFNULL(per_billed, 0) < 99.999
@@ -147,15 +161,54 @@ def get_kpi_summary(filters: frappe._dict) -> dict[str, Any]:
 		"unpaid_invoice_count": int(ar_outstanding.cnt or 0),
 		"late_outstanding": flt(late.total),
 		"late_invoice_count": int(late.cnt or 0),
+		"ap_outstanding": flt(ap_outstanding.total),
+		"unpaid_pi_count": int(ap_outstanding.cnt or 0),
+		"late_ap_outstanding": flt(late_pi.total),
+		"late_pi_count": int(late_pi.cnt or 0),
 		"cash_in": flt(cash_in),
 		"cash_out": flt(cash_out),
 		"sales_invoiced": flt(sales_invoiced),
+		"purchase_invoiced": flt(purchase_invoiced),
 		"so_partly_billed_count": int(so_partly or 0),
-		"aging_buckets": get_receivable_aging_buckets(company),
+		"po_partly_billed_count": int(po_partly or 0),
+		"aging_buckets": get_invoice_aging_buckets("Sales Invoice", company),
+		"payable_aging_buckets": get_invoice_aging_buckets("Purchase Invoice", company),
 	}
 
 
-def get_receivable_aging_buckets(company: str) -> dict[str, float]:
+def _invoice_outstanding_summary(doctype: str, company: str) -> frappe._dict:
+	table = f"tab{doctype}"
+	return frappe.db.sql(
+		f"""
+		SELECT COALESCE(SUM(outstanding_amount), 0) AS total, COUNT(*) AS cnt
+		FROM `{table}`
+		WHERE docstatus = 1
+		  AND company = %s
+		  AND IFNULL(outstanding_amount, 0) > 0.005
+		""",
+		company,
+		as_dict=True,
+	)[0]
+
+
+def _invoice_late_summary(doctype: str, company: str) -> frappe._dict:
+	table = f"tab{doctype}"
+	return frappe.db.sql(
+		f"""
+		SELECT COALESCE(SUM(outstanding_amount), 0) AS total, COUNT(*) AS cnt
+		FROM `{table}`
+		WHERE docstatus = 1
+		  AND company = %s
+		  AND IFNULL(outstanding_amount, 0) > 0.005
+		  AND due_date IS NOT NULL
+		  AND due_date < %s
+		""",
+		(company, today()),
+		as_dict=True,
+	)[0]
+
+
+def get_invoice_aging_buckets(doctype: str, company: str) -> dict[str, float]:
 	"""Outstanding amount by days past due (based on due_date)."""
 	buckets = {
 		"not_due": 0.0,
@@ -165,10 +218,11 @@ def get_receivable_aging_buckets(company: str) -> dict[str, float]:
 		"days_60_plus": 0.0,
 	}
 
+	table = f"tab{doctype}"
 	rows = frappe.db.sql(
-		"""
+		f"""
 		SELECT outstanding_amount, due_date
-		FROM `tabSales Invoice`
+		FROM `{table}`
 		WHERE docstatus = 1
 		  AND company = %s
 		  AND IFNULL(outstanding_amount, 0) > 0.005
@@ -205,23 +259,35 @@ def build_report_summary(summary: dict[str, Any], company: str):
 			"indicator": "Red" if summary["ar_outstanding"] > 0 else "Green",
 		},
 		{
+			"value": summary["ap_outstanding"],
+			"label": _("Total Payable (Outstanding)"),
+			"datatype": "Currency",
+			"currency": currency,
+			"indicator": "Red" if summary["ap_outstanding"] > 0 else "Green",
+		},
+		{
 			"value": summary["unpaid_invoice_count"],
-			"label": _("Unpaid Invoices"),
+			"label": _("Unpaid Sales Invoices"),
 			"datatype": "Int",
 			"indicator": "Orange" if summary["unpaid_invoice_count"] else "Green",
 		},
 		{
+			"value": summary["unpaid_pi_count"],
+			"label": _("Unpaid Purchase Invoices"),
+			"datatype": "Int",
+			"indicator": "Orange" if summary["unpaid_pi_count"] else "Green",
+		},
+		{
 			"value": summary["late_invoice_count"],
-			"label": _("Late Invoices"),
+			"label": _("Late Sales Invoices"),
 			"datatype": "Int",
 			"indicator": "Red" if summary["late_invoice_count"] else "Green",
 		},
 		{
-			"value": summary["late_outstanding"],
-			"label": _("Late Amount"),
-			"datatype": "Currency",
-			"currency": currency,
-			"indicator": "Red" if summary["late_outstanding"] > 0 else "Green",
+			"value": summary["late_pi_count"],
+			"label": _("Late Purchase Invoices"),
+			"datatype": "Int",
+			"indicator": "Red" if summary["late_pi_count"] else "Green",
 		},
 		{
 			"value": summary["cash_in"],
@@ -245,10 +311,23 @@ def build_report_summary(summary: dict[str, Any], company: str):
 			"indicator": "Blue",
 		},
 		{
+			"value": summary["purchase_invoiced"],
+			"label": _("Purchase Invoiced (Period)"),
+			"datatype": "Currency",
+			"currency": currency,
+			"indicator": "Blue",
+		},
+		{
 			"value": summary["so_partly_billed_count"],
 			"label": _("SO Partly Billed"),
 			"datatype": "Int",
 			"indicator": "Orange" if summary["so_partly_billed_count"] else "Green",
+		},
+		{
+			"value": summary["po_partly_billed_count"],
+			"label": _("PO Partly Billed"),
+			"datatype": "Int",
+			"indicator": "Orange" if summary["po_partly_billed_count"] else "Green",
 		},
 	]
 
@@ -256,7 +335,7 @@ def build_report_summary(summary: dict[str, Any], company: str):
 def build_cash_chart(summary: dict[str, Any]):
 	return {
 		"data": {
-			"labels": [_("Cash In"), _("Cash Out"), _("Sales Invoiced")],
+			"labels": [_("Cash In"), _("Cash Out"), _("Sales Invoiced"), _("Purchase Invoiced")],
 			"datasets": [
 				{
 					"name": _("Amount"),
@@ -264,12 +343,13 @@ def build_cash_chart(summary: dict[str, Any]):
 						summary["cash_in"],
 						summary["cash_out"],
 						summary["sales_invoiced"],
+						summary["purchase_invoiced"],
 					],
 				}
 			],
 		},
 		"type": "bar",
-		"colors": ["#28a745", "#dc3545", "#5e64ff"],
+		"colors": ["#28a745", "#dc3545", "#5e64ff", "#17a2b8"],
 		"fieldtype": "Currency",
 	}
 
@@ -315,7 +395,7 @@ def get_columns():
 			"hidden": 1,
 			"width": 100,
 		},
-		{"fieldname": "customer", "label": _("Customer"), "fieldtype": "Link", "options": "Customer", "width": 160},
+		{"fieldname": "party", "label": _("Customer / Supplier"), "fieldtype": "Data", "width": 160},
 		{"fieldname": "posting_date", "label": _("Date"), "fieldtype": "Date", "width": 100},
 		{"fieldname": "due_date", "label": _("Due Date"), "fieldtype": "Date", "width": 100},
 		{"fieldname": "grand_total", "label": _("Amount / Order Total"), "fieldtype": "Currency", "width": 140},
@@ -371,6 +451,7 @@ def get_detail_rows(filters: frappe._dict) -> list[dict]:
 				"document": inv.document,
 				"reference_doctype": "Sales Invoice",
 				"customer": inv.customer,
+				"party": inv.customer,
 				"posting_date": inv.posting_date,
 				"due_date": inv.due_date,
 				"grand_total": inv.grand_total,
@@ -423,6 +504,7 @@ def get_detail_rows(filters: frappe._dict) -> list[dict]:
 				"document": so.document,
 				"reference_doctype": "Sales Order",
 				"customer": so.customer,
+				"party": so.customer,
 				"posting_date": so.posting_date,
 				"due_date": None,
 				"grand_total": so.grand_total,
@@ -435,6 +517,101 @@ def get_detail_rows(filters: frappe._dict) -> list[dict]:
 
 	if not orders:
 		rows.append(_empty_row(_("No partly billed sales orders.")))
+
+	rows.append(_section_row(_("Outstanding Purchase Invoices (Top 50)")))
+
+	purchase_invoices = frappe.db.sql(
+		"""
+		SELECT
+			name AS document,
+			supplier,
+			posting_date,
+			due_date,
+			grand_total,
+			outstanding_amount,
+			status,
+			CASE
+				WHEN due_date IS NOT NULL AND due_date < %(today)s
+				THEN DATEDIFF(%(today)s, due_date)
+				ELSE 0
+			END AS late_days
+		FROM `tabPurchase Invoice`
+		WHERE docstatus = 1
+		  AND company = %(company)s
+		  AND IFNULL(outstanding_amount, 0) > 0.005
+		ORDER BY late_days DESC, outstanding_amount DESC
+		LIMIT 50
+		""",
+		{"company": company, "today": today_str},
+		as_dict=True,
+	)
+
+	for inv in purchase_invoices:
+		rows.append(
+			{
+				"row_type": _("Outstanding Purchase Invoice"),
+				"document": inv.document,
+				"reference_doctype": "Purchase Invoice",
+				"customer": "",
+				"party": inv.supplier,
+				"posting_date": inv.posting_date,
+				"due_date": inv.due_date,
+				"grand_total": inv.grand_total,
+				"outstanding_amount": inv.outstanding_amount,
+				"per_billed": None,
+				"late_days": int(inv.late_days or 0),
+				"status": inv.status,
+			}
+		)
+
+	if not purchase_invoices:
+		rows.append(_empty_row(_("No outstanding purchase invoices.")))
+
+	rows.append(_section_row(_("Purchase Orders — Partly Billed")))
+
+	po_orders = frappe.db.sql(
+		"""
+		SELECT
+			name AS document,
+			supplier,
+			transaction_date AS posting_date,
+			grand_total,
+			per_billed,
+			status
+		FROM `tabPurchase Order`
+		WHERE docstatus = 1
+		  AND company = %(company)s
+		  AND IFNULL(per_billed, 0) < 99.999
+		  AND status NOT IN ('Closed', 'Cancelled')
+		ORDER BY transaction_date DESC
+		LIMIT 50
+		""",
+		{"company": company},
+		as_dict=True,
+	)
+
+	for po in po_orders:
+		per_billed = flt(po.per_billed)
+		unbilled_est = flt(po.grand_total) * (100 - per_billed) / 100
+		rows.append(
+			{
+				"row_type": _("Partly Billed PO"),
+				"document": po.document,
+				"reference_doctype": "Purchase Order",
+				"customer": "",
+				"party": po.supplier,
+				"posting_date": po.posting_date,
+				"due_date": None,
+				"grand_total": po.grand_total,
+				"outstanding_amount": unbilled_est,
+				"per_billed": per_billed,
+				"late_days": None,
+				"status": po.status,
+			}
+		)
+
+	if not po_orders:
+		rows.append(_empty_row(_("No partly billed purchase orders.")))
 
 	return rows
 

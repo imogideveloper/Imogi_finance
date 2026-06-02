@@ -4,24 +4,26 @@ const FM_CARD_METHOD =
 	"imogi_finance.imogi_finance.report.finance_monitor_dashboard.finance_monitor_dashboard.get_finance_monitor_cards";
 
 function fm_inject_card_styles() {
-	if (document.getElementById("imogi-finance-monitor-card-style")) return;
+	if (document.getElementById("imogi-finance-monitor-card-style-v8")) return;
 	const style = document.createElement("style");
-	style.id = "imogi-finance-monitor-card-style";
+	style.id = "imogi-finance-monitor-card-style-v8";
 	style.textContent = `
-		.imogi-fm-cards{margin:12px 0 16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-		.imogi-fm-card{border:1px solid var(--border-color);border-radius:var(--border-radius-lg);padding:14px 16px;background:var(--card-bg);cursor:pointer;transition:box-shadow .15s,border-color .15s}
-		.imogi-fm-card:hover{box-shadow:var(--shadow-sm);border-color:var(--primary)}
-		.imogi-fm-card__label{font-size:12px;color:var(--text-muted);margin-bottom:6px}
-		.imogi-fm-card__count{font-size:26px;font-weight:700;line-height:1.2}
-		.imogi-fm-card__amount{font-size:13px;margin-top:4px;color:var(--text-color)}
-		.imogi-fm-card--late{border-left:4px solid #dc3545}
-		.imogi-fm-card--unpaid{border-left:4px solid #f0ad4e}
-		.imogi-fm-aging{margin:0 0 16px;padding:14px 16px;border:1px solid var(--border-color);border-radius:var(--border-radius-lg);background:var(--card-bg)}
-		.imogi-fm-aging h6{margin:0 0 12px;font-size:13px;font-weight:600}
-		.imogi-fm-aging__bars{display:flex;align-items:flex-end;gap:8px;height:72px}
-		.imogi-fm-aging__bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
-		.imogi-fm-aging__fill{width:100%;max-width:48px;border-radius:4px 4px 0 0;background:var(--primary);min-height:2px}
-		.imogi-fm-aging__lbl{font-size:10px;color:var(--text-muted);text-align:center;line-height:1.2}
+		.imogi-fm-dashboard .datatable,
+		.imogi-fm-dashboard .report-wrapper,
+		.imogi-fm-dashboard .report-footer,
+		.imogi-fm-dashboard .report-summary,
+		.imogi-fm-dashboard .chart-wrapper{display:none!important}
+		.imogi-fm-cards{display:flex;flex-wrap:wrap;gap:16px;margin:16px 0;align-items:flex-start}
+		.imogi-fm-invoice-card{width:min(100%,500px);max-width:500px;flex:0 0 auto;border-radius:var(--border-radius-lg);overflow:hidden;display:flex;flex-direction:column;border:1px solid #e2e5e9;background:#f8f9fa;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+		.imogi-fm-invoice-card__header{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#f0f1f3;border-bottom:1px solid #e2e5e9}
+		.imogi-fm-invoice-card__icon{font-size:18px;line-height:1;color:#6c757d}
+		.imogi-fm-invoice-card__title{font-size:15px;font-weight:600;margin:0;flex:1;color:#364152}
+		.imogi-fm-invoice-card__metrics{display:grid;grid-template-columns:auto auto;column-gap:28px;row-gap:12px;justify-content:end;align-items:baseline;padding:12px 16px 14px}
+		.imogi-fm-metric__link{font-size:15px;font-weight:500;color:var(--primary);text-decoration:none;cursor:pointer;justify-self:end;text-align:right;white-space:nowrap}
+		.imogi-fm-metric__link:hover{text-decoration:none;color:var(--primary)}
+		.imogi-fm-metric__amount{font-size:20px;font-weight:700;line-height:1.25;letter-spacing:-.02em;white-space:nowrap;justify-self:end;text-align:right}
+		.imogi-fm-metric__amount--unpaid{color:#059669}
+		.imogi-fm-metric__amount--late{color:#dc3545}
 	`;
 	document.head.appendChild(style);
 }
@@ -33,11 +35,27 @@ function fm_format_currency(amount, currency) {
 	});
 }
 
+function fm_ensure_cards_host($main) {
+	let $host = $main.find(".imogi-fm-cards-host");
+	if (!$host.length) {
+		$host = $('<div class="imogi-fm-cards-host"></div>');
+	}
+	const $filters = $main.find(".page-form").first();
+	if ($filters.length) {
+		$host.insertAfter($filters);
+	} else {
+		$main.prepend($host);
+	}
+	return $host;
+}
+
 function fm_render_cards(report) {
 	const company = report.get_filter_value("company");
 	if (!company) return;
 
 	fm_inject_card_styles();
+	report.page.main.addClass("imogi-fm-dashboard");
+	fm_hide_report_chrome(report);
 
 	frappe.call({
 		method: FM_CARD_METHOD,
@@ -45,113 +63,152 @@ function fm_render_cards(report) {
 		callback(r) {
 			if (!r.message) return;
 			const $main = report.page.main;
-			let $host = $main.find(".imogi-fm-cards-host");
-			if (!$host.length) {
-				$host = $('<div class="imogi-fm-cards-host"></div>');
-				const $summary = $main.find(".report-summary");
-				if ($summary.length) {
-					$summary.after($host);
-				} else {
-					$main.prepend($host);
-				}
-			}
+			const $host = fm_ensure_cards_host($main);
 			$host.html(fm_build_cards_html(r.message));
 			fm_bind_card_clicks(report);
+			fm_hide_report_chrome(report);
 		},
 	});
 }
 
+function fm_build_invoice_card(card, side, currency) {
+	const unpaid = card.unpaid || {};
+	const late = card.late || {};
+	const icon = side === "sales" ? "es-line-file" : "es-line-receipt";
+
+	return `
+		<div class="imogi-fm-invoice-card imogi-fm-invoice-card--${side}" data-side="${side}">
+			<div class="imogi-fm-invoice-card__header">
+				<span class="imogi-fm-invoice-card__icon">${frappe.utils.icon(icon, "md")}</span>
+				<h6 class="imogi-fm-invoice-card__title">${card.title}</h6>
+			</div>
+			<div class="imogi-fm-invoice-card__metrics">
+				<a href="#" class="imogi-fm-metric__link" data-route="${side}_unpaid">${unpaid.count || 0} ${__("Unpaid Invoices")}</a>
+				<span class="imogi-fm-metric__amount imogi-fm-metric__amount--unpaid">${fm_format_currency(unpaid.amount, currency)}</span>
+				<a href="#" class="imogi-fm-metric__link" data-route="${side}_late">${late.count || 0} ${__("Late Invoices")}</a>
+				<span class="imogi-fm-metric__amount imogi-fm-metric__amount--late">${fm_format_currency(late.amount, currency)}</span>
+			</div>
+		</div>`;
+}
+
 function fm_build_cards_html(data) {
 	const currency = data.currency;
-	const unpaid = data.unpaid || {};
-	const late = data.late || {};
-	const buckets = data.aging_buckets || {};
-	const max_bucket = Math.max(
-		1,
-		...["not_due", "days_1_7", "days_8_30", "days_31_60", "days_60_plus"].map((k) => flt(buckets[k]))
-	);
-
-	const bucket_defs = [
-		{ key: "not_due", label: __("Not Due"), color: "#5e64ff" },
-		{ key: "days_1_7", label: __("1–7 Late"), color: "#f0ad4e" },
-		{ key: "days_8_30", label: __("8–30 Late"), color: "#fd7e14" },
-		{ key: "days_31_60", label: __("31–60 Late"), color: "#dc3545" },
-		{ key: "days_60_plus", label: __("60+ Late"), color: "#721c24" },
-	];
-
-	const agingBars = bucket_defs
-		.map((b) => {
-			const val = flt(buckets[b.key]);
-			const pct = Math.round((val / max_bucket) * 100);
-			return `
-			<div class="imogi-fm-aging__bar" title="${frappe.utils.escape_html(fm_format_currency(val, currency))}">
-				<div class="imogi-fm-aging__fill" style="height:${pct}%;background:${b.color}"></div>
-				<div class="imogi-fm-aging__lbl">${b.label}</div>
-			</div>`;
-		})
-		.join("");
+	const sales = data.sales || {};
+	const purchase = data.purchase || {};
 
 	return `
 		<div class="imogi-fm-cards">
-			<div class="imogi-fm-card imogi-fm-card--unpaid" data-route="unpaid">
-				<div class="imogi-fm-card__label">${__("Unpaid Invoices")}</div>
-				<div class="imogi-fm-card__count">${unpaid.count || 0}</div>
-				<div class="imogi-fm-card__amount">${fm_format_currency(unpaid.amount, currency)}</div>
-			</div>
-			<div class="imogi-fm-card imogi-fm-card--late" data-route="late">
-				<div class="imogi-fm-card__label">${__("Late Invoices")}</div>
-				<div class="imogi-fm-card__count">${late.count || 0}</div>
-				<div class="imogi-fm-card__amount">${fm_format_currency(late.amount, currency)}</div>
-			</div>
-			<div class="imogi-fm-card" data-route="so_partly">
-				<div class="imogi-fm-card__label">${__("SO Partly Billed")}</div>
-				<div class="imogi-fm-card__count">${data.so_partly_billed_count || 0}</div>
-				<div class="imogi-fm-card__amount text-muted">${__("Open list")}</div>
-			</div>
-		</div>
-		<div class="imogi-fm-aging">
-			<h6>${__("Receivable aging (by due date)")}</h6>
-			<div class="imogi-fm-aging__bars">${agingBars}</div>
+			${fm_build_invoice_card(sales, "sales", currency)}
+			${fm_build_invoice_card(purchase, "purchase", currency)}
 		</div>
 	`;
+}
+
+function fm_open_invoice_list(doctype, company, filters) {
+	frappe.set_route("List", doctype, { company, docstatus: 1, ...filters });
 }
 
 function fm_bind_card_clicks(report) {
 	const company = report.get_filter_value("company");
 	const today = frappe.datetime.get_today();
+	const $main = report.page.main;
 
-	report.page.main.find(".imogi-fm-card").off("click.imogi_fm").on("click.imogi_fm", function () {
+	$main.find(".imogi-fm-metric__link").off("click.imogi_fm").on("click.imogi_fm", function (e) {
+		e.preventDefault();
 		const route = $(this).data("route");
-		if (route === "unpaid") {
-			frappe.set_route("List", "Sales Invoice", {
-				company,
-				outstanding_amount: [">", 0],
-				docstatus: 1,
-			});
-		} else if (route === "late") {
-			frappe.set_route("List", "Sales Invoice", {
-				company,
+		if (route === "sales_unpaid") {
+			fm_open_invoice_list("Sales Invoice", company, { outstanding_amount: [">", 0] });
+		} else if (route === "sales_late") {
+			fm_open_invoice_list("Sales Invoice", company, {
 				outstanding_amount: [">", 0],
 				due_date: ["<", today],
-				docstatus: 1,
 			});
-		} else if (route === "so_partly") {
-			frappe.set_route("List", "Sales Order", {
-				company,
-				per_billed: ["<", 100],
-				docstatus: 1,
+		} else if (route === "purchase_unpaid") {
+			fm_open_invoice_list("Purchase Invoice", company, { outstanding_amount: [">", 0] });
+		} else if (route === "purchase_late") {
+			fm_open_invoice_list("Purchase Invoice", company, {
+				outstanding_amount: [">", 0],
+				due_date: ["<", today],
 			});
 		}
 	});
 }
 
-function fm_open_late_invoices(report) {
-	frappe.set_route("List", "Sales Invoice", {
+function fm_open_late_invoices(report, doctype = "Sales Invoice") {
+	frappe.set_route("List", doctype, {
 		company: report.get_filter_value("company"),
 		outstanding_amount: [">", 0],
 		due_date: ["<", frappe.datetime.get_today()],
 		docstatus: 1,
 	});
+}
+
+function fm_hide_report_chrome(report) {
+	report.page.main.find(".report-summary, .chart-wrapper, .report-wrapper, .report-footer, .datatable").hide();
+	if (report.$message) report.$message.hide();
+	if (report.$report) report.$report.hide();
+}
+
+function fm_wrap_report_refresh(report) {
+	const finish = () => {
+		fm_hide_report_chrome(report);
+		fm_render_cards(report);
+	};
+
+	const original_refresh = report.refresh.bind(report);
+	report.refresh = function (...args) {
+		return original_refresh(...args).then((result) => {
+			finish();
+			return result;
+		});
+	};
+}
+
+function fm_setup_quick_links(report) {
+	const company = () => report.get_filter_value("company");
+	const period = () => [
+		report.get_filter_value("from_date"),
+		report.get_filter_value("to_date"),
+	];
+
+	const links = [
+		{
+			group: __("Customer"),
+			items: [
+				{ label: __("Unpaid Invoices"), action: () => fm_open_invoice_list("Sales Invoice", company(), { outstanding_amount: [">", 0] }) },
+				{ label: __("Late Invoices"), action: () => fm_open_late_invoices(report, "Sales Invoice") },
+				{ label: __("Partly Billed SO"), action: () => frappe.set_route("List", "Sales Order", { company: company(), per_billed: ["<", 100], docstatus: 1 }) },
+			],
+		},
+		{
+			group: __("Supplier"),
+			items: [
+				{ label: __("Unpaid Bills"), action: () => fm_open_invoice_list("Purchase Invoice", company(), { outstanding_amount: [">", 0] }) },
+				{ label: __("Late Bills"), action: () => fm_open_late_invoices(report, "Purchase Invoice") },
+				{ label: __("Partly Billed PO"), action: () => frappe.set_route("List", "Purchase Order", { company: company(), per_billed: ["<", 100], docstatus: 1 }) },
+			],
+		},
+		{
+			group: __("Cash"),
+			items: [
+				{
+					label: __("Payment Entries"),
+					action: () =>
+						frappe.set_route("List", "Payment Entry", {
+							company: company(),
+							posting_date: ["Between", period()],
+							docstatus: 1,
+						}),
+				},
+			],
+		},
+	];
+
+	for (const { group, items } of links) {
+		for (const { label, action } of items) {
+			report.page.add_inner_button(label, action, group);
+		}
+	}
 }
 
 frappe.query_reports["Finance Monitor Dashboard"] = {
@@ -181,75 +238,8 @@ frappe.query_reports["Finance Monitor Dashboard"] = {
 	],
 
 	onload(report) {
-		report.page.add_inner_button(__("Unpaid Invoices"), () => {
-			frappe.set_route("List", "Sales Invoice", {
-				company: report.get_filter_value("company"),
-				outstanding_amount: [">", 0],
-				docstatus: 1,
-			});
-		});
-
-		report.page.add_inner_button(__("Late Invoices"), () => fm_open_late_invoices(report));
-
-		report.page.add_inner_button(__("Partly Billed SO"), () => {
-			frappe.set_route("List", "Sales Order", {
-				company: report.get_filter_value("company"),
-				per_billed: ["<", 100],
-				docstatus: 1,
-			});
-		});
-
-		report.page.add_inner_button(__("Payment Entries"), () => {
-			frappe.set_route("List", "Payment Entry", {
-				company: report.get_filter_value("company"),
-				posting_date: [
-					"Between",
-					[report.get_filter_value("from_date"), report.get_filter_value("to_date")],
-				],
-				docstatus: 1,
-			});
-		});
-
+		fm_setup_quick_links(report);
+		fm_wrap_report_refresh(report);
 		fm_render_cards(report);
-	},
-
-	refresh(report) {
-		fm_render_cards(report);
-	},
-
-	formatter(value, row, column, data, default_formatter) {
-		if (data && (data.is_section || data.is_empty)) {
-			if (column.fieldname === "row_type") {
-				const style = data.is_section
-					? "font-weight:600;font-size:13px;padding:8px 0;color:var(--text-color)"
-					: "color:var(--text-muted);font-style:italic";
-				return `<span style="${style}">${frappe.utils.escape_html(data.row_type || "")}</span>`;
-			}
-			return "";
-		}
-
-		value = default_formatter(value, row, column, data);
-
-		if (column.fieldname === "outstanding_amount" && data && flt(data.outstanding_amount) > 0) {
-			return `<span style="color:#d9534f;font-weight:600">${value}</span>`;
-		}
-
-		if (column.fieldname === "late_days" && data && flt(data.late_days) > 0) {
-			const color = flt(data.late_days) > 30 ? "#dc3545" : "#f0ad4e";
-			return `<span style="color:${color};font-weight:600">${value}</span>`;
-		}
-
-		if (column.fieldname === "status" && data && data.status) {
-			const status = data.status;
-			const orange = ["Partially Paid", "Partial Paid", "Outstanding Invoice", "Partly Billed", "SI Created"];
-			const green = ["Paid", "Fully Billed"];
-			let color = "blue";
-			if (green.includes(status)) color = "green";
-			else if (orange.includes(status)) color = "orange";
-			else if (status === "Overdue" || status === "Unpaid") color = "red";
-			return `<span class="indicator-pill ${color}">${status}</span>`;
-		}
-
-		return value;
 	},
 };
