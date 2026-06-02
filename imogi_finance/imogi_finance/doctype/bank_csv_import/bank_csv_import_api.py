@@ -9,24 +9,39 @@ import io
 from frappe.utils.file_manager import get_file_path
 from frappe import _
 
+_BANK_STATEMENT_DTYPES = ("Bank Statement", "Bank CSV Import")
+
+
+def get_bank_statement_doctype() -> str:
+    """Resolve active doctype name (legacy Bank CSV Import vs Bank Statement)."""
+    for name in _BANK_STATEMENT_DTYPES:
+        if frappe.db.table_exists(f"tab{name}"):
+            return name
+    frappe.throw(_("DocType Bank Statement / Bank CSV Import tidak ditemukan."))
+
+
+def get_bank_statement_doc(docname: str):
+    return frappe.get_doc(get_bank_statement_doctype(), docname)
+
 
 @frappe.whitelist()
 def run_import(docname):
     """Jalankan import CSV dan buat Bank Transactions."""
-    doc = frappe.get_doc("Bank Statement", docname)
+    doctype = get_bank_statement_doctype()
+    doc = get_bank_statement_doc(docname)
 
     if doc.status == "Processing":
         frappe.throw(_("Import sudah berjalan."))
 
     # Update status
-    frappe.db.set_value("Bank Statement", docname, "status", "Processing", update_modified=False)
+    frappe.db.set_value(doctype, docname, "status", "Processing", update_modified=False)
     frappe.db.commit()
 
     try:
         result = _process_import(doc)
 
         # Reload dokumen terbaru agar tidak terkena TimestampMismatchError.
-        latest_doc = frappe.get_doc("Bank Statement", docname)
+        latest_doc = get_bank_statement_doc(docname)
         latest_doc.status = "Completed"
         latest_doc.total_rows = result["total"]
         latest_doc.created_rows = result["created"]
@@ -46,7 +61,7 @@ def run_import(docname):
         return result
 
     except Exception as e:
-        frappe.db.set_value("Bank Statement", docname, {
+        frappe.db.set_value(doctype, docname, {
             "status": "Failed",
             "import_log": str(e),
         })
@@ -59,9 +74,10 @@ def _get_previous_closing_balance(bank_account, current_docname):
     Ambil closing_balance dari BCI sebelumnya untuk bank account yang sama.
     Urut berdasarkan statement_to_date descending, ambil yang pertama.
     """
-    prev = frappe.db.sql("""
+    table = f"tab{get_bank_statement_doctype()}"
+    prev = frappe.db.sql(f"""
         SELECT closing_balance, statement_to_date
-        FROM `tabBank Statement`
+        FROM `{table}`
         WHERE bank_account = %s
           AND status = 'Completed'
           AND name != %s

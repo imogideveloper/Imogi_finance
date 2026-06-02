@@ -2,6 +2,10 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import now
 
+from imogi_finance.imogi_finance.doctype.bank_csv_import.bank_csv_import_api import (
+    get_bank_statement_doc,
+)
+
 
 class BankStatement(Document):
     pass
@@ -10,7 +14,7 @@ class BankStatement(Document):
 @frappe.whitelist()
 def auto_reconcile_statement_details(docname: str):
     """Auto-match Statement Detail rows against GL Entry on bank account."""
-    doc = frappe.get_doc("Bank Statement", docname)
+    doc = get_bank_statement_doc(docname)
     account = frappe.db.get_value("Bank Account", doc.bank_account, "account")
     if not account:
         frappe.throw("Akun GL untuk Bank Account tidak ditemukan.")
@@ -65,7 +69,7 @@ def auto_reconcile_statement_details(docname: str):
 
 @frappe.whitelist()
 def reset_reconcile_statement_details(docname: str):
-    doc = frappe.get_doc("Bank Statement", docname)
+    doc = get_bank_statement_doc(docname)
     reset_count = 0
     for row in doc.statement_details or []:
         if row.is_reconciled:
