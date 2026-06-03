@@ -184,6 +184,38 @@ def get_gl_account(
     return None
 
 
+def get_driver_commission_expense_account(company: str) -> str:
+	"""Expense account for Purchase Invoice komisi driver (towing).
+
+	Lookup: Finance Control Settings → GL Account Mappings → driver_commission_expense
+	(per company, lalu global). Fallback: Expense Account / root_type Expense.
+	"""
+	from imogi_finance.settings.gl_purposes import DRIVER_COMMISSION_EXPENSE
+
+	account = get_gl_account(DRIVER_COMMISSION_EXPENSE, company=company, required=False)
+	if account:
+		return account
+
+	for filters in (
+		{"account_type": "Expense Account"},
+		{"root_type": "Expense"},
+	):
+		name = frappe.db.get_value(
+			"Account", {"company": company, "is_group": 0, **filters}, "name"
+		)
+		if name:
+			return name
+
+	frappe.throw(
+		_(
+			"Akun beban komisi driver belum diatur. Tambahkan baris purpose "
+			"'driver_commission_expense' di Finance Control Settings → GL Account Mappings "
+			"(pilih akun per Company towing Anda)."
+		),
+		title=_("Missing GL Account Mapping"),
+	)
+
+
 def get_tax_profile(company: str) -> frappe.Document:
     """Get Tax Profile for a company.
     

@@ -21,8 +21,8 @@
       "in_list_view": 1,
       "label": "Purpose",
       "reqd": 1,
-      "options": "digital_stamp_expense\ndigital_stamp_payment\ndefault_paid_from\ndefault_prepaid\ndpp_variance\nppn_variance",
-      "description": "Purpose/reason for this GL account mapping:\n\n• digital_stamp_expense: GL account to post digital stamp/materai costs\n• digital_stamp_payment: GL account where stamp payment comes from (cash/bank)\n• default_paid_from: Default account for bank transfer source (paid from account)\n• default_prepaid: Default prepaid/advance account for deferred expense amortization\n• dpp_variance: GL account to post discrepancies between OCR-extracted and manually-entered taxable amount (DPP)\n• ppn_variance: GL account to post discrepancies between OCR-extracted and manually-entered tax amount (PPN)"
+      "options": "digital_stamp_expense\ndigital_stamp_payment\ndefault_paid_from\ndefault_prepaid\ndpp_variance\nppn_variance\ndriver_commission_expense",
+      "description": "Purpose/reason for this GL account mapping:\n\n• digital_stamp_expense: GL account to post digital stamp/materai costs\n• digital_stamp_payment: GL account where stamp payment comes from (cash/bank)\n• default_paid_from: Default account for bank transfer source (paid from account)\n• default_prepaid: Default prepaid/advance account for deferred expense amortization\n• dpp_variance: GL account to post discrepancies between OCR-extracted and manually-entered taxable amount (DPP)\n• ppn_variance: GL account to post discrepancies between OCR-extracted and manually-entered tax amount (PPN)\n• driver_commission_expense: Expense account for Driver Commission Purchase Invoice (towing)"
     },
     {
       "fieldname": "account_type",
