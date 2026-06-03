@@ -23584,4 +23584,52 @@
   ],
   "title": "Towing Driver"
  }
+,
+ {
+  "charts": [],
+  "content": "[{\"id\": \"hdr_access\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Access Studio</b></span>\", \"col\": 12}}, {\"id\": \"s_ws_ui\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Workspace UI Settings\", \"col\": 6}}]",
+  "custom_blocks": [],
+  "docstatus": 0,
+  "doctype": "Workspace",
+  "for_user": null,
+  "hide_custom": 0,
+  "icon": "setting-gear",
+  "indicator_color": "green",
+  "is_hidden": 0,
+  "label": "Workspace Access Studio",
+  "links": [],
+  "modified": "2026-06-02 00:00:00.000000",
+  "module": "Imogi Finance",
+  "name": "Workspace Access Studio",
+  "number_cards": [],
+  "parent_page": "",
+  "public": 1,
+  "quick_lists": [],
+  "restrict_to_domain": null,
+  "roles": [
+   {"role": "System Manager"},
+   {"role": "Accounts Manager"}
+  ],
+  "sequence_id": -0.85,
+  "shortcuts": [
+   {
+    "color": "Green",
+    "doc_view": "",
+    "format": null,
+    "icon": "setting-gear",
+    "kanban_board": null,
+    "label": "Workspace UI Settings",
+    "link_to": "Workspace UI Settings",
+    "parent": "Workspace Access Studio",
+    "parentfield": "shortcuts",
+    "parenttype": "Workspace",
+    "report_ref_doctype": null,
+    "restrict_to_domain": null,
+    "stats_filter": null,
+    "type": "DocType",
+    "url": null
+   }
+  ],
+  "title": "Workspace Access Studio"
+ }
 ]

@@ -102,7 +102,7 @@ def create_payment_entry_from_report(do_names, supplier, driver_nama, total_komi
     expense_account = (
         frappe.db.get_value("Account", {
             "company": company,
-            "account_name": ["like", "%Komisi%"],
+            "account_name": ["like", "%COST OF GOODS SOLD%"],
             "is_group": 0,
         }, "name")
         or frappe.db.get_value("Account", {
