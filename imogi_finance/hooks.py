@@ -54,12 +54,9 @@ doctype_js = {
     "Salary Structure": "public/js/salary_structure.js",
     "Salary Slip": "public/js/salary_slip.js",
     "Payroll Entry": "public/js/payroll_entry.js",
-    "Bank Statement": "public/js/bank_statement_form.js",
-    "Bank CSV Import": "public/js/bank_statement_form.js",
 }
 
 app_include_js = [
-    "/assets/imogi_finance/js/bank_statement_form.js",
     "/assets/imogi_finance/js/payment_entry_allocation_status.js",
     "/assets/imogi_finance/js/imogi_finance.js",
     "/assets/imogi_finance/js/workspace_visibility.js",
@@ -77,6 +74,10 @@ doctype_list_js = {
     "Sales Invoice": [
         "public/js/sales_invoice_list.js",
         "public/js/sales_invoice_list_toolbar.js",
+    ],
+    "Purchase Invoice": [
+        "public/js/purchase_invoice_list.js",
+        "public/js/purchase_invoice_list_toolbar.js",
     ],
     "Sales Order": [
         "public/js/sales_order_list_toolbar.js",

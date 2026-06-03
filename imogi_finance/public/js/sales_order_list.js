@@ -34,15 +34,13 @@ const SO_STATUS_COLORS = {
 	Draft: "grey",
 	Submitted: "blue",
 	"SI Created": "blue",
-	"Outstanding Invoice": "orange",
-	"Partial Paid": "orange",
+	Partial: "orange",
 	Paid: "green",
 	Cancelled: "red",
 };
 
 const SO_STATUS_ICON = {
-	"Outstanding Invoice": "es-solid-dot",
-	"Partial Paid": "es-solid-dot",
+	Partial: "es-solid-dot",
 	"SI Created": "es-line-inbox",
 	Paid: "es-solid-success",
 	Submitted: "es-line-inbox",
@@ -290,7 +288,7 @@ function imogi_so_list_ensure_toolbar(listview) {
 
 function normalize_so_payment_status(status) {
 	const value = (status || "").trim();
-	if (value === "Partial Paid") return "Outstanding Invoice";
+	if (value === "Partial Paid" || value === "Outstanding Invoice") return "Partial";
 	return value;
 }
 
@@ -325,7 +323,7 @@ function inject_so_status_styles() {
 
 function format_so_outstanding_amount(value, df, doc) {
 	const status = get_business_status(doc);
-	if (status !== "Outstanding Invoice") {
+	if (status !== "Partial") {
 		return `<span class="so-outstanding-empty text-muted">—</span>`;
 	}
 	const amount = flt(value);

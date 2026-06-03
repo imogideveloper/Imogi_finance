@@ -11,7 +11,7 @@ def execute():
 		"Sales Order",
 		filters={
 			"docstatus": 1,
-			"custom_payment_status": ("in", ["Outstanding Invoice", "Partial Paid", "SI Created", "Paid"]),
+			"custom_payment_status": ("in", ["Partial", "Outstanding Invoice", "Partial Paid", "SI Created", "Paid"]),
 		},
 		pluck="name",
 	):

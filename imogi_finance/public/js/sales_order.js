@@ -16,15 +16,14 @@ const SO_FORM_STATUS_COLORS = {
     Draft: "grey",
     Submitted: "blue",
     "SI Created": "blue",
-    "Outstanding Invoice": "orange",
-    "Partial Paid": "orange",
+    Partial: "orange",
     Paid: "green",
     Cancelled: "red",
 };
 
 function normalize_so_form_payment_status(status) {
     const value = (status || "").trim();
-    if (value === "Partial Paid") return "Outstanding Invoice";
+    if (value === "Partial Paid" || value === "Outstanding Invoice") return "Partial";
     return value || "Submitted";
 }
 

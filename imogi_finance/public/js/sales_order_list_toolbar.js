@@ -4,13 +4,13 @@ const SO_LIST_STATUS_ORDER = [
 	"Draft",
 	"Submitted",
 	"SI Created",
-	"Outstanding Invoice",
+	"Partial",
 	"Paid",
 	"Cancelled",
 ];
 
 const SO_GROUP_ICON = {
-	"Outstanding Invoice": "es-solid-dot",
+	Partial: "es-solid-dot",
 	"SI Created": "es-line-inbox",
 	Paid: "es-solid-success",
 	Submitted: "es-line-inbox",
@@ -19,7 +19,7 @@ const SO_GROUP_ICON = {
 };
 
 const SO_GROUP_HEADER_STYLE = {
-	"Outstanding Invoice": { border: "#f97316", bg: "linear-gradient(90deg,#fff7ed 0%,#f8fafc 55%)", title: "#9a3412" },
+	Partial: { border: "#f97316", bg: "linear-gradient(90deg,#fff7ed 0%,#f8fafc 55%)", title: "#9a3412" },
 	Paid: { border: "#10b981", bg: "linear-gradient(90deg,#ecfdf5 0%,#f8fafc 55%)", title: "#065f46" },
 	Submitted: { border: "#3b82f6", bg: "linear-gradient(90deg,#eff6ff 0%,#f8fafc 55%)", title: "#1e40af" },
 	"SI Created": { border: "#6366f1", bg: "linear-gradient(90deg,#eef2ff 0%,#f8fafc 55%)", title: "#3730a3" },
@@ -54,14 +54,18 @@ window.init_imogi_so_status_toolbar = function (listview) {
 		if (cint(doc.docstatus) === 2) return "Cancelled";
 		if (cint(doc.docstatus) === 0) return "Draft";
 		const v = (doc.custom_payment_status || "").trim();
-		return v === "Partial Paid" ? "Outstanding Invoice" : v || "Submitted";
+		if (v === "Partial Paid" || v === "Outstanding Invoice") return "Partial";
+		return v || "Submitted";
 	}
 
 	function expand_status_filter(values) {
 		const out = new Set();
 		values.forEach((v) => {
 			out.add(v);
-			if (v === "Outstanding Invoice") out.add("Partial Paid");
+			if (v === "Partial") {
+				out.add("Partial Paid");
+				out.add("Outstanding Invoice");
+			}
 		});
 		return Array.from(out);
 	}
@@ -90,11 +94,13 @@ window.init_imogi_so_status_toolbar = function (listview) {
 			if (!f || f[1] !== FILTER_FIELD) return;
 			if (f[2] === "in") {
 				parse_status_filter_value(f[3]).forEach((v) => {
-					if (v === "Partial Paid") found.push("Outstanding Invoice");
+					if (v === "Partial Paid" || v === "Outstanding Invoice") found.push("Partial");
 					else found.push(v);
 				});
 			} else if (f[2] === "=" && f[3]) {
-				found.push(f[3] === "Partial Paid" ? "Outstanding Invoice" : f[3]);
+				found.push(
+					f[3] === "Partial Paid" || f[3] === "Outstanding Invoice" ? "Partial" : f[3]
+				);
 			}
 		});
 		selected_status_filters = [...new Set(found)];
@@ -487,7 +493,9 @@ window.init_imogi_so_status_toolbar = function (listview) {
 			$(this).prop(
 				"checked",
 				selected_status_filters.includes(val) ||
-					(val === "Outstanding Invoice" && selected_status_filters.includes("Partial Paid"))
+					(val === "Partial" &&
+						(selected_status_filters.includes("Partial Paid") ||
+							selected_status_filters.includes("Outstanding Invoice")))
 			);
 		});
 	}

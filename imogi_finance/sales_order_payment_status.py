@@ -82,7 +82,7 @@ def _resolve_payment_status(summary: dict, so_docstatus: int) -> str:
 
 	if summary["has_submitted_invoice"]:
 		if so_invoice_gap > tolerance or total_si_outstanding > tolerance:
-			return "Outstanding Invoice"
+			return "Partial"
 
 	return "SI Created"
 

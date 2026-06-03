@@ -447,7 +447,7 @@ def get_detail_rows(filters: frappe._dict) -> list[dict]:
 	for inv in invoices:
 		rows.append(
 			{
-				"row_type": _("Outstanding Invoice"),
+				"row_type": _("Partial"),
 				"document": inv.document,
 				"reference_doctype": "Sales Invoice",
 				"customer": inv.customer,
