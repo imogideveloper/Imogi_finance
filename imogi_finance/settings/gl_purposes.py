@@ -19,6 +19,9 @@ DEFAULT_PREPAID = "default_prepaid"
 DPP_VARIANCE = "dpp_variance"
 PPN_VARIANCE = "ppn_variance"
 
+# Towing / Driver Commission (optional — configure per company in Finance Control Settings)
+DRIVER_COMMISSION_EXPENSE = "driver_commission_expense"
+
 # All purposes (for validation/audit)
 ALL_PURPOSES = {
     DIGITAL_STAMP_EXPENSE,

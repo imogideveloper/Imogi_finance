@@ -98,28 +98,9 @@ def create_payment_entry_from_report(do_names, supplier, driver_nama, total_komi
     frappe.db.commit()
 
     # ── 2. Buat Purchase Invoice sebagai tagihan komisi ──────────────────────
-    # Cari expense account untuk komisi
-    expense_account = (
-        frappe.db.get_value("Account", {
-            "company": company,
-            "account_name": ["like", "%COST OF GOODS SOLD%"],
-            "account_number": ["like", "%5111001%"],
-            "is_group": 0,
-        }, "name")
-        or frappe.db.get_value("Account", {
-            "company": company,
-            "account_type": "Expense Account",
-            "is_group": 0,
-        }, "name")
-        or frappe.db.get_value("Account", {
-            "company": company,
-            "root_type": "Expense",
-            "is_group": 0,
-        }, "name")
-    )
+    from imogi_finance.settings.utils import get_driver_commission_expense_account
 
-    if not expense_account:
-        frappe.throw(_("Tidak ditemukan Expense Account. Buat akun 'Komisi Driver' di Chart of Accounts."))
+    expense_account = get_driver_commission_expense_account(company)
 
     pi = frappe.new_doc("Purchase Invoice")
     pi.supplier         = supplier
