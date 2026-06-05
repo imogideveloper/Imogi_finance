@@ -50,6 +50,7 @@ doctype_js = {
         "public/js/sales_invoice_tax_invoice.js",
         "public/js/payment_reconciliation_helper.js",
         "public/js/transaction_price_lock.js",
+        "public/js/sales_invoice_towing.js",
     ],
     "Delivery Order Towing": "public/js/delivery_order_towing.js",
     "Purchase Order": [
@@ -70,6 +71,7 @@ boot_session = "imogi_finance.workspace_visibility.update_boot_session"
 
 
 doctype_list_js = {
+    "Delivery Order Towing": "public/js/delivery_order_towing_list.js",
     "Sales Order": "public/js/sales_order_list.js",
     "Bank CSV Import": "imogi_finance/imogi_finance/doctype/bank_csv_import/bank_csv_import_list.js",
     "Administrative Payment Voucher": "imogi_finance/doctype/administrative_payment_voucher/administrative_payment_voucher_list.js",
@@ -188,6 +190,7 @@ doc_events = {
             "imogi_finance.tax_operations.validate_tax_period_lock",
             "imogi_finance.validators.finance_validator.validate_document_tax_fields",
             "imogi_finance.events.transaction_price_lock.validate_no_price_change",
+            "imogi_finance.overrides.sales_invoice_towing.validate_towing_payment_terms",
         ],
         "before_submit": [
             "imogi_finance.imogi_finance.doctype.tax_period_closing.tax_period_closing.check_period_is_closed",
