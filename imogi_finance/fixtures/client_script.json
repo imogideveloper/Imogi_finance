@@ -267,11 +267,11 @@
     "docstatus": 0,
     "doctype": "Client Script",
     "dt": "Delivery Order Towing",
-    "enabled": 1,
+    "enabled": 0,
     "modified": "2026-04-24 16:49:21.215435",
     "module": null,
     "name": "status do",
-    "script": "frappe.listview_settings['Delivery Order Towing'] = {\r\n    get_indicator: function(doc) {\r\n        // Use the custom Status field instead of docstatus\r\n        const status_colors = {\r\n            'Draft': 'red',\r\n            'Submitted': 'blue',\r\n            'Assigned': 'orange',\r\n            'Picked Up': 'purple',\r\n            'In Transit': 'yellow',\r\n            'Delivered': 'green',\r\n            'Cancelled': 'gray',\r\n            'Completed': 'darkgreen'\r\n        };\r\n        \r\n        if (doc.status) {\r\n            return [__(doc.status), status_colors[doc.status] || 'gray', 'status,=,' + doc.status];\r\n        }\r\n        \r\n        // Fallback to docstatus\r\n        if (doc.docstatus === 0) {\r\n            return [__('Draft'), 'red', 'docstatus,=,0'];\r\n        } else if (doc.docstatus === 1) {\r\n            return [__('Submitted'), 'blue', 'docstatus,=,1'];\r\n        } else if (doc.docstatus === 2) {\r\n            return [__('Cancelled'), 'gray', 'docstatus,=,2'];\r\n        }\r\n    },\r\n    \r\n    refresh: function(listview) {\r\n        // Add custom filter for Status field\r\n        listview.page.add_field({\r\n            fieldtype: 'Select',\r\n            label: __('Status'),\r\n            fieldname: 'status',\r\n            options: [\r\n                '',\r\n                'Draft',\r\n                'Submitted', \r\n                'Assigned',\r\n                'Picked Up',\r\n                'In Transit',\r\n                'Delivered',\r\n                'Completed',\r\n                'Cancelled'\r\n            ],\r\n            change: function() {\r\n                listview.refresh();\r\n            }\r\n        });\r\n    }\r\n};",
+    "script": "",
     "view": "List"
    },
    {
