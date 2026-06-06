@@ -403,6 +403,53 @@ def get_towing_invoice_items(
 
 
 @frappe.whitelist()
+def debug_towing_billing_eligibility(sales_order, company=None, customer=None):
+	"""Cek kenapa SO tidak muncul di dialog tarik DO towing."""
+	reasons = []
+	so = frappe.db.get_value(
+		"Sales Order",
+		sales_order,
+		["name", "docstatus", "company", "customer"],
+		as_dict=True,
+	)
+	if not so:
+		return {"eligible": False, "reasons": [_("Sales Order tidak ditemukan.")]}
+	if so.docstatus != 1:
+		reasons.append(_("Sales Order belum Submitted."))
+	if company and so.company != company:
+		reasons.append(
+			_("Company SO ({0}) berbeda dengan Sales Invoice ({1}).").format(
+				so.company, company
+			)
+		)
+	if customer and so.customer != customer:
+		reasons.append(
+			_("Customer SO ({0}) berbeda dengan Sales Invoice ({1}).").format(
+				so.customer, customer
+			)
+		)
+
+	done_dos = frappe.get_all(
+		"Delivery Order Towing",
+		filters={"sales_order": sales_order, "docstatus": 1, "status": "Done"},
+		fields=["name", "sales_invoice"],
+	)
+	uninvoiced = [row.name for row in done_dos if not row.get("sales_invoice")]
+	if not done_dos:
+		reasons.append(_("Belum ada DO Towing berstatus Done dan Submitted."))
+	elif not uninvoiced:
+		reasons.append(_("Semua DO Done sudah punya Sales Invoice."))
+
+	return {
+		"eligible": not reasons,
+		"sales_order": so,
+		"done_do_count": len(done_dos),
+		"uninvoiced_do": uninvoiced,
+		"reasons": reasons or [_("SO eligible — seharusnya muncul di dialog.")],
+	}
+
+
+@frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
 def get_towing_sales_order_query(doctype, txt, searchfield, start, page_len, filters):
 	"""Link query: SO towing yang punya DO Done belum ditagih."""
@@ -429,12 +476,6 @@ def get_towing_sales_order_query(doctype, txt, searchfield, start, page_len, fil
 			  AND do.docstatus = 1
 			  AND do.status = 'Done'
 			  AND IFNULL(do.sales_invoice, '') = ''
-		)"""
-	)
-	conditions.append(
-		"""EXISTS (
-			SELECT 1 FROM `tabSO Towing Kendaraan` stk
-			WHERE stk.parent = so.name
 		)"""
 	)
 
