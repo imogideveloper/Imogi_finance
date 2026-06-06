@@ -18,17 +18,29 @@ frappe.ui.form.on("Sales Invoice", {
 	},
 });
 
+function get_invoice_company(frm) {
+	return frm.doc.company || frappe.defaults.get_user_default("Company");
+}
+
 function pull_towing_from_sales_orders(frm) {
-	if (!frm.doc.company) {
+	const company = get_invoice_company(frm);
+	if (!company) {
 		frappe.msgprint({
-			title: __("Company Belum Diisi"),
-			message: __("Isi Company terlebih dahulu."),
+			title: __("Company Belum Ter-set"),
+			message: __(
+				"Sales Invoice butuh Company (perusahaan penerbit invoice), bukan Customer. " +
+				"Field Company mungkin tersembunyi — cek tab More Info, atau set Default Company di User Settings."
+			),
 			indicator: "orange",
 		});
 		return;
 	}
 
-	const setters = { company: frm.doc.company };
+	if (!frm.doc.company) {
+		frm.set_value("company", company);
+	}
+
+	const setters = { company: get_invoice_company(frm) };
 	const read_only_setters = ["company"];
 
 	if (frm.doc.customer) {
@@ -44,7 +56,7 @@ function pull_towing_from_sales_orders(frm) {
 		size: "large",
 		primary_action_label: __("Tarik DO"),
 		get_query() {
-			const filters = { company: frm.doc.company };
+			const filters = { company: get_invoice_company(frm) };
 			if (frm.doc.customer) {
 				filters.customer = frm.doc.customer;
 			}
