@@ -4,7 +4,7 @@ import frappe
 from erpnext.accounts.party import get_due_date
 from erpnext.controllers.accounts_controller import get_payment_terms
 from frappe import _
-from frappe.utils import flt, getdate, today
+from frappe.utils import cint, flt, getdate, today
 
 DEFAULT_TOWING_ITEM = "JASA-TOWING-001"
 
@@ -449,19 +449,10 @@ def debug_towing_billing_eligibility(sales_order, company=None, customer=None):
 	}
 
 
-@frappe.whitelist()
-@frappe.validate_and_sanitize_search_inputs
-def get_towing_sales_order_query(doctype, txt, searchfield, start, page_len, filters):
-	"""Link query: SO towing yang punya DO Done belum ditagih."""
-	company = (filters or {}).get("company")
-	customer = (filters or {}).get("customer")
+def _eligible_towing_so_sql(company, customer=None, txt=None):
+	conditions = ["so.docstatus = 1", "so.company = %s"]
+	values: list = [company]
 
-	conditions = ["so.docstatus = 1"]
-	values: list = []
-
-	if company:
-		conditions.append("so.company = %s")
-		values.append(company)
 	if customer:
 		conditions.append("so.customer = %s")
 		values.append(customer)
@@ -478,20 +469,96 @@ def get_towing_sales_order_query(doctype, txt, searchfield, start, page_len, fil
 			  AND IFNULL(do.sales_invoice, '') = ''
 		)"""
 	)
+	return conditions, values
 
+
+@frappe.whitelist()
+def list_eligible_towing_sales_orders(company, customer=None):
+	"""List SO towing yang bisa ditagih + hint kalau kosong."""
+	if not company:
+		frappe.throw(_("Company wajib diisi."))
+
+	conditions, values = _eligible_towing_so_sql(company, customer=customer)
 	where_clause = " AND ".join(conditions)
-	values.extend([start, page_len])
+
+	rows = frappe.db.sql(
+		f"""
+		SELECT so.name, so.customer, so.customer_name, so.transaction_date, so.company
+		FROM `tabSales Order` so
+		WHERE {where_clause}
+		ORDER BY so.transaction_date DESC, so.name DESC
+		LIMIT 50
+		""",
+		tuple(values),
+		as_dict=True,
+	)
+
+	hints = []
+	if not rows:
+		hints.append(
+			_("Tidak ada SO Submitted dengan DO Towing Done yang belum ditagih untuk company {0}.").format(
+				company
+			)
+		)
+		if customer:
+			hints.append(
+				_("Filter customer aktif: {0}. Coba kosongkan Customer di SI lalu tarik ulang.").format(
+					customer
+				)
+			)
+
+		candidate_sos = frappe.db.sql(
+			"""
+			SELECT DISTINCT do.sales_order
+			FROM `tabDelivery Order Towing` do
+			INNER JOIN `tabSales Order` so ON so.name = do.sales_order
+			WHERE do.docstatus = 1
+			  AND do.status = 'Done'
+			  AND IFNULL(do.sales_invoice, '') = ''
+			  AND so.docstatus = 1
+			LIMIT 10
+			""",
+			as_dict=True,
+		)
+		for row in candidate_sos:
+			check = debug_towing_billing_eligibility(
+				row.sales_order, company=company, customer=customer
+			)
+			if not check.get("eligible"):
+				hints.append(f"{row.sales_order}: {'; '.join(check.get('reasons') or [])}")
+
+	return {"sales_orders": rows, "hints": hints}
+
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def get_towing_sales_order_query(doctype, txt, searchfield, start, page_len, filters):
+	"""Link query: SO towing yang punya DO Done belum ditagih."""
+	filters = frappe.parse_json(filters) if isinstance(filters, str) else (filters or {})
+	company = filters.get("company")
+	customer = filters.get("customer")
+
+	if not company:
+		return []
+
+	conditions, values = _eligible_towing_so_sql(company, customer=customer, txt=txt or None)
+	where_clause = " AND ".join(conditions)
+	values.extend([cint(start), cint(page_len)])
 
 	return frappe.db.sql(
 		f"""
-		SELECT so.name, so.customer_name, so.transaction_date, so.custom_payment_status
+		SELECT
+			so.name,
+			so.customer_name,
+			so.transaction_date,
+			so.company
 		FROM `tabSales Order` so
 		WHERE {where_clause}
 		ORDER BY so.transaction_date DESC, so.name DESC
 		LIMIT %s, %s
 		""",
 		tuple(values),
-		as_dict=False,
+		as_dict=True,
 	)
 
 
