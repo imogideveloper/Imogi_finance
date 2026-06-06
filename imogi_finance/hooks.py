@@ -89,6 +89,7 @@ jinja = {
         "imogi_finance.receipt_control.utils.build_verification_url",
         "imogi_finance.receipt_control.utils.requires_materai",
         "imogi_finance.receipt_control.utils.get_default_receipt_design",
+        "imogi_finance.overrides.sales_invoice_towing.get_towing_print_payment_info",
     ]
 }
 
