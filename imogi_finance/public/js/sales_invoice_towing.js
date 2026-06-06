@@ -22,7 +22,7 @@ function get_invoice_company(frm) {
 	return frm.doc.company || frappe.defaults.get_user_default("Company");
 }
 
-function pull_towing_from_sales_orders(frm) {
+function ensure_invoice_company(frm) {
 	const company = get_invoice_company(frm);
 	if (!company) {
 		frappe.msgprint({
@@ -33,36 +33,70 @@ function pull_towing_from_sales_orders(frm) {
 			),
 			indicator: "orange",
 		});
-		return;
+		return null;
 	}
 
 	if (!frm.doc.company) {
 		frm.set_value("company", company);
 	}
+	return company;
+}
 
-	const setters = { company: get_invoice_company(frm) };
-	const read_only_setters = ["company"];
-
-	if (frm.doc.customer) {
-		setters.customer = frm.doc.customer;
-		read_only_setters.push("customer");
+function pull_towing_from_sales_orders(frm) {
+	const company = ensure_invoice_company(frm);
+	if (!company) {
+		return;
 	}
 
+	frappe.dom.freeze(__("Mencari Sales Order towing..."));
+	frappe.call({
+		method: "imogi_finance.overrides.sales_invoice_towing.list_eligible_towing_sales_orders",
+		args: {
+			company,
+			customer: frm.doc.customer || null,
+		},
+		callback(r) {
+			frappe.dom.unfreeze();
+			const data = r.message || {};
+			const sales_orders = data.sales_orders || [];
+
+			if (!sales_orders.length) {
+				let message = (data.hints || []).join("<br>") || __(
+					"Tidak ada Sales Order dengan DO Towing Done yang belum ditagih."
+				);
+				frappe.msgprint({
+					title: __("Tidak Ada SO Towing"),
+					message,
+					indicator: "orange",
+				});
+				return;
+			}
+
+			open_towing_sales_order_dialog(frm, company, sales_orders);
+		},
+		error() {
+			frappe.dom.unfreeze();
+		},
+	});
+}
+
+function open_towing_sales_order_dialog(frm, company, sales_orders) {
 	new frappe.ui.form.MultiSelectDialog({
 		doctype: "Sales Order",
 		target: frm,
-		setters,
-		read_only_setters,
+		setters: {
+			company,
+		},
+		read_only_setters: ["company"],
 		size: "large",
 		primary_action_label: __("Tarik DO"),
+		columns: ["name", "customer_name", "transaction_date", "company"],
 		get_query() {
-			const filters = { company: get_invoice_company(frm) };
-			if (frm.doc.customer) {
-				filters.customer = frm.doc.customer;
-			}
 			return {
 				query: "imogi_finance.overrides.sales_invoice_towing.get_towing_sales_order_query",
-				filters,
+				filters: {
+					company,
+				},
 			};
 		},
 		action(selections) {
@@ -90,7 +124,8 @@ function get_towing_sales_orders(frm) {
 }
 
 function apply_towing_payment_terms(frm, prefetched) {
-	if (!frm.doc.customer || !frm.doc.company) {
+	const company = get_invoice_company(frm);
+	if (!frm.doc.customer || !company) {
 		return Promise.resolve();
 	}
 
@@ -104,7 +139,7 @@ function apply_towing_payment_terms(frm, prefetched) {
 			method: "imogi_finance.overrides.sales_invoice_towing.get_towing_payment_info",
 			args: {
 				sales_orders,
-				company: frm.doc.company,
+				company,
 				customer: frm.doc.customer,
 				posting_date: frm.doc.posting_date || null,
 				payment_terms_template:
@@ -145,13 +180,18 @@ function recalc_towing_payment_terms(frm) {
 }
 
 function load_towing_items_into_invoice(frm, sales_orders) {
+	const company = get_invoice_company(frm);
+	if (!company) {
+		return;
+	}
+
 	frappe.dom.freeze(__("Mengambil DO Towing dari Sales Order..."));
 
 	frappe.call({
 		method: "imogi_finance.overrides.sales_invoice_towing.get_towing_invoice_items",
 		args: {
 			sales_orders,
-			company: frm.doc.company,
+			company,
 			customer: frm.doc.customer || null,
 			exclude_invoiced: 1,
 			posting_date: frm.doc.posting_date || null,
