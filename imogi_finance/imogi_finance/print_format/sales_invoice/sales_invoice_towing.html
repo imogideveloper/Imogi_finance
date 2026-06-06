@@ -208,6 +208,18 @@
     white-space: nowrap;
   }
 
+  .inv-table.continuation {
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .inv-table.continuation tbody td {
+    padding-top: 14px;
+  }
+
+  .inv-table.continuation tbody tr:first-child td {
+    padding-top: 12px;
+  }
+
   .item-main {
     font-weight: 700;
     color: #0f2557;
@@ -398,6 +410,9 @@
 
 {% set company = frappe.get_doc("Company", doc.company) %}
 {% set company_address = frappe.get_all("Address", filters={"name": doc.company_address}, fields=["address_line1", "address_line2", "city", "pincode"], limit=1) %}
+{% set payment_info = get_towing_print_payment_info(doc) %}
+{% set print_due_date = payment_info.due_date %}
+{% set print_payment_terms = payment_info.payment_terms_template %}
 
 {# ── PAGINATION LOGIC ── #}
 {% set items_per_page = 5 %}
@@ -413,7 +428,8 @@
 
   <div class="towing-invoice{% if page_num < total_pages %} page-break{% endif %}">
 
-    <!-- HEADER (repeated on each page) -->
+    <!-- HEADER (only on first page) -->
+    {% if page_num == 1 %}
     <div class="inv-header">
       <div class="inv-header-left">
         <div class="company-name">{{ company.company_name }}</div>
@@ -430,10 +446,12 @@
         <div class="inv-number">{{ doc.name }}</div>
         <div class="inv-dates">
           Tanggal: {{ frappe.format(doc.posting_date, {"fieldtype": "Date"}) }}<br>
-          Jatuh Tempo: {{ frappe.format(doc.due_date, {"fieldtype": "Date"}) }}
+          {% if print_payment_terms %}Syarat Bayar: {{ print_payment_terms }}<br>{% endif %}
+          Jatuh Tempo: {{ frappe.format(print_due_date, {"fieldtype": "Date"}) if print_due_date else "-" }}
         </div>
       </div>
     </div>
+    {% endif %}
 
     <!-- META (only on first page) -->
     {% if page_num == 1 %}
@@ -478,7 +496,8 @@
     {% endif %}
 
     <!-- ITEMS TABLE (current page items) -->
-    <table class="inv-table">
+    <table class="inv-table{% if page_num > 1 %} continuation{% endif %}">
+      {% if page_num == 1 %}
       <thead>
         <tr>
           <th style="width:30px">No</th>
@@ -488,6 +507,7 @@
           <th class="right" style="width:120px">Jumlah</th>
         </tr>
       </thead>
+      {% endif %}
       <tbody>
         {% for item in page_items %}
         <tr>

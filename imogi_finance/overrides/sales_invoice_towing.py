@@ -2,6 +2,7 @@ import json
 
 import frappe
 from erpnext.accounts.party import get_due_date
+from erpnext.controllers.accounts_controller import get_payment_terms
 from frappe import _
 from frappe.utils import flt, getdate, today
 
@@ -23,35 +24,85 @@ def _get_cost_center(company: str) -> str | None:
 	return frappe.get_cached_value("Company", company, "cost_center")
 
 
+def _resolve_payment_terms_template(
+	sales_orders: list[str] | None = None,
+	*,
+	current_template: str | None = None,
+) -> str | None:
+	if current_template:
+		return current_template
+
+	for so_name in sales_orders or []:
+		template_name = frappe.db.get_value("Sales Order", so_name, "payment_terms_template")
+		if template_name:
+			return template_name
+
+	return None
+
+
+def _build_payment_schedule(
+	template_name: str,
+	*,
+	posting_date,
+	grand_total=0,
+	base_grand_total=0,
+) -> list[dict]:
+	schedule = get_payment_terms(
+		template_name,
+		posting_date=posting_date,
+		grand_total=flt(grand_total),
+		base_grand_total=flt(base_grand_total),
+	)
+	return schedule or []
+
+
+def _due_date_from_schedule(schedule: list[dict], fallback=None):
+	due_dates = [row.get("due_date") for row in schedule or [] if row.get("due_date")]
+	if due_dates:
+		return max(getdate(d) for d in due_dates)
+	return fallback
+
+
 def _resolve_payment_terms(
 	customer: str,
 	company: str,
 	sales_orders: list[str],
 	*,
 	posting_date=None,
-) -> dict[str, str | None]:
-	"""Ambil payment terms dari SO / customer dan hitung due date."""
+	payment_terms_template: str | None = None,
+	grand_total=0,
+	base_grand_total=0,
+) -> dict:
+	"""Ambil payment terms dari SO / SI dan hitung due date + payment schedule."""
 	posting_date = getdate(posting_date or today())
-	payment_terms_template = None
-
-	for so_name in sales_orders:
-		payment_terms_template = frappe.db.get_value(
-			"Sales Order", so_name, "payment_terms_template"
-		)
-		if payment_terms_template:
-			break
-
-	due_date = get_due_date(
-		posting_date,
-		"Customer",
-		customer,
-		company=company,
-		template_name=payment_terms_template,
+	template_name = _resolve_payment_terms_template(
+		sales_orders,
+		current_template=payment_terms_template,
 	)
 
+	schedule: list[dict] = []
+	if template_name:
+		schedule = _build_payment_schedule(
+			template_name,
+			posting_date=posting_date,
+			grand_total=grand_total,
+			base_grand_total=base_grand_total,
+		)
+
+	due_date = _due_date_from_schedule(schedule)
+	if not due_date and customer and company:
+		due_date = get_due_date(
+			posting_date,
+			"Customer",
+			customer,
+			company=company,
+			template_name=template_name,
+		)
+
 	return {
-		"payment_terms_template": payment_terms_template,
+		"payment_terms_template": template_name,
 		"due_date": due_date,
+		"payment_schedule": schedule,
 	}
 
 
@@ -64,11 +115,77 @@ def _apply_payment_terms_to_doc(doc, sales_orders: list[str]) -> None:
 		doc.company,
 		sales_orders,
 		posting_date=doc.posting_date,
+		payment_terms_template=doc.get("payment_terms_template"),
+		grand_total=doc.get("rounded_total") or doc.get("grand_total"),
+		base_grand_total=doc.get("base_rounded_total") or doc.get("base_grand_total"),
 	)
+
 	if terms.get("payment_terms_template"):
 		doc.payment_terms_template = terms["payment_terms_template"]
+
+	if terms.get("payment_schedule"):
+		doc.set("payment_schedule", [])
+		for row in terms["payment_schedule"]:
+			doc.append("payment_schedule", row)
+
 	if terms.get("due_date"):
 		doc.due_date = terms["due_date"]
+
+
+def get_towing_print_payment_info(doc) -> dict:
+	"""Resolve payment terms and due date for towing invoice print/PDF."""
+	sales_orders = list(
+		dict.fromkeys(
+			item.sales_order for item in (doc.get("items") or []) if item.get("sales_order")
+		)
+	)
+
+	if doc.get("payment_schedule"):
+		due_dates = [row.due_date for row in doc.payment_schedule if row.get("due_date")]
+		if due_dates:
+			return {
+				"payment_terms_template": doc.get("payment_terms_template"),
+				"due_date": max(getdate(d) for d in due_dates),
+			}
+
+	terms = _resolve_payment_terms(
+		doc.customer,
+		doc.company,
+		sales_orders,
+		posting_date=doc.get("posting_date"),
+		payment_terms_template=doc.get("payment_terms_template"),
+		grand_total=doc.get("rounded_total") or doc.get("grand_total"),
+		base_grand_total=doc.get("base_rounded_total") or doc.get("base_grand_total"),
+	)
+	return {
+		"payment_terms_template": terms.get("payment_terms_template"),
+		"due_date": terms.get("due_date"),
+	}
+
+
+@frappe.whitelist()
+def get_towing_payment_info(
+	customer,
+	company,
+	sales_orders,
+	posting_date=None,
+	payment_terms_template=None,
+	grand_total=None,
+	base_grand_total=None,
+):
+	"""Return payment terms, schedule, and due date for towing SI."""
+	if isinstance(sales_orders, str):
+		sales_orders = json.loads(sales_orders)
+
+	return _resolve_payment_terms(
+		customer,
+		company,
+		[so for so in dict.fromkeys(sales_orders or []) if so],
+		posting_date=posting_date,
+		payment_terms_template=payment_terms_template,
+		grand_total=grand_total,
+		base_grand_total=base_grand_total,
+	)
 
 
 def _build_do_item_map(sales_order: str) -> dict[str, str]:
@@ -242,7 +359,7 @@ def build_towing_invoice_items(
 	payment_meta = (
 		_resolve_payment_terms(customer, company, sales_orders)
 		if customer
-		else {"payment_terms_template": None, "due_date": None}
+		else {"payment_terms_template": None, "due_date": None, "payment_schedule": []}
 	)
 
 	return {
@@ -253,6 +370,7 @@ def build_towing_invoice_items(
 		"do_count": len(items),
 		"payment_terms_template": payment_meta.get("payment_terms_template"),
 		"due_date": payment_meta.get("due_date"),
+		"payment_schedule": payment_meta.get("payment_schedule") or [],
 	}
 
 

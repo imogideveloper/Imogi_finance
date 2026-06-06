@@ -12,6 +12,10 @@ frappe.ui.form.on("Sales Invoice", {
 			__("Towing")
 		);
 	},
+
+	posting_date(frm) {
+		recalc_towing_payment_terms(frm);
+	},
 });
 
 function pull_towing_from_sales_orders(frm) {
@@ -59,6 +63,75 @@ function pull_towing_from_sales_orders(frm) {
 	});
 }
 
+function is_towing_invoice(frm) {
+	return (frm.doc.items || []).some(
+		(row) =>
+			(row.item_name || "").startsWith("Jasa Towing") ||
+			(row.description || "").includes("Jasa Towing")
+	);
+}
+
+function get_towing_sales_orders(frm) {
+	return [
+		...new Set((frm.doc.items || []).map((row) => row.sales_order).filter(Boolean)),
+	];
+}
+
+function apply_towing_payment_terms(frm, prefetched) {
+	if (!frm.doc.customer || !frm.doc.company) {
+		return Promise.resolve();
+	}
+
+	const sales_orders = get_towing_sales_orders(frm);
+	if (!sales_orders.length && !prefetched?.payment_terms_template) {
+		return Promise.resolve();
+	}
+
+	return frappe
+		.call({
+			method: "imogi_finance.overrides.sales_invoice_towing.get_towing_payment_info",
+			args: {
+				sales_orders,
+				company: frm.doc.company,
+				customer: frm.doc.customer,
+				posting_date: frm.doc.posting_date || null,
+				payment_terms_template:
+					prefetched?.payment_terms_template || frm.doc.payment_terms_template || null,
+				grand_total: frm.doc.rounded_total || frm.doc.grand_total || 0,
+				base_grand_total: frm.doc.base_rounded_total || frm.doc.base_grand_total || 0,
+			},
+		})
+		.then((r) => apply_payment_terms_response(frm, r.message));
+}
+
+function apply_payment_terms_response(frm, data) {
+	if (!data) {
+		return Promise.resolve();
+	}
+
+	const tasks = [];
+
+	if (data.payment_terms_template) {
+		tasks.push(frm.set_value("payment_terms_template", data.payment_terms_template));
+	}
+
+	return Promise.all(tasks).then(() => {
+		if (data.payment_schedule?.length) {
+			frm.set_value("payment_schedule", data.payment_schedule);
+		}
+		if (data.due_date) {
+			frm.set_value("due_date", data.due_date);
+		}
+	});
+}
+
+function recalc_towing_payment_terms(frm) {
+	if (!is_towing_invoice(frm)) {
+		return;
+	}
+	apply_towing_payment_terms(frm);
+}
+
 function load_towing_items_into_invoice(frm, sales_orders) {
 	frappe.dom.freeze(__("Mengambil DO Towing dari Sales Order..."));
 
@@ -79,39 +152,37 @@ function load_towing_items_into_invoice(frm, sales_orders) {
 
 			const data = r.message;
 
-			if (!frm.doc.customer && data.customer) {
-				frm.set_value("customer", data.customer);
-			}
-			if (data.payment_terms_template) {
-				frm.set_value("payment_terms_template", data.payment_terms_template);
-			}
-			if (data.due_date) {
-				frm.set_value("due_date", data.due_date);
-			}
+			const after_customer = !frm.doc.customer && data.customer
+				? frm.set_value("customer", data.customer)
+				: Promise.resolve();
 
-			frm.clear_table("items");
-			(data.items || []).forEach((row) => {
-				const child = frm.add_child("items");
-				Object.assign(child, row);
-			});
-			frm.refresh_field("items");
-
-			let message = __("✅ {0} baris DO Towing dimuat dari {1} Sales Order.", [
-				data.do_count,
-				(data.so_summaries || []).length,
-			]);
-
-			if (data.skipped && data.skipped.length) {
-				message += "<br><br><b>" + __("Dilewati:") + "</b><br>";
-				data.skipped.forEach((row) => {
-					message += `• ${frappe.utils.escape_html(row.sales_order)} — ${frappe.utils.escape_html(row.reason)}<br>`;
+			after_customer.then(() => {
+				frm.clear_table("items");
+				(data.items || []).forEach((row) => {
+					const child = frm.add_child("items");
+					Object.assign(child, row);
 				});
-			}
+				frm.refresh_field("items");
 
-			frappe.msgprint({
-				title: __("Towing"),
-				message,
-				indicator: "green",
+				return apply_towing_payment_terms(frm, data);
+			}).then(() => {
+				let message = __("✅ {0} baris DO Towing dimuat dari {1} Sales Order.", [
+					data.do_count,
+					(data.so_summaries || []).length,
+				]);
+
+				if (data.skipped && data.skipped.length) {
+					message += "<br><br><b>" + __("Dilewati:") + "</b><br>";
+					data.skipped.forEach((row) => {
+						message += `• ${frappe.utils.escape_html(row.sales_order)} — ${frappe.utils.escape_html(row.reason)}<br>`;
+					});
+				}
+
+				frappe.msgprint({
+					title: __("Towing"),
+					message,
+					indicator: "green",
+				});
 			});
 		},
 		error() {
