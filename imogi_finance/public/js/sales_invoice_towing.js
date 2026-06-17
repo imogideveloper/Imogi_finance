@@ -1,4 +1,4 @@
-// Tarik DO Towing dari satu atau banyak Sales Order (penagihan bulk)
+// Tarik DO Towing langsung dari Delivery Order (penagihan bulk)
 
 frappe.ui.form.on("Sales Invoice", {
 	refresh(frm) {
@@ -7,8 +7,8 @@ frappe.ui.form.on("Sales Invoice", {
 		}
 
 		frm.add_custom_button(
-			__("Tarik DO Towing dari SO"),
-			() => pull_towing_from_sales_orders(frm),
+			__("Tarik DO Towing"),
+			() => pull_towing_from_delivery_orders(frm),
 			__("Towing")
 		);
 	},
@@ -42,15 +42,15 @@ function ensure_invoice_company(frm) {
 	return company;
 }
 
-function pull_towing_from_sales_orders(frm) {
+function pull_towing_from_delivery_orders(frm) {
 	const company = ensure_invoice_company(frm);
 	if (!company) {
 		return;
 	}
 
-	frappe.dom.freeze(__("Mencari Sales Order towing..."));
+	frappe.dom.freeze(__("Mencari Delivery Order towing..."));
 	frappe.call({
-		method: "imogi_finance.overrides.sales_invoice_towing.list_eligible_towing_sales_orders",
+		method: "imogi_finance.overrides.sales_invoice_towing.list_eligible_towing_delivery_orders",
 		args: {
 			company,
 			customer: frm.doc.customer || null,
@@ -58,21 +58,21 @@ function pull_towing_from_sales_orders(frm) {
 		callback(r) {
 			frappe.dom.unfreeze();
 			const data = r.message || {};
-			const sales_orders = data.sales_orders || [];
+			const delivery_orders = data.delivery_orders || [];
 
-			if (!sales_orders.length) {
-				let message = (data.hints || []).join("<br>") || __(
-					"Tidak ada Sales Order dengan DO Towing Done yang belum ditagih."
+			if (!delivery_orders.length) {
+				const message = (data.hints || []).join("<br>") || __(
+					"Tidak ada DO Towing berstatus Done/Submitted yang belum ditagih."
 				);
 				frappe.msgprint({
-					title: __("Tidak Ada SO Towing"),
+					title: __("Tidak Ada DO Towing"),
 					message,
 					indicator: "orange",
 				});
 				return;
 			}
 
-			open_towing_sales_order_dialog(frm, company, sales_orders);
+			open_towing_delivery_order_dialog(frm, company);
 		},
 		error() {
 			frappe.dom.unfreeze();
@@ -80,28 +80,25 @@ function pull_towing_from_sales_orders(frm) {
 	});
 }
 
-function open_towing_sales_order_dialog(frm, company, sales_orders) {
+function open_towing_delivery_order_dialog(frm, company) {
 	new frappe.ui.form.MultiSelectDialog({
-		doctype: "Sales Order",
+		doctype: "Delivery Order Towing",
 		target: frm,
-		setters: {
-			company,
-		},
-		read_only_setters: ["company"],
 		size: "large",
 		primary_action_label: __("Tarik DO"),
-		columns: ["name", "customer_name", "transaction_date", "company"],
+		columns: ["name", "nomor_polisi", "status", "customer_name", "tanggal_do", "sales_order"],
 		get_query() {
 			return {
-				query: "imogi_finance.overrides.sales_invoice_towing.get_towing_sales_order_query",
+				query: "imogi_finance.overrides.sales_invoice_towing.get_towing_delivery_order_query",
 				filters: {
 					company,
+					customer: frm.doc.customer || null,
 				},
 			};
 		},
 		action(selections) {
 			if (!selections || !selections.length) {
-				frappe.msgprint(__("Pilih minimal 1 Sales Order."));
+				frappe.msgprint(__("Pilih minimal 1 Delivery Order Towing."));
 				return;
 			}
 			load_towing_items_into_invoice(frm, selections);
@@ -179,18 +176,18 @@ function recalc_towing_payment_terms(frm) {
 	apply_towing_payment_terms(frm);
 }
 
-function load_towing_items_into_invoice(frm, sales_orders) {
+function load_towing_items_into_invoice(frm, delivery_orders) {
 	const company = get_invoice_company(frm);
 	if (!company) {
 		return;
 	}
 
-	frappe.dom.freeze(__("Mengambil DO Towing dari Sales Order..."));
+	frappe.dom.freeze(__("Mengambil data Delivery Order Towing..."));
 
 	frappe.call({
 		method: "imogi_finance.overrides.sales_invoice_towing.get_towing_invoice_items",
 		args: {
-			sales_orders,
+			delivery_orders,
 			company,
 			customer: frm.doc.customer || null,
 			exclude_invoiced: 1,
@@ -218,15 +215,13 @@ function load_towing_items_into_invoice(frm, sales_orders) {
 
 				return apply_towing_payment_terms(frm, data);
 			}).then(() => {
-				let message = __("✅ {0} baris DO Towing dimuat dari {1} Sales Order.", [
-					data.do_count,
-					(data.so_summaries || []).length,
-				]);
+				let message = __("✅ {0} baris DO Towing dimuat.", [data.do_count]);
 
 				if (data.skipped && data.skipped.length) {
 					message += "<br><br><b>" + __("Dilewati:") + "</b><br>";
 					data.skipped.forEach((row) => {
-						message += `• ${frappe.utils.escape_html(row.sales_order)} — ${frappe.utils.escape_html(row.reason)}<br>`;
+						const label = row.delivery_order || row.sales_order || "-";
+						message += `• ${frappe.utils.escape_html(label)} — ${frappe.utils.escape_html(row.reason)}<br>`;
 					});
 				}
 

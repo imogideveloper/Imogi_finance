@@ -789,46 +789,74 @@ def update_do_from_po(doc, method=None):
     frappe.db.commit()
 
 def validate_invoice_do_completion(doc, method=None):
-    """
-    Block Sales Invoice jika dibuat dari SO yang punya DO belum Done.
-    """
-    # Ambil SO dari invoice items
-    so_list = list(set(
-        item.sales_order 
-        for item in doc.items 
-        if item.get("sales_order")
-    ))
+	"""
+	Block Sales Invoice jika DO towing terkait belum siap ditagih.
+	Untuk invoice towing: hanya validasi DO yang ada di baris item.
+	"""
+	from imogi_finance.overrides.sales_invoice_towing import (
+		extract_delivery_orders_from_doc,
+		is_billable_do_status,
+		_items_already_towing_expanded,
+	)
 
-    if not so_list:
-        return
+	if _items_already_towing_expanded(doc):
+		for do_name in extract_delivery_orders_from_doc(doc):
+			do = frappe.db.get_value(
+				"Delivery Order Towing",
+				do_name,
+				["name", "status", "sales_invoice", "nomor_polisi"],
+				as_dict=True,
+			)
+			if not do:
+				frappe.throw(_("Delivery Order Towing {0} tidak ditemukan.").format(do_name))
+			if not is_billable_do_status(do.status):
+				frappe.throw(
+					_("DO Towing {0} ({1}) belum siap ditagih — status: <b>{2}</b>").format(
+						do.name, do.nomor_polisi, do.status
+					),
+					title=_("DO Towing Belum Siap"),
+				)
+			if do.sales_invoice and do.sales_invoice != doc.name:
+				frappe.throw(
+					_("DO Towing {0} sudah ditagih di {1}.").format(do.name, do.sales_invoice),
+					title=_("DO Sudah Ditagih"),
+				)
+		return
 
-    for so_name in so_list:
-        dos = frappe.get_all(
-            "Delivery Order Towing",
-            filters={
-                "sales_order": so_name,
-                "docstatus": ["!=", 2]
-            },
-            fields=["name", "status", "nomor_polisi"]
-        )
+	so_list = list(
+		set(item.sales_order for item in doc.items if item.get("sales_order"))
+	)
 
-        if not dos:
-            continue
+	if not so_list:
+		return
 
-        belum_done = [d for d in dos if d.status != "Done"]
+	for so_name in so_list:
+		dos = frappe.get_all(
+			"Delivery Order Towing",
+			filters={
+				"sales_order": so_name,
+				"docstatus": ["!=", 2],
+			},
+			fields=["name", "status", "nomor_polisi"],
+		)
 
-        if belum_done:
-            detail = "<br>".join(
-                f"• {d.name} ({d.nomor_polisi}) — status: <b>{d.status}</b>"
-                for d in belum_done
-            )
-            frappe.throw(
-                _("Sales Invoice tidak bisa dibuat dari SO <b>{0}</b> "
-                  "karena ada DO Towing yang belum selesai:<br><br>{1}").format(
-                    so_name, detail
-                ),
-                title="DO Towing Belum Selesai"
-            )
+		if not dos:
+			continue
+
+		belum_siap = [d for d in dos if not is_billable_do_status(d.status)]
+
+		if belum_siap:
+			detail = "<br>".join(
+				f"• {d.name} ({d.nomor_polisi}) — status: <b>{d.status}</b>"
+				for d in belum_siap
+			)
+			frappe.throw(
+				_("Sales Invoice tidak bisa dibuat dari SO <b>{0}</b> "
+				  "karena ada DO Towing yang belum siap ditagih:<br><br>{1}").format(
+					so_name, detail
+				),
+				title=_("DO Towing Belum Siap"),
+			)
 
 
 def update_do_payment_status(doc, method=None):

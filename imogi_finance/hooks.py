@@ -122,7 +122,7 @@ fixtures = [
     {"doctype": "Workflow State", "filters": [["workflow_state_name", "in", 
         ["Draft", "Submitted", "Assigned", "Pick Up", "Delivered", "Done", "Awaiting Dokument", "Cancelled"]]]},
     {"doctype": "Workflow Action Master", "filters": [["workflow_action_name", "in", 
-        ["Assign Driver", "Konfirmasi Pick Up", "Konfirmasi Delivered", "Selesaikan DO", "Awaiting Dokument", "Cancel"]]]},
+        ["Assign Driver", "Konfirmasi Pick Up", "Konfirmasi Delivered", "Selesaikan DO", "Awaiting Dokument", "Cancel", "Tandai Selesai"]]]},
     {"doctype": "Workflow", "filters": [["name", "=", "DO Towing Workflow"]]},
     
     # 5. Reports & UI
@@ -199,6 +199,7 @@ doc_events = {
         "on_submit": [
             "imogi_finance.sales_order_payment_status.update_from_sales_invoice",
             "imogi_finance.events.sales_invoice.fix_rounding_status",
+            "imogi_finance.overrides.sales_invoice_towing.link_towing_delivery_orders_on_submit",
         ],
         "on_cancel": [
             "imogi_finance.sales_order_payment_status.update_from_sales_invoice",
