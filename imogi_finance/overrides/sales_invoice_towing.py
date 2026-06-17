@@ -7,7 +7,7 @@ from frappe import _
 from frappe.utils import cint, flt, formatdate, getdate, today
 
 DEFAULT_TOWING_ITEM = "JASA-TOWING-001"
-BILLABLE_DO_STATUSES = ("Done", "Assigned", "Delivered", "Awaiting Dokument")
+BILLABLE_DO_STATUSES = ("Done",)
 
 
 def is_billable_do_status(status: str | None) -> bool:
@@ -461,7 +461,7 @@ def build_towing_invoice_items_from_delivery_orders(
 			skipped.append(
 				{
 					"delivery_order": do_name,
-					"reason": _("Status DO belum siap ditagih (saat ini: {0}).").format(
+					"reason": _("Status DO harus Done untuk ditagih (saat ini: {0}).").format(
 						do.status or "-"
 					),
 				}
@@ -629,7 +629,7 @@ def _debug_delivery_order_eligibility(delivery_order, company=None, customer=Non
 		reasons.append(_("Delivery Order belum Submitted."))
 	if not is_billable_do_status(do.status):
 		reasons.append(
-			_("Status DO belum siap ditagih (saat ini: {0}).").format(do.status or "-")
+			_("Status DO harus Done untuk ditagih (saat ini: {0}).").format(do.status or "-")
 		)
 	if do.get("sales_invoice"):
 		reasons.append(_("DO sudah ditagih di {0}.").format(do.sales_invoice))
@@ -770,7 +770,7 @@ def list_eligible_towing_delivery_orders(company, customer=None):
 	if not rows:
 		hints.append(
 			_(
-				"Tidak ada DO Towing yang siap ditagih untuk company {0}."
+				"Tidak ada DO Towing berstatus Done yang siap ditagih untuk company {0}."
 			).format(company)
 		)
 		if customer:
