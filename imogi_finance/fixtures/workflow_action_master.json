@@ -65,6 +65,11 @@
  },
  {
   "doctype": "Workflow Action Master",
+  "name": "Tandai Selesai",
+  "workflow_action_name": "Tandai Selesai"
+ },
+ {
+  "doctype": "Workflow Action Master",
   "name": "Revise",
   "workflow_action_name": "Revise"
  }
