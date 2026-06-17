@@ -1,8 +1,7 @@
-// List view Delivery Order Towing — indicator status (tanpa duplikasi filter)
+// List view Delivery Order Towing — indicator mengikuti field status
 
 const DO_TOWING_STATUS_COLORS = {
 	Draft: "red",
-	Submitted: "blue",
 	Assigned: "orange",
 	"Pick Up": "purple",
 	Delivered: "green",
@@ -23,11 +22,9 @@ frappe.listview_settings["Delivery Order Towing"] = {
 		if (doc.docstatus === 0) {
 			return [__("Draft"), "red", "docstatus,=,0"];
 		}
-		if (doc.docstatus === 1) {
-			return [__("Submitted"), "blue", "docstatus,=,1"];
-		}
 		if (doc.docstatus === 2) {
 			return [__("Cancelled"), "gray", "docstatus,=,2"];
 		}
+		return [__("Draft"), "red", "docstatus,=,0"];
 	},
 };

@@ -149,6 +149,15 @@ def ensure_towing_workflow_consistency():
         wam.workflow_action_name = awaiting_state
         wam.insert(ignore_permissions=True)
 
+    # Normalisasi data lama: status Submitted tidak dipakai lagi
+    frappe.db.sql(
+        """
+        UPDATE `tabDelivery Order Towing`
+        SET status = 'Assigned'
+        WHERE status = 'Submitted'
+        """
+    )
+
     # 2) Ensure DocField options for status — TIDAK include Submitted
     field = frappe.db.get_value(
         "DocField",
@@ -283,6 +292,9 @@ def ensure_towing_workflow_consistency():
             # Cancel (hanya Admin)
             {"state": "Assigned",  "action": "Cancel",              "next_state": "Cancelled",        "allowed": "Admin Towing"},
             {"state": "Assigned",  "action": "Cancel",              "next_state": "Cancelled",        "allowed": "Sales Manager"},
+            # Assigned → Done (shortcut penagihan / tandai selesai)
+            {"state": "Assigned",  "action": "Tandai Selesai",      "next_state": "Done",             "allowed": "Admin Towing"},
+            {"state": "Assigned",  "action": "Tandai Selesai",      "next_state": "Done",             "allowed": "Sales Manager"},
         ]
 
         for req in required_transitions:

@@ -42,6 +42,18 @@ function _hide_native_cancel_btn(frm) {
     });
 }
 
+// Sembunyikan tombol "Submit" bawaan — pakai workflow "Assign Driver" saja
+function _hide_native_submit_btn(frm) {
+    [100, 400, 800, 1500].forEach(function(ms) {
+        setTimeout(function() {
+            frm.page.wrapper.find('.page-actions .btn').filter(function() {
+                const label = $(this).text().trim();
+                return label === __('Submit') || label === 'Submit';
+            }).hide();
+        }, ms);
+    });
+}
+
 function _generate_detail_kendaraan(frm) {
     var towing_items = (frm.doc.items || []).filter(function(item) {
         return item.item_code && (
@@ -148,12 +160,135 @@ var _update_item_qty = function(frm) {
     frm.refresh_field('items');
 };
 
+const DO_TOWING_STATUS_COLORS = {
+	Draft: "red",
+	Assigned: "orange",
+	"Pick Up": "purple",
+	Delivered: "green",
+	"Awaiting Dokument": "yellow",
+	Done: "darkgreen",
+	Cancelled: "gray",
+};
+
+const INVOICE_DOC_FIELDS = ["attachment_invoice", "tanggal_invoice"];
+
+function is_invoice_document_status(status) {
+	return status === "Awaiting Dokument" || status === "Done";
+}
+
+function sync_invoice_document_fields(frm) {
+	const show = is_invoice_document_status(frm.doc.status);
+
+	INVOICE_DOC_FIELDS.forEach((fieldname) => {
+		const field = frm.fields_dict[fieldname];
+		if (!field) {
+			return;
+		}
+
+		field.df.allow_on_submit = show ? 1 : 0;
+		field.df.read_only = frm.doc.status === "Done" ? 1 : 0;
+		if (show) {
+			field.df.hidden = 0;
+			field.df.hidden_due_to_dependency = 0;
+		}
+	});
+}
+
+function install_do_status_indicator(frm) {
+	if (!frm.toolbar || frm._do_status_indicator_patched) {
+		return;
+	}
+	frm._do_status_indicator_patched = true;
+
+	const default_set_indicator = frm.toolbar.set_indicator.bind(frm.toolbar);
+	frm.toolbar.set_indicator = function () {
+		if (frm.doc.__unsaved) {
+			frm.page.set_indicator(__("Not Saved"), "orange");
+			return;
+		}
+
+		const status = frm.doc.status;
+		if (status) {
+			frm.page.set_indicator(
+				__(status),
+				DO_TOWING_STATUS_COLORS[status] || "gray"
+			);
+			return;
+		}
+
+		default_set_indicator();
+	};
+}
+
+function set_do_status_indicator(frm) {
+	install_do_status_indicator(frm);
+
+	if (frm.doc.__unsaved) {
+		frm.page.set_indicator(__("Not Saved"), "orange");
+		return;
+	}
+
+	const status = frm.doc.status;
+	if (status) {
+		frm.page.set_indicator(__(status), DO_TOWING_STATUS_COLORS[status] || "gray");
+	} else if (frm.toolbar) {
+		frm.toolbar.set_indicator();
+	}
+}
+
+function apply_do_workflow_action(frm, action, options = {}) {
+	const { before_apply, after_apply } = options;
+
+	return Promise.resolve(before_apply ? before_apply(frm) : null)
+		.then(() => {
+			if (frm.is_dirty()) {
+				return frm.save();
+			}
+		})
+		.then(() => {
+			frappe.dom.freeze(__("Memproses..."));
+			return frappe.xcall("frappe.model.workflow.apply_workflow", {
+				doc: frm.doc,
+				action,
+			});
+		})
+		.then(() => (after_apply ? after_apply(frm) : null))
+		.then(() => frm.reload_doc())
+		.then(() => {
+			sync_invoice_document_fields(frm);
+			if (frm.layout) {
+				frm.layout.refresh_dependency();
+			}
+			frm.refresh_fields();
+			set_do_status_indicator(frm);
+		})
+		.finally(() => frappe.dom.unfreeze());
+}
+
 frappe.ui.form.on('Delivery Order Towing', {
+
+    onload(frm) {
+        install_do_status_indicator(frm);
+    },
+
+    onload_post_render(frm) {
+        set_do_status_indicator(frm);
+    },
+
+    status(frm) {
+        sync_invoice_document_fields(frm);
+        if (frm.layout) {
+            frm.layout.refresh_dependency();
+        }
+        frm.refresh_fields();
+        set_do_status_indicator(frm);
+    },
 
     // ── REFRESH FORM ──────────────────────────────────────────
     refresh: function(frm) {
      if (!frm.is_new()) {
     const editable_fields = ['driver', 'driver_nama', 'koordinator', 'kendaraan_towing'];
+    sync_invoice_document_fields(frm);
 
     frm.fields.forEach(function(f) {
         const fn = f.df.fieldname;
@@ -161,6 +296,11 @@ frappe.ui.form.on('Delivery Order Towing', {
             f.df.hidden = 1;
             f.df.read_only = 1;
             f.df.allow_on_submit = 0;
+        } else if (
+            is_invoice_document_status(frm.doc.status) &&
+            INVOICE_DOC_FIELDS.includes(fn)
+        ) {
+            // Field invoice ditangani sync_invoice_document_fields()
         } else if (!editable_fields.includes(fn) &&
             f.df.fieldtype !== 'Section Break' &&
             f.df.fieldtype !== 'Column Break') {
@@ -172,6 +312,9 @@ frappe.ui.form.on('Delivery Order Towing', {
     });
 
     frm.refresh_fields();
+    if (frm.layout) {
+        frm.layout.refresh_dependency();
+    }
 
     // Force hide harga_jasa via DOM
     setTimeout(function() {
@@ -181,23 +324,26 @@ frappe.ui.form.on('Delivery Order Towing', {
     }, 200);
 }
 
-        frm.trigger('set_status_indicator');
+        set_do_status_indicator(frm);
         frm.trigger('render_custom_buttons');
         frm.trigger('set_field_readonly_by_role');
+
+        if (frm.doc.docstatus === 0) {
+            _hide_native_submit_btn(frm);
+        }
 
         // Tampilkan status invoice live dari Finance Imogi
         if (frm.doc.sales_invoice && frm.doc.status === 'Done') {
             frm.trigger('refresh_invoice_status');
         }
+
+        // toolbar.refresh() dipanggil setelah handler ini — set ulang indikator workflow.
+        frappe.after_ajax(() => set_do_status_indicator(frm));
     },
 
     // ── INDIKATOR STATUS ──────────────────────────────────────
     set_status_indicator: function(frm) {
-        const map = {
-            Draft: 'gray', Assigned: 'orange', 'Pick Up': 'blue',
-            Delivered: 'green', Done: 'darkgreen', Cancelled: 'red'
-        };
-        frm.page.set_indicator(frm.doc.status, map[frm.doc.status] || 'gray');
+        set_do_status_indicator(frm);
     },
 
     // ── TOMBOL CUSTOM ─────────────────────────────────────────
@@ -247,25 +393,9 @@ frappe.ui.form.on('Delivery Order Towing', {
                         frm.trigger('action_delivered');
                     }, __('Aksi')).addClass('btn-primary');
                 }
-                // Delivered → driver selesaikan DO (ubah ke Awaiting Dokumen)
-                // Setelah Awaiting Dokumen, hanya Admin Towing yg bisa Konfirmasi Dokumen
                 if (status === 'Delivered') {
                     frm.add_custom_button(__('Selesaikan DO'), () => {
-                        frappe.confirm(
-                            __('Tandai DO <b>{0}</b> sebagai selesai?<br>'
-                               + '<small>Status akan berubah ke <b>Awaiting Dokumen</b>. '
-                               + 'Konfirmasi dokumen selanjutnya dilakukan oleh Admin Towing.</small>',
-                               [frm.doc.name]),
-                            function() {
-                                frm.set_value('status', 'Awaiting Dokument');
-                                frm.save().then(() => {
-                                    frappe.show_alert({
-                                        message: __('Status DO diupdate ke Awaiting Dokumen'),
-                                        indicator: 'orange'
-                                    }, 5);
-                                });
-                            }
-                        );
+                        frm.trigger('action_complete_do');
                     }, __('Aksi')).addClass('btn-success');
                 }
                 // Status Awaiting Dokument → tidak ada tombol untuk driver
@@ -306,7 +436,21 @@ frappe.ui.form.on('Delivery Order Towing', {
             }, __('Aksi')).addClass('btn-primary');
         }
 
-        // ─ Delivered: Selesaikan & Buat Invoice
+        // ─ Delivered: Selesaikan DO
+        if (status === 'Delivered') {
+            frm.add_custom_button(__('Selesaikan DO'), () => {
+                frm.trigger('action_complete_do');
+            }, __('Aksi')).addClass('btn-primary');
+        }
+
+        // ─ Awaiting Dokument: Konfirmasi Dokumen → Done
+        if (status === 'Awaiting Dokument') {
+            frm.add_custom_button(__('Konfirmasi Dokumen'), () => {
+                frm.trigger('action_confirm_document');
+            }, __('Aksi')).addClass('btn-success');
+        }
+
+        // ─ Delivered: shortcut selesaikan + buat invoice (2 langkah workflow)
         if (status === 'Delivered') {
             frm.add_custom_button(__('Selesaikan & Buat Invoice'), () => {
                 frm.trigger('action_done_and_invoice');
@@ -366,13 +510,99 @@ frappe.ui.form.on('Delivery Order Towing', {
         frappe.confirm(
             `Submit DO dan assign ke driver <b>${frm.doc.driver_nama || frm.doc.driver}</b>?`,
             () => {
-                frm.set_value('status', 'Assigned');
-                frm.save('Submit');
+                apply_do_workflow_action(frm, 'Assign Driver').then(() => {
+                    frappe.show_alert({
+                        message: __('Status DO diupdate ke Assigned'),
+                        indicator: 'green',
+                    }, 5);
+                });
             }
         );
     },
 
-    // ── ACTION: BUAT UANG JALAN via FINANCE IMOGI ────────────
+    action_pickup: function(frm) {
+        frappe.prompt([
+            { label: 'Catatan Pick Up', fieldname: 'catatan', fieldtype: 'Small Text' }
+        ], function(vals) {
+            apply_do_workflow_action(frm, 'Konfirmasi Pick Up', {
+                before_apply() {
+                    if (vals.catatan) {
+                        return frm.set_value('catatan_driver', vals.catatan);
+                    }
+                },
+                after_apply() {
+                    frappe.show_alert({ message: 'Status diupdate ke Pick Up', indicator: 'blue' });
+                },
+            });
+        }, 'Konfirmasi Pick Up', 'Konfirmasi');
+    },
+
+    action_delivered: function(frm) {
+        frappe.prompt([
+            { label: 'Catatan Delivered', fieldname: 'catatan', fieldtype: 'Small Text' }
+        ], function(vals) {
+            apply_do_workflow_action(frm, 'Konfirmasi Delivered', {
+                before_apply() {
+                    if (!vals.catatan) {
+                        return;
+                    }
+                    const prev = frm.doc.catatan_driver || '';
+                    return frm.set_value('catatan_driver', prev + '\n[Delivered] ' + vals.catatan);
+                },
+                after_apply() {
+                    frappe.show_alert({ message: 'Status diupdate ke Delivered', indicator: 'green' });
+                },
+            });
+        }, 'Konfirmasi Delivered', 'Konfirmasi');
+    },
+
+    action_complete_do: function(frm) {
+        frappe.confirm(
+            __('Tandai DO <b>{0}</b> sebagai selesai?<br>'
+               + '<small>Status akan berubah ke <b>Awaiting Dokument</b>.</small>', [frm.doc.name]),
+            () => {
+                apply_do_workflow_action(frm, 'Selesaikan DO', {
+                    after_apply() {
+                        frappe.show_alert({
+                            message: __('Status DO diupdate ke Awaiting Dokument'),
+                            indicator: 'orange',
+                        }, 5);
+                    },
+                });
+            }
+        );
+    },
+
+    action_confirm_document: function(frm) {
+        frappe.confirm(
+            __('Konfirmasi dokumen DO <b>{0}</b> selesai?', [frm.doc.name]),
+            () => {
+                apply_do_workflow_action(frm, 'Konfirmasi Dokumen', {
+                    after_apply() {
+                        frappe.show_alert({
+                            message: __('Status DO diupdate ke Done'),
+                            indicator: 'green',
+                        }, 5);
+                    },
+                });
+            }
+        );
+    },
+
+    action_done_and_invoice: function(frm) {
+        frappe.confirm(
+            'Selesaikan DO ini lalu lanjut ke Awaiting Dokument?',
+            function() {
+                apply_do_workflow_action(frm, 'Selesaikan DO').then(() => {
+                    frappe.msgprint({
+                        title: __('Langkah Berikutnya'),
+                        message: __('Setelah dokumen lengkap, gunakan aksi <b>Konfirmasi Dokumen</b> untuk menandai Done.'),
+                        indicator: 'blue',
+                    });
+                });
+            }
+        );
+    },
     action_create_uang_jalan: function(frm) {
         if (!frm.doc.driver) {
             frappe.msgprint('Pilih driver terlebih dahulu.');
@@ -438,49 +668,6 @@ frappe.ui.form.on('Delivery Order Towing', {
                 });
             }, 'Buat Uang Jalan via Finance Imogi', 'Buat');
         });
-    },
-
-    // ── ACTION: KONFIRMASI PICK UP ────────────────────────────
-    action_pickup: function(frm) {
-        frappe.prompt([
-            { label: 'Catatan Pick Up', fieldname: 'catatan', fieldtype: 'Small Text' }
-        ], function(vals) {
-            frm.set_value('status', 'Pick Up');
-            if (vals.catatan) frm.set_value('catatan_driver', vals.catatan);
-            frm.save().then(() =>
-                frappe.show_alert({ message: 'Status diupdate ke Pick Up', indicator: 'blue' })
-            );
-        }, 'Konfirmasi Pick Up', 'Konfirmasi');
-    },
-
-    // ── ACTION: KONFIRMASI DELIVERED ─────────────────────────
-    action_delivered: function(frm) {
-        frappe.prompt([
-            { label: 'Catatan Delivered', fieldname: 'catatan', fieldtype: 'Small Text' }
-        ], function(vals) {
-            frm.set_value('status', 'Delivered');
-            if (vals.catatan) {
-                const prev = frm.doc.catatan_driver || '';
-                frm.set_value('catatan_driver', prev + '\n[Delivered] ' + vals.catatan);
-            }
-            frm.save().then(() =>
-                frappe.show_alert({ message: 'Status diupdate ke Delivered', indicator: 'green' })
-            );
-        }, 'Konfirmasi Delivered', 'Konfirmasi');
-    },
-
-    // ── ACTION: DONE + AUTO INVOICE ke FINANCE IMOGI ─────────
-    action_done_and_invoice: function(frm) {
-        frappe.confirm(
-            'Selesaikan DO ini? Sales Invoice akan otomatis dibuat di <b>Finance Imogi</b> dan ' +
-            'dikirim ke Direktur untuk approval.',
-            function() {
-                frm.set_value('status', 'Done');
-                frm.save().then(() => {
-                    frm.trigger('call_create_invoice');
-                });
-            }
-        );
     },
 
     // ── ACTION: BUAT INVOICE MANUAL (jika sudah Done tapi belum ada invoice) ──

@@ -1,3 +1,38 @@
+// DO Towing: badge form harus ikuti field status, bukan docstatus "Submitted"
+(function () {
+	if (frappe._do_towing_get_indicator_patched) {
+		return;
+	}
+	frappe._do_towing_get_indicator_patched = true;
+
+	const DO_TOWING_STATUS_COLORS = {
+		Draft: "red",
+		Assigned: "orange",
+		"Pick Up": "purple",
+		Delivered: "green",
+		"Awaiting Dokument": "yellow",
+		Done: "darkgreen",
+		Cancelled: "gray",
+		Submitted: "blue",
+	};
+
+	const original_get_indicator = frappe.get_indicator;
+	frappe.get_indicator = function (doc, doctype, show_workflow_state) {
+		const dt = doctype || (doc && doc.doctype);
+		if (dt === "Delivery Order Towing" && doc && !doc.__unsaved) {
+			const status = doc.status;
+			if (status) {
+				return [
+					__(status, null, dt),
+					DO_TOWING_STATUS_COLORS[status] || "gray",
+					"status,=," + status,
+				];
+			}
+		}
+		return original_get_indicator(doc, doctype, show_workflow_state);
+	};
+})();
+
 frappe.after_ajax(function() {
     const _original = frappe.views.ListView.prototype.setup_defaults;
     frappe.views.ListView.prototype.setup_defaults = async function() {

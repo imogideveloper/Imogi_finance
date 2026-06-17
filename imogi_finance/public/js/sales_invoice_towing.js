@@ -48,62 +48,83 @@ function pull_towing_from_delivery_orders(frm) {
 		return;
 	}
 
-	frappe.dom.freeze(__("Mencari Delivery Order towing..."));
-	frappe.call({
-		method: "imogi_finance.overrides.sales_invoice_towing.list_eligible_towing_delivery_orders",
-		args: {
-			company,
-			customer: frm.doc.customer || null,
-		},
-		callback(r) {
-			frappe.dom.unfreeze();
-			const data = r.message || {};
-			const delivery_orders = data.delivery_orders || [];
-
-			if (!delivery_orders.length) {
-				const message = (data.hints || []).join("<br>") || __(
-					"Tidak ada DO Towing berstatus Done/Submitted yang belum ditagih."
-				);
-				frappe.msgprint({
-					title: __("Tidak Ada DO Towing"),
-					message,
-					indicator: "orange",
-				});
-				return;
-			}
-
-			open_towing_delivery_order_dialog(frm, company);
-		},
-		error() {
-			frappe.dom.unfreeze();
-		},
-	});
+	open_towing_delivery_order_dialog(frm, company);
 }
 
 function open_towing_delivery_order_dialog(frm, company) {
-	new frappe.ui.form.MultiSelectDialog({
+	let ms_dialog;
+
+	const setters = [
+		{
+			fieldname: "billing_company",
+			label: __("Company"),
+			fieldtype: "Link",
+			options: "Company",
+			default: company,
+			reqd: 1,
+			onchange() {
+				frappe.flags.auto_scroll = false;
+			},
+		},
+	];
+
+	if (frm.doc.customer) {
+		setters.push({
+			fieldname: "customer",
+			label: __("Customer"),
+			fieldtype: "Link",
+			options: "Customer",
+			default: frm.doc.customer,
+			read_only: 1,
+		});
+	}
+
+	ms_dialog = new frappe.ui.form.MultiSelectDialog({
 		doctype: "Delivery Order Towing",
 		target: frm,
+		setters,
 		size: "large",
 		primary_action_label: __("Tarik DO"),
-		columns: ["name", "nomor_polisi", "status", "customer_name", "tanggal_do", "sales_order"],
+		columns: [
+			"name",
+			"company",
+			"nomor_polisi",
+			"status",
+			"customer_name",
+			"tanggal_do",
+			"sales_order",
+		],
 		get_query() {
+			const selected_company =
+				ms_dialog?.dialog?.fields_dict?.billing_company?.get_value() || company;
+
 			return {
 				query: "imogi_finance.overrides.sales_invoice_towing.get_towing_delivery_order_query",
 				filters: {
-					company,
+					company: selected_company,
 					customer: frm.doc.customer || null,
 				},
 			};
 		},
-		action(selections) {
-			if (!selections || !selections.length) {
+		action(delivery_orders, opts) {
+			if (!delivery_orders || !delivery_orders.length) {
 				frappe.msgprint(__("Pilih minimal 1 Delivery Order Towing."));
 				return;
 			}
-			load_towing_items_into_invoice(frm, selections);
+
+			const dialog_company = opts?.billing_company || company;
+			const pull = () => load_towing_items_into_invoice(frm, delivery_orders);
+
+			if (dialog_company && frm.doc.company !== dialog_company) {
+				frm.set_value("company", dialog_company).then(pull);
+				return;
+			}
+			pull();
 		},
 	});
+
+	// Link field default kadang belum ter-set saat get_results() pertama dipanggil.
+	setTimeout(() => ms_dialog.get_results(), 200);
 }
 
 function is_towing_invoice(frm) {
