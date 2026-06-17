@@ -303,7 +303,7 @@
    "oldfieldname": null,
    "fieldtype": "Select",
    "oldfieldtype": null,
-   "options": "Draft\nSubmitted\nAssigned\nPick Up\nDelivered\nDone\nAwaiting Dokument\nCancelled",
+   "options": "Draft\nAssigned\nPick Up\nDelivered\nDone\nAwaiting Dokument\nCancelled",
    "search_index": 0,
    "show_dashboard": 0,
    "hidden": 0,

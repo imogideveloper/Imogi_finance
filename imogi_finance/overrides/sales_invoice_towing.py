@@ -4,10 +4,10 @@ import frappe
 from erpnext.accounts.party import get_due_date
 from erpnext.controllers.accounts_controller import get_payment_terms
 from frappe import _
-from frappe.utils import cint, flt, getdate, today
+from frappe.utils import cint, flt, formatdate, getdate, today
 
 DEFAULT_TOWING_ITEM = "JASA-TOWING-001"
-BILLABLE_DO_STATUSES = ("Done", "Submitted")
+BILLABLE_DO_STATUSES = ("Done", "Assigned", "Delivered", "Awaiting Dokument")
 
 
 def is_billable_do_status(status: str | None) -> bool:
@@ -366,7 +366,7 @@ def build_towing_invoice_items(
 				skipped.append(
 					{
 						"sales_order": sales_order,
-						"reason": _("Belum ada DO Towing berstatus Done/Submitted."),
+						"reason": _("Belum ada DO Towing yang siap ditagih."),
 					}
 				)
 			continue
@@ -461,7 +461,7 @@ def build_towing_invoice_items_from_delivery_orders(
 			skipped.append(
 				{
 					"delivery_order": do_name,
-					"reason": _("Status DO harus Done atau Submitted (saat ini: {0}).").format(
+					"reason": _("Status DO belum siap ditagih (saat ini: {0}).").format(
 						do.status or "-"
 					),
 				}
@@ -629,7 +629,7 @@ def _debug_delivery_order_eligibility(delivery_order, company=None, customer=Non
 		reasons.append(_("Delivery Order belum Submitted."))
 	if not is_billable_do_status(do.status):
 		reasons.append(
-			_("Status DO harus Done atau Submitted (saat ini: {0}).").format(do.status or "-")
+			_("Status DO belum siap ditagih (saat ini: {0}).").format(do.status or "-")
 		)
 	if do.get("sales_invoice"):
 		reasons.append(_("DO sudah ditagih di {0}.").format(do.sales_invoice))
@@ -700,7 +700,7 @@ def _debug_sales_order_eligibility(sales_order, company=None, customer=None):
 	)
 	uninvoiced = [row.name for row in billable_dos if not row.get("sales_invoice")]
 	if not billable_dos:
-		reasons.append(_("Belum ada DO Towing berstatus Done/Submitted."))
+		reasons.append(_("Belum ada DO Towing yang siap ditagih."))
 	elif not uninvoiced:
 		reasons.append(_("Semua DO billable sudah punya Sales Invoice."))
 
@@ -728,9 +728,10 @@ def _eligible_do_sql(company, customer=None, txt=None):
 		values.append(customer)
 	if txt:
 		conditions.append(
-			"(do.name LIKE %s OR do.nomor_polisi LIKE %s OR do.customer_name LIKE %s OR do.sales_order LIKE %s)"
+			"(do.name LIKE %s OR do.nomor_polisi LIKE %s OR do.customer_name LIKE %s "
+			"OR do.sales_order LIKE %s OR so.company LIKE %s)"
 		)
-		values.extend([f"%{txt}%", f"%{txt}%", f"%{txt}%", f"%{txt}%"])
+		values.extend([f"%{txt}%", f"%{txt}%", f"%{txt}%", f"%{txt}%", f"%{txt}%"])
 
 	return conditions, values
 
@@ -769,7 +770,7 @@ def list_eligible_towing_delivery_orders(company, customer=None):
 	if not rows:
 		hints.append(
 			_(
-				"Tidak ada DO Towing berstatus Done/Submitted yang belum ditagih untuk company {0}."
+				"Tidak ada DO Towing yang siap ditagih untuk company {0}."
 			).format(company)
 		)
 		if customer:
@@ -812,8 +813,10 @@ def list_eligible_towing_sales_orders(company, customer=None):
 
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
-def get_towing_delivery_order_query(doctype, txt, searchfield, start, page_len, filters):
-	"""Link query: DO towing Done/Submitted yang belum ditagih."""
+def get_towing_delivery_order_query(
+	doctype, txt, searchfield, start, page_len, filters, as_dict=False, **kwargs
+):
+	"""Link query: DO towing yang siap ditagih."""
 	filters = frappe.parse_json(filters) if isinstance(filters, str) else (filters or {})
 	company = filters.get("company")
 	customer = filters.get("customer")
@@ -825,10 +828,11 @@ def get_towing_delivery_order_query(doctype, txt, searchfield, start, page_len, 
 	where_clause = " AND ".join(conditions)
 	values.extend([cint(start), cint(page_len)])
 
-	return frappe.db.sql(
+	rows = frappe.db.sql(
 		f"""
 		SELECT
 			do.name,
+			so.company,
 			do.nomor_polisi,
 			do.customer_name,
 			do.tanggal_do,
@@ -841,7 +845,14 @@ def get_towing_delivery_order_query(doctype, txt, searchfield, start, page_len, 
 		LIMIT %s, %s
 		""",
 		tuple(values),
+		as_dict=True,
 	)
+
+	for row in rows:
+		if row.get("tanggal_do"):
+			row["tanggal_do"] = formatdate(row["tanggal_do"])
+
+	return rows
 
 
 @frappe.whitelist()

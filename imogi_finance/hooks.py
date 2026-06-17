@@ -138,6 +138,7 @@ override_doctype_class = {
     "Sales Invoice": "imogi_finance.overrides.sales_invoice.CustomSalesInvoice",
     "Payment Request": "imogi_finance.overrides.payment_request.CustomPaymentRequest",
     "Bank Statement Import": "imogi_finance.overrides.bank_statement_import.CustomBankStatementImport",
+    "Delivery Order Towing": "imogi_finance.overrides.delivery_order_towing.DeliveryOrderTowing",
 }
 
 # Document Events
@@ -465,7 +466,9 @@ doc_events = {
         "validate": "imogi_finance.events.item_price_lock.validate_no_price_change",
     },
     "Delivery Order Towing": {
+        "validate": "imogi_finance.overrides.delivery_order_towing.validate_towing_workflow_status",
         "after_save": "imogi_finance.overrides.delivery_order_towing.after_save",
+        "before_submit": "imogi_finance.overrides.delivery_order_towing.before_submit",
         "on_update_after_submit": "imogi_finance.overrides.delivery_order_towing.on_update_after_submit",
         "on_submit": "imogi_finance.overrides.delivery_order_towing.on_submit",
         "before_cancel": "imogi_finance.overrides.delivery_order_towing.before_cancel_do_towing",

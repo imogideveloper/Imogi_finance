@@ -162,10 +162,18 @@ class DeliveryOrderTowing(Document):
 
     # ── VALIDATE ─────────────────────────────────────────────
     def validate(self):
+        self.normalize_status()
         self.validate_driver_required_on_assign()
         self.validate_invoice_fields_on_awaiting_document()
         self.validate_harga_jasa()
         self.set_customer_name()
+
+    def normalize_status(self):
+        """Status legacy 'Submitted' tidak dipakai — samakan ke Assigned."""
+        if self.status == "Submitted":
+            self.status = "Assigned"
+        if self.docstatus == 1 and self.status == "Draft":
+            self.status = "Assigned"
 
     def validate_driver_required_on_assign(self):
         if self.status == "Assigned" and not self.driver:
@@ -479,11 +487,56 @@ def on_update_after_submit(doc, method=None):
     instance = DeliveryOrderTowing(doc.doctype, doc.name)
     instance.on_update_after_submit()
 
+def before_submit(doc, method=None):
+	"""Simpan status workflow sebelum Frappe reset ke state docstatus=1 pertama."""
+	if doc.doctype != "Delivery Order Towing":
+		return
+
+	preserve = doc.status
+	if preserve in (None, "", "Submitted"):
+		preserve = "Assigned"
+	if preserve and preserve != "Draft":
+		doc.flags.towing_preserve_status = preserve
+
+
+def validate_towing_workflow_status(doc, method=None):
+	"""Pastikan status tidak pernah tertinggal sebagai 'Submitted'."""
+	if doc.doctype != "Delivery Order Towing":
+		return
+
+	if doc.status == "Submitted":
+		doc.status = "Assigned"
+
+	if doc.docstatus == 1 and doc.status == "Draft":
+		doc.status = "Assigned"
+
+
+def restore_towing_status_after_submit(doc, method=None):
+	"""Kembalikan status yang sudah di-set apply_workflow sebelum doc.submit()."""
+	if doc.doctype != "Delivery Order Towing":
+		return
+
+	preserve = getattr(doc.flags, "towing_preserve_status", None)
+	if not preserve and doc.status == "Submitted":
+		preserve = "Assigned"
+
+	if preserve and doc.status != preserve:
+		frappe.db.set_value(
+			"Delivery Order Towing",
+			doc.name,
+			"status",
+			preserve,
+			update_modified=False,
+		)
+		doc.status = preserve
+
+
 def on_submit(doc, method=None):
-    """Hook: dipanggil saat DO di-submit (Draft → Submitted)."""
-    instance = DeliveryOrderTowing(doc.doctype, doc.name)
-    instance.create_po_uang_jalan()
-    populate_towing_to_linked_docs(doc)
+	"""Hook: submit DO Towing + buat PO uang jalan."""
+	restore_towing_status_after_submit(doc, method)
+	instance = DeliveryOrderTowing(doc.doctype, doc.name)
+	instance.create_po_uang_jalan()
+	populate_towing_to_linked_docs(doc)
 
 
 # ──────────────────────────────────────────────────────────────
