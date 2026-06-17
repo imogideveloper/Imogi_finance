@@ -115,6 +115,11 @@ function open_towing_delivery_order_dialog(frm, company) {
 			const dialog_company = opts?.billing_company || company;
 			const pull = () => load_towing_items_into_invoice(frm, delivery_orders);
 
+			// Tutup modal segera setelah user konfirmasi tarik DO.
+			if (ms_dialog?.dialog) {
+				ms_dialog.dialog.hide();
+			}
+
 			if (dialog_company && frm.doc.company !== dialog_company) {
 				frm.set_value("company", dialog_company).then(pull);
 				return;

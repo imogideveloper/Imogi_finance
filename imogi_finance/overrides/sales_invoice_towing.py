@@ -227,6 +227,7 @@ def _delivery_order_fields() -> list[str]:
 	return [
 		"name",
 		"docstatus",
+		"nomor_rangka",
 		"nomor_mesin",
 		"nomor_polisi",
 		"tipe_kendaraan",
@@ -277,17 +278,17 @@ def _build_si_item_from_do(
 	income_account: str | None,
 	cost_center: str | None,
 ) -> dict:
-	nomor_mesin = do.get("nomor_mesin") or do.get("nomor_polisi") or "N/A"
+	nomor_rangka = do.get("nomor_rangka") or do.get("nomor_polisi") or "N/A"
 	tipe = do.get("tipe_kendaraan") or ""
 	merk = do.get("merk_kendaraan") or ""
 	kendaraan = f"{merk} {tipe}".strip() or "Kendaraan"
 	rute = f"{do.get('lokasi_pickup') or '-'} → {do.get('lokasi_tujuan') or '-'}"
 	item_code = do_item_map.get(do.name) or DEFAULT_TOWING_ITEM
-	description = f"Jasa Towing - {nomor_mesin}\n{kendaraan} | {rute}\n{do.name}"
+	description = f"Jasa Towing - {nomor_rangka}\n{kendaraan} | {rute}\n{do.name}"
 
 	return {
 		"item_code": item_code,
-		"item_name": f"Jasa Towing - {nomor_mesin}",
+		"item_name": f"Jasa Towing - {nomor_rangka}",
 		"description": description,
 		"qty": 1,
 		"rate": flt(do.get("harga_jasa") or 0),
