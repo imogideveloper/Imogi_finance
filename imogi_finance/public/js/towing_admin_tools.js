@@ -13,6 +13,10 @@ frappe.ui.form.on('User', {
         frm.add_custom_button(__('🗑️ Purge Towing History'), function() {
             _towing_purge_dialog(frm);
         }, __('🔧 Towing Admin'));
+
+        frm.add_custom_button(__('💣 Purge Semua Transaksi Towing'), function() {
+            _towing_purge_all_dialog(frm);
+        }, __('🔧 Towing Admin')).addClass('btn-danger');
     }
 });
 
@@ -156,6 +160,142 @@ function _execute_purge() {
                     indicator: 'green'
                 });
             }
+        },
+        error() {
+            frappe.dom.unfreeze();
+        }
+    });
+}
+
+
+function _towing_purge_all_dialog(frm) {
+    frappe.dom.freeze(__('Menghitung dokumen towing...'));
+
+    frappe.call({
+        method: 'imogi_finance.api.towing_admin.preview_towing_purge_all',
+        callback(r) {
+            frappe.dom.unfreeze();
+            if (!r.message) return;
+
+            const data = r.message;
+            const counts = data.documents || {};
+            const total = data.total_documents || 0;
+
+            let rows = '';
+            for (const [doctype, count] of Object.entries(counts)) {
+                if (!count) continue;
+                rows += `
+                    <tr>
+                        <td style="padding:4px 8px">${doctype}</td>
+                        <td style="padding:4px 8px;text-align:right"><b>${count}</b></td>
+                    </tr>`;
+            }
+
+            if (total === 0) {
+                frappe.msgprint({
+                    title: __('Tidak Ada Data'),
+                    message: __('Tidak ada dokumen transaksi towing yang bisa dihapus.'),
+                    indicator: 'green'
+                });
+                return;
+            }
+
+            const d = new frappe.ui.Dialog({
+                title: __('⚠️ HAPUS SEMUA Transaksi Towing'),
+                fields: [
+                    {
+                        fieldtype: 'HTML',
+                        options: `
+                            <div style="padding:8px 0">
+                                <p style="color:#c00;font-weight:bold">
+                                    PERINGATAN: Operasi ini TIDAK BISA dibatalkan!
+                                </p>
+                                <p>Akan menghapus permanen <b>${total} dokumen</b> transaksi towing:</p>
+                                <table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:12px">
+                                    <thead>
+                                        <tr style="background:#f5f5f5">
+                                            <th style="padding:4px 8px;text-align:left">DocType</th>
+                                            <th style="padding:4px 8px;text-align:right">Jumlah</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>${rows}</tbody>
+                                </table>
+                                <p style="margin-top:10px;font-size:12px;color:#666">
+                                    Termasuk <b>semua</b> Payment Entry, Sales Invoice, Purchase Invoice,
+                                    Sales Order, Purchase Order, Delivery Order Towing, Expense Claim,
+                                    dan Driver Commission di site ini, plus riwayat Version/Comment/Activity Log.
+                                </p>
+                                <p style="margin-top:12px;color:#d44">
+                                    Ketik <b>HAPUS SEMUA</b> untuk konfirmasi:
+                                </p>
+                            </div>`
+                    },
+                    {
+                        fieldtype: 'Data',
+                        fieldname: 'konfirmasi',
+                        label: 'Konfirmasi',
+                        placeholder: 'Ketik: HAPUS SEMUA'
+                    }
+                ],
+                primary_action_label: __('💣 Hapus Semua Sekarang'),
+                primary_action(values) {
+                    if (values.konfirmasi !== 'HAPUS SEMUA') {
+                        frappe.show_alert({
+                            message: __('Ketik "HAPUS SEMUA" (huruf kapital semua) untuk konfirmasi'),
+                            indicator: 'red'
+                        }, 4);
+                        return;
+                    }
+                    d.hide();
+                    _execute_purge_all();
+                }
+            });
+            d.show();
+        },
+        error() {
+            frappe.dom.unfreeze();
+        }
+    });
+}
+
+
+function _execute_purge_all() {
+    frappe.dom.freeze(__('Menghapus semua transaksi towing...'));
+
+    frappe.call({
+        method: 'imogi_finance.api.towing_admin.purge_towing_transactions',
+        args: { confirm: 'HAPUS SEMUA' },
+        callback(r) {
+            frappe.dom.unfreeze();
+            if (!r.message) return;
+
+            const res = r.message;
+            let detail_html = '<ul style="margin-top:8px">';
+            for (const [doctype, count] of Object.entries(res.documents || {})) {
+                if (count > 0) {
+                    detail_html += `<li>${doctype}: <b>${count}</b> dokumen</li>`;
+                }
+            }
+            detail_html += '</ul>';
+
+            let failed_html = '';
+            if (res.failed && res.failed.length) {
+                failed_html = '<p style="color:#c00;margin-top:8px"><b>Beberapa dokumen gagal dihapus:</b><br>'
+                    + res.failed.join('<br>') + '</p>';
+            }
+
+            frappe.msgprint({
+                title: res.success ? __('✅ Purge Selesai') : __('⚠️ Purge Selesai dengan Error'),
+                message: `
+                    <b>${res.total_documents_deleted} dokumen</b> dihapus.
+                    <b>${res.history_deleted || 0} record riwayat</b> dibersihkan.
+                    ${detail_html}
+                    ${failed_html}
+                    <p style="color:#666;font-size:12px;margin-top:8px">
+                        Log operasi dicatat di Error Log.
+                    </p>`,
+                indicator: res.success ? 'green' : 'orange'
+            });
         },
         error() {
             frappe.dom.unfreeze();

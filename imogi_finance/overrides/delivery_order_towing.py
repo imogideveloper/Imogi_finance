@@ -1179,11 +1179,9 @@ def cancel_do_from_sales_order(doc, method=None):
 # ──────────────────────────────────────────────────────────────────────────
 
 def before_cancel_do_towing(doc, method=None):
-    """
-    Hook: before_cancel pada Delivery Order Towing.
-    Auto-cancel PO (Draft maupun Submitted) asal PO tidak punya PI/PE aktif.
-    Jika PO punya PI/PE aktif → BLOCK.
-    """
+    """Hook: before_cancel pada Delivery Order Towing."""
+    if frappe.flags.get("in_towing_purge"):
+        return
     if doc.flags.get("skip_cancel_check"):
         return
 
@@ -1262,15 +1260,9 @@ def before_cancel_do_towing(doc, method=None):
 # ──────────────────────────────────────────────────────────────────────────
 
 def before_cancel_po_uang_jalan(doc, method=None):
-    """
-    Hook: before_cancel pada Purchase Order Uang Jalan.
-
-    Alur:
-      1. Cek setiap PI yang ter-link ke PO ini.
-         - Jika PI punya PE aktif → BLOCK (user harus cancel PE dulu).
-         - Jika PI tidak punya PE aktif → auto-cancel PI (Draft maupun Submitted).
-      2. Setelah semua PI di-cancel/hapus, bersihkan link di DO, lanjutkan cancel PO.
-    """
+    """Hook: before_cancel pada Purchase Order Uang Jalan."""
+    if frappe.flags.get("in_towing_purge"):
+        return
     if doc.flags.get("skip_cancel_check"):
         return
 
@@ -1858,10 +1850,9 @@ def on_trash_po_uang_jalan(doc, method=None):
 # ══════════════════════════════════════════════════════════════════════════
 
 def before_cancel_pi_auto_cancel_pe(doc, method=None):
-    """
-    Hook: before_cancel pada Purchase Invoice.
-    Auto-cancel semua Payment Entry yang ter-link ke PI ini.
-    """
+    """Hook: before_cancel pada Purchase Invoice."""
+    if frappe.flags.get("in_towing_purge"):
+        return
     if doc.flags.get("skip_cancel_check"):
         return
 
