@@ -141,6 +141,66 @@ def _apply_payment_terms_to_doc(doc, sales_orders: list[str]) -> None:
 		doc.due_date = terms["due_date"]
 
 
+def _clean_address_lines(lines: list[str]) -> list[str]:
+	"""Remove empty and duplicate address lines while preserving order."""
+	cleaned: list[str] = []
+	seen: set[str] = set()
+	for line in lines:
+		part = (line or "").strip()
+		if not part:
+			continue
+		key = part.casefold()
+		if key in seen:
+			continue
+		seen.add(key)
+		cleaned.append(part)
+	return cleaned
+
+
+def format_towing_customer_address(doc) -> str:
+	"""Format customer address for towing invoice print without duplicate lines."""
+	address_name = doc.get("customer_address")
+	if address_name and frappe.db.exists("Address", address_name):
+		addr = frappe.get_doc("Address", address_name)
+		lines: list[str] = []
+
+		line1 = (addr.address_line1 or "").strip()
+		line2 = (addr.address_line2 or "").strip()
+		if line1:
+			lines.append(line1)
+		if line2 and line2.casefold() != line1.casefold():
+			lines.append(line2)
+
+		city = (addr.city or "").strip()
+		state = (addr.state or addr.county or "").strip()
+		pincode = (addr.pincode or "").strip()
+		country = (addr.country or "").strip()
+
+		existing = {part.casefold() for part in lines}
+		locality_parts = []
+		for part in _clean_address_lines([city, state]):
+			if part.casefold() not in existing:
+				locality_parts.append(part)
+				existing.add(part.casefold())
+		locality = ", ".join(locality_parts)
+		if pincode:
+			locality = f"{locality} {pincode}".strip(", ").strip()
+		if locality:
+			lines.append(locality)
+		if country:
+			lines.append(country)
+
+		return "\n".join(_clean_address_lines(lines))
+
+	raw = (doc.get("address_display") or "").strip()
+	if not raw:
+		return ""
+
+	raw = raw.replace("<br>", "\n").replace("<br/>", "\n").replace("<br />", "\n")
+	lines = _clean_address_lines(raw.replace("\r\n", "\n").split("\n"))
+	return "\n".join(lines)
+
+
 def get_towing_print_payment_info(doc) -> dict:
 	"""Resolve payment terms and due date for towing invoice print/PDF."""
 	sales_orders = list(

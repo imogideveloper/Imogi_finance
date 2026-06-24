@@ -1,6 +1,4 @@
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-
   .towing-invoice * {
     box-sizing: border-box;
     margin: 0;
@@ -8,38 +6,38 @@
   }
 
   .towing-invoice {
-    font-family: 'Plus Jakarta Sans', Arial, sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
     font-size: 11px;
-    color: #1a1a2e;
+    color: #c2410c;
     background: #fff;
     width: 100%;
     max-width: 800px;
     margin: 0 auto;
   }
 
-  /* ── PAGE BREAK ── */
-  .page-break {
-    page-break-after: always;
-    margin-bottom: 30px;
-  }
-
-  @media print {
-    .page-break {
-      margin-bottom: 0;
-    }
-  }
-
   /* ── HEADER ── */
   .inv-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    background: #0f2557;
-    color: #fff;
+    display: table;
+    width: 100%;
+    background: #fff;
+    color: #c2410c;
     padding: 24px 28px 20px;
+    border: 1px solid #fed7aa;
     border-radius: 4px 4px 0 0;
+    border-bottom: 3px solid #ea580c;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+
+  .inv-header-left,
+  .inv-header-right {
+    display: table-cell;
+    vertical-align: top;
+  }
+
+  .inv-header-right {
+    text-align: right;
+    width: 40%;
   }
 
   .inv-header-left .company-name {
@@ -47,26 +45,14 @@
     font-weight: 800;
     letter-spacing: -0.5px;
     line-height: 1;
-  }
-
-  .inv-header-left .company-sub {
-    font-size: 9px;
-    font-weight: 500;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    opacity: 0.7;
-    margin-top: 3px;
+    color: #c2410c;
   }
 
   .inv-header-left .company-address {
     font-size: 9px;
-    opacity: 0.65;
+    color: #9a3412;
     margin-top: 10px;
     line-height: 1.6;
-  }
-
-  .inv-header-right {
-    text-align: right;
   }
 
   .inv-header-right .inv-label {
@@ -74,34 +60,36 @@
     font-weight: 800;
     letter-spacing: 3px;
     text-transform: uppercase;
-    color: #f0b429;
+    color: #c2410c;
   }
 
   .inv-header-right .inv-number {
     font-size: 11px;
-    opacity: 0.8;
+    color: #9a3412;
     margin-top: 4px;
   }
 
   .inv-header-right .inv-dates {
     margin-top: 8px;
     font-size: 9.5px;
-    opacity: 0.7;
+    color: #9a3412;
     line-height: 1.7;
   }
 
   /* ── META ROW ── */
   .inv-meta {
-    display: flex;
-    background: #f7f9fc;
-    border: 1px solid #e2e8f0;
+    display: table;
+    width: 100%;
+    background: #fff;
+    border: 1px solid #fed7aa;
     border-top: none;
   }
 
   .inv-meta-block {
-    flex: 1;
+    display: table-cell;
     padding: 14px 20px;
-    border-right: 1px solid #e2e8f0;
+    border-right: 1px solid #fed7aa;
+    width: 25%;
   }
 
   .inv-meta-block:last-child {
@@ -113,28 +101,38 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    color: #64748b;
+    color: #9a3412;
     margin-bottom: 4px;
   }
 
   .inv-meta-block .meta-value {
     font-size: 11px;
     font-weight: 700;
-    color: #0f2557;
+    color: #c2410c;
   }
 
   /* ── BILLING ── */
   .inv-billing {
-    display: flex;
+    display: table;
+    width: 100%;
     padding: 18px 20px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #fed7aa;
     border-top: none;
+    background: #fff;
   }
 
-  .inv-billing-to { flex: 1; }
+  .inv-billing-to,
+  .inv-billing-from {
+    display: table-cell;
+    vertical-align: top;
+    width: 50%;
+  }
+
+  .inv-billing-to {
+    text-align: left;
+  }
 
   .inv-billing-from {
-    flex: 1;
     text-align: right;
   }
 
@@ -143,36 +141,34 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    color: #64748b;
+    color: #9a3412;
     margin-bottom: 5px;
   }
 
   .billing-name {
     font-size: 13px;
     font-weight: 700;
-    color: #0f2557;
+    color: #c2410c;
   }
 
   .billing-detail {
     font-size: 9.5px;
-    color: #475569;
+    color: #9a3412;
     line-height: 1.7;
     margin-top: 3px;
   }
 
-  /* ── ITEMS TABLE (PRINT SAFE VERSION - DARK TEXT ON LIGHT BG) ── */
+  /* ── ITEMS TABLE ── */
   .inv-table {
     width: 100%;
     border-collapse: collapse;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #fed7aa;
     border-top: none;
   }
 
-  /* PRINT-SAFE: Dark background with white text changed to light background with dark text */
   .inv-table thead tr {
-    background: #e0e7ff;
-    background-color: #e0e7ff !important;
-    border-bottom: 3px solid #0f2557;
+    background: #fff;
+    border-bottom: 3px solid #ea580c;
   }
 
   .inv-table thead th {
@@ -182,24 +178,25 @@
     text-transform: uppercase;
     letter-spacing: 1px;
     text-align: left;
-    color: #0f2557 !important;
-    background-color: #e0e7ff !important;
+    color: #9a3412 !important;
+    background: #fff !important;
   }
 
   .inv-table thead th.right { text-align: right; }
 
   .inv-table tbody tr {
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid #fed7aa;
   }
 
   .inv-table tbody tr:nth-child(even) {
-    background: #f8fafc;
+    background: #fff;
   }
 
   .inv-table tbody td {
     padding: 12px 14px;
     vertical-align: top;
     font-size: 10.5px;
+    color: #c2410c;
   }
 
   .inv-table tbody td.right {
@@ -208,35 +205,23 @@
     white-space: nowrap;
   }
 
-  .inv-table.continuation {
-    border-top: 1px solid #e2e8f0;
-  }
-
-  .inv-table.continuation tbody td {
-    padding-top: 14px;
-  }
-
-  .inv-table.continuation tbody tr:first-child td {
-    padding-top: 12px;
-  }
-
   .item-main {
     font-weight: 700;
-    color: #0f2557;
+    color: #c2410c;
     font-size: 11px;
   }
 
   .item-sub {
     font-size: 9.5px;
-    color: #475569;
+    color: #9a3412;
     margin-top: 2px;
   }
 
-  /* ── TOTALS TABLE (full width) ── */
+  /* ── TOTALS ── */
   .inv-totals-table {
     width: 100%;
     border-collapse: collapse;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #fed7aa;
     border-top: none;
   }
 
@@ -245,49 +230,39 @@
     font-size: 10.5px;
   }
 
-  .inv-totals-table .subtotal-row td {
-    color: #64748b;
-    background: #f8fafc;
-  }
-
-  .inv-totals-table .subtotal-row td.value {
-    text-align: right;
-    font-weight: 600;
-    color: #1a1a2e;
-  }
-
   .inv-totals-table .tax-row td {
-    color: #64748b;
-    border-top: 1px dashed #e2e8f0;
+    color: #c2410c;
+    background: #fff;
+    border-top: 1px dashed #fed7aa;
   }
 
   .inv-totals-table .tax-row td.value {
     text-align: right;
     font-weight: 600;
-    color: #1a1a2e;
+    color: #c2410c;
   }
 
   .inv-totals-table .total-row {
-    background: #0f2557;
+    background: #fff;
+    border-top: 3px solid #ea580c;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
-    color-adjust: exact;
   }
 
   .inv-totals-table .total-row td {
     padding: 12px 16px;
     font-size: 13px;
     font-weight: 800;
-    color: #fff !important;
+    color: #c2410c !important;
     border-top: none;
+    background: #fff;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
-    color-adjust: exact;
   }
 
   .inv-totals-table .total-row td.value {
     text-align: right;
-    color: #f0b429 !important;
+    color: #c2410c !important;
     font-size: 15px;
   }
 
@@ -298,12 +273,12 @@
   /* ── TERBILANG ── */
   .inv-terbilang {
     width: 100%;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #fed7aa;
     border-top: none;
     padding: 10px 16px;
-    background: #fffbeb;
+    background: #fff;
     font-size: 9.5px;
-    color: #92400e;
+    color: #9a3412;
     font-style: italic;
     display: block;
   }
@@ -315,13 +290,27 @@
 
   /* ── FOOTER ── */
   .inv-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    border: 1px solid #e2e8f0;
+    display: table;
+    width: 100%;
+    border: 1px solid #fed7aa;
     border-top: none;
     padding: 16px 20px;
-    background: #f7f9fc;
+    background: #fff;
+    border-radius: 0 0 4px 4px;
+  }
+
+  .inv-payment-info {
+    display: table-cell;
+    background: #fff;
+    vertical-align: bottom;
+  }
+
+  .inv-signature {
+    display: table-cell;
+    vertical-align: bottom;
+    text-align: center;
+    width: 180px;
+    background: #fff;
   }
 
   .inv-payment-info .pay-label {
@@ -329,261 +318,263 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    color: #64748b;
+    color: #9a3412;
     margin-bottom: 5px;
   }
 
   .inv-payment-info .pay-detail {
     font-size: 9.5px;
-    color: #334155;
-    line-height: 1.7;
+    color: #c2410c;
+    line-height: 1.1;
+    background: #fff;
   }
 
-  .inv-signature {
+  .pay-block {
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+
+  .pay-intro {
+    font-weight: 700;
+    color: #c2410c;
+    margin: 0;
+    padding: 0;
+    line-height: 1.15;
+  }
+
+  .pay-lines {
+    margin: 1px 0 0 10px;
+    padding: 0;
+  }
+
+  .pay-line {
+    margin: 0;
+    padding: 0;
+    line-height: 1.1;
+    font-size: 9.5px;
+    color: #c2410c;
+  }
+
+  .pay-line .pay-key {
+    display: inline-block;
+    width: 88px;
+    white-space: nowrap;
+    color: #c2410c;
+  }
+
+  .pay-line .pay-sep {
+    display: inline-block;
+    width: 10px;
     text-align: center;
-    min-width: 150px;
+    color: #c2410c;
+  }
+
+  .pay-note {
+    margin: 4px 0 0 0;
+    padding: 0;
+    font-size: 9.5px;
+    color: #9a3412;
+    line-height: 1.15;
   }
 
   .inv-signature .sig-line {
-    border-top: 1px solid #94a3b8;
+    border-top: 1px solid #fdba74;
     padding-top: 6px;
     font-size: 9px;
-    color: #64748b;
+    color: #9a3412;
   }
 
   .inv-signature .sig-name {
     font-size: 10px;
     font-weight: 700;
-    color: #0f2557;
+    color: #c2410c;
     margin-top: 2px;
   }
 
-  /* ── BOTTOM BAR ── */
-  .inv-bottom-bar {
-    background: #0f2557;
-    color: rgba(255,255,255,0.6);
-    font-size: 8.5px;
-    padding: 8px 20px;
-    display: flex;
-    justify-content: space-between;
-    border-radius: 0 0 4px 4px;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-    color-adjust: exact;
-  }
-  
-  /* PRINT OVERRIDES */
   @media print {
     * {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
-      color-adjust: exact !important;
     }
-    
+
+    .towing-invoice {
+      max-width: none;
+    }
+
     .inv-header {
-      background: #0f2557 !important;
+      background: #fff !important;
+      color: #c2410c !important;
     }
-    
+
+    .inv-header .company-name,
+    .inv-header .inv-label,
+    .inv-header .company-address,
+    .inv-header .inv-number,
+    .inv-header .inv-dates {
+      color: #c2410c !important;
+    }
+
     .inv-table thead th {
-      color: #0f2557 !important;
-      background: #e0e7ff !important;
+      color: #9a3412 !important;
+      background: #fff !important;
     }
-    
+
     .inv-totals-table .total-row {
-      background: #0f2557 !important;
+      background: #fff !important;
     }
-    
+
     .inv-totals-table .total-row td {
-      color: #ffffff !important;
+      color: #c2410c !important;
+      background: #fff !important;
     }
-    
-    .inv-totals-table .total-row td.value {
-      color: #f0b429 !important;
-    }
-    
-    .inv-bottom-bar {
-      background: #0f2557 !important;
-      color: rgba(255,255,255,0.6) !important;
+
+    .inv-footer,
+    .inv-payment-info,
+    .inv-signature,
+    .inv-terbilang,
+    .pay-detail,
+    .pay-block {
+      background: #fff !important;
     }
   }
 </style>
 
 {% set company = frappe.get_doc("Company", doc.company) %}
-{% set company_address = frappe.get_all("Address", filters={"name": doc.company_address}, fields=["address_line1", "address_line2", "city", "pincode"], limit=1) %}
 {% set payment_info = get_towing_print_payment_info(doc) %}
 {% set print_due_date = payment_info.due_date %}
 {% set print_payment_terms = payment_info.payment_terms_template %}
 
-{# ── PAGINATION LOGIC ── #}
-{% set items_per_page = 5 %}
-{% set total_items = doc.items | length %}
-{% set total_pages = ((total_items - 1) // items_per_page) + 1 if total_items > 0 else 1 %}
+<div class="towing-invoice">
 
-{# ── LOOP THROUGH PAGES ── #}
-{% for page_num in range(1, total_pages + 1) %}
-  {% set start_idx = (page_num - 1) * items_per_page %}
-  {% set end_idx = start_idx + items_per_page %}
-  {% set page_items = doc.items[start_idx:end_idx] %}
-  {% set page_subtotal = page_items | sum(attribute='amount') %}
-
-  <div class="towing-invoice{% if page_num < total_pages %} page-break{% endif %}">
-
-    <!-- HEADER (only on first page) -->
-    {% if page_num == 1 %}
-    <div class="inv-header">
-      <div class="inv-header-left">
-        <div class="company-name">{{ company.company_name }}</div>
-        <div class="company-sub">PT. {{ company.company_name }}</div>
-        <div class="company-address">
-          {% if company_address %}
-            {{ company_address[0].address_line1 or "" }}{% if company_address[0].address_line2 %}, {{ company_address[0].address_line2 }}{% endif %}{% if company_address[0].city %}, {{ company_address[0].city }}{% endif %}{% if company_address[0].pincode %} {{ company_address[0].pincode }}{% endif %}<br>
-          {% endif %}
-          {% if company.phone_no %}{{ company.phone_no }}{% endif %}{% if company.email %} &nbsp;|&nbsp; {{ company.email }}{% endif %}
-        </div>
-      </div>
-      <div class="inv-header-right">
-        <div class="inv-label">Invoice</div>
-        <div class="inv-number">{{ doc.name }}</div>
-        <div class="inv-dates">
-          Tanggal: {{ frappe.format(doc.posting_date, {"fieldtype": "Date"}) }}<br>
-          {% if print_payment_terms %}Syarat Bayar: {{ print_payment_terms }}<br>{% endif %}
-          Jatuh Tempo: {{ frappe.format(print_due_date, {"fieldtype": "Date"}) if print_due_date else "-" }}
-        </div>
+  <div class="inv-header">
+    <div class="inv-header-left">
+      <div class="company-name">PT. {{ company.company_name }}</div>
+      <div class="company-address">
+        Fatmawati Festival, JL. RS. Fatmawati Raya, Blok A/8, Kel. Cilandak Barat, Kec. Cilandak, Kota Adm. Jakarta Selatan, Provinsi DKI Jakarta 12430<br>
+        {% if company.phone_no %}{{ company.phone_no }}{% endif %}{% if company.email %} &nbsp;|&nbsp; {{ company.email }}{% endif %}
       </div>
     </div>
-    {% endif %}
-
-    <!-- META (only on first page) -->
-    {% if page_num == 1 %}
-    <div class="inv-meta">
-      <div class="inv-meta-block">
-        <div class="meta-label">Sales Order</div>
-        <div class="meta-value">{{ doc.items[0].sales_order if doc.items and doc.items[0].sales_order else "-" }}</div>
-      </div>
-      <div class="inv-meta-block">
-        <div class="meta-label">Periode</div>
-        <div class="meta-value">{{ frappe.format(doc.posting_date, {"fieldtype": "Date"}) }}</div>
-      </div>
-      <div class="inv-meta-block">
-        <div class="meta-label">Jumlah Kendaraan</div>
-        <div class="meta-value">{{ doc.items | length }} unit</div>
-      </div>
-      <div class="inv-meta-block">
-        <div class="meta-label">Status</div>
-        <div class="meta-value">{{ doc.status }}</div>
+    <div class="inv-header-right">
+      <div class="inv-label">Invoice</div>
+      <div class="inv-number">{{ doc.name }}</div>
+      <div class="inv-dates">
+        Tanggal: {{ frappe.format(doc.posting_date, {"fieldtype": "Date"}) }}<br>
+        {% if print_payment_terms %}Syarat Bayar: {{ print_payment_terms }}<br>{% endif %}
+        Jatuh Tempo: {{ frappe.format(print_due_date, {"fieldtype": "Date"}) if print_due_date else "-" }}
       </div>
     </div>
-
-    <!-- BILLING (only on first page) -->
-    <div class="inv-billing">
-      <div class="inv-billing-to">
-        <div class="billing-label">Ditagihkan Kepada</div>
-        <div class="billing-name">{{ doc.customer_name or doc.customer }}</div>
-        <div class="billing-detail">
-          {% if doc.address_display %}{{ doc.address_display | replace("\n", "<br>") }}{% endif %}
-        </div>
-      </div>
-      <div class="inv-billing-from">
-        <div class="billing-label">Dari</div>
-        <div class="billing-name">{{ company.company_name }}</div>
-        <div class="billing-detail">
-          {% if company.tax_id %}NPWP: {{ company.tax_id }}<br>{% endif %}
-          {% if company.default_bank_account %}Bank: {{ company.default_bank_account }}<br>{% endif %}
-          A/N: {{ company.company_name }}
-        </div>
-      </div>
-    </div>
-    {% endif %}
-
-    <!-- ITEMS TABLE (current page items) -->
-    <table class="inv-table{% if page_num > 1 %} continuation{% endif %}">
-      {% if page_num == 1 %}
-      <thead>
-        <tr>
-          <th style="width:30px">No</th>
-          <th>Deskripsi Jasa</th>
-          <th class="right" style="width:60px">Qty</th>
-          <th class="right" style="width:120px">Harga</th>
-          <th class="right" style="width:120px">Jumlah</th>
-        </tr>
-      </thead>
-      {% endif %}
-      <tbody>
-        {% for item in page_items %}
-        <tr>
-          <td>{{ start_idx + loop.index }}</td>
-          <td>
-            {% set desc_lines = (item.description or item.item_name or "").split("\n") %}
-            <div class="item-main">{{ desc_lines[0] if desc_lines | length > 0 else "-" }}</div>
-            {% if desc_lines | length > 1 %}
-              <div class="item-sub">{{ desc_lines[1] }}</div>
-            {% endif %}
-          </td>
-          <td class="right">{{ item.qty | int }} unit</td>
-          <td class="right">Rp {{ "{:,.0f}".format(item.rate) }}</td>
-          <td class="right">Rp {{ "{:,.0f}".format(item.amount) }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-
-    <!-- PAGE SUBTOTAL -->
-    <table class="inv-totals-table">
-      <tr class="subtotal-row">
-        <td class="spacer"></td>
-        <td>Subtotal Halaman {{ page_num }}</td>
-        <td class="value">Rp {{ "{:,.0f}".format(page_subtotal) }}</td>
-      </tr>
-    </table>
-
-    <!-- GRAND TOTAL (only on last page) -->
-    {% if page_num == total_pages %}
-      <table class="inv-totals-table">
-        {% for tax in doc.taxes %}
-        <tr class="tax-row">
-          <td class="spacer"></td>
-          <td>{{ tax.description }}</td>
-          <td class="value">Rp {{ "{:,.0f}".format(tax.tax_amount) }}</td>
-        </tr>
-        {% endfor %}
-        <tr class="total-row">
-          <td class="spacer"></td>
-          <td>TOTAL</td>
-          <td class="value">Rp {{ "{:,.0f}".format(doc.grand_total) }}</td>
-        </tr>
-      </table>
-
-      <!-- TERBILANG (only on last page) -->
-      {% if doc.in_words %}
-      <div class="inv-terbilang">
-        <strong>Terbilang:</strong> {{ doc.in_words }}
-      </div>
-      {% endif %}
-
-      <!-- FOOTER (only on last page) -->
-      <div class="inv-footer">
-        <div class="inv-payment-info">
-          <div class="pay-label">Catatan Pembayaran</div>
-          <div class="pay-detail">
-            {% if company.default_bank_account %}Transfer ke {{ company.default_bank_account }} a/n {{ company.company_name }}.<br>{% endif %}
-            Cantumkan nomor invoice pada keterangan transfer.
-          </div>
-        </div>
-        <div class="inv-signature">
-          <div style="height: 50px;"></div>
-          <div class="sig-line">Hormat Kami,</div>
-          <div class="sig-name">{{ company.company_name }}</div>
-          <div style="font-size:9px;color:#94a3b8;margin-top:2px;">Authorized Signature</div>
-        </div>
-      </div>
-    {% endif %}
-
-    <!-- BOTTOM BAR (on every page) -->
-    <div class="inv-bottom-bar">
-      <span>{{ company.company_name }} — Dokumen dibuat secara otomatis oleh sistem.</span>
-      <span>Halaman {{ page_num }} / {{ total_pages }}</span>
-    </div>
-
   </div>
 
-{% endfor %}
+  <div class="inv-meta">
+    <div class="inv-meta-block">
+      <div class="meta-label">Sales Order</div>
+      <div class="meta-value">{{ doc.items[0].sales_order if doc.items and doc.items[0].sales_order else "-" }}</div>
+    </div>
+    <div class="inv-meta-block">
+      <div class="meta-label">Periode</div>
+      <div class="meta-value">{{ frappe.format(doc.posting_date, {"fieldtype": "Date"}) }}</div>
+    </div>
+    <div class="inv-meta-block">
+      <div class="meta-label">Jumlah Kendaraan</div>
+      <div class="meta-value">{{ doc.items | length }} unit</div>
+    </div>
+    <div class="inv-meta-block">
+      <div class="meta-label">Status</div>
+      <div class="meta-value">{{ doc.status }}</div>
+    </div>
+  </div>
+
+  <div class="inv-billing">
+    <div class="inv-billing-to">
+      <div class="billing-label">Ditagihkan Kepada</div>
+      <div class="billing-name">{{ doc.customer_name or doc.customer }}</div>
+      <div class="billing-detail">
+        {% set customer_address = format_towing_customer_address(doc) %}
+        {% if customer_address %}{{ customer_address | replace("\n", "<br>") }}{% endif %}
+      </div>
+    </div>
+    <div class="inv-billing-from">
+      <div class="billing-label">Dari</div>
+      <div class="billing-name">{{ company.company_name }}</div>
+      <div class="billing-detail">
+        {% if company.tax_id %}NPWP: {{ company.tax_id }}<br>{% endif %}
+        {% if company.default_bank_account %}Bank: {{ company.default_bank_account }}<br>{% endif %}
+        A/N: {{ company.company_name }}
+      </div>
+    </div>
+  </div>
+
+  <table class="inv-table">
+    <thead>
+      <tr>
+        <th style="width:30px">No</th>
+        <th>Deskripsi Jasa</th>
+        <th class="right" style="width:60px">Qty</th>
+        <th class="right" style="width:120px">Harga</th>
+        <th class="right" style="width:120px">Jumlah</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in doc.items %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>
+          {% set desc_lines = (item.description or item.item_name or "").split("\n") %}
+          <div class="item-main">{{ desc_lines[0] if desc_lines | length > 0 else "-" }}</div>
+          {% if desc_lines | length > 1 %}
+            <div class="item-sub">{{ desc_lines[1] }}</div>
+          {% endif %}
+        </td>
+        <td class="right">{{ item.qty | int }} unit</td>
+        <td class="right">Rp {{ "{:,.0f}".format(item.rate) }}</td>
+        <td class="right">Rp {{ "{:,.0f}".format(item.amount) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <table class="inv-totals-table">
+    {% for tax in doc.taxes %}
+    <tr class="tax-row">
+      <td class="spacer"></td>
+      <td>{{ tax.description }}</td>
+      <td class="value">Rp {{ "{:,.0f}".format(tax.tax_amount) }}</td>
+    </tr>
+    {% endfor %}
+    <tr class="total-row">
+      <td class="spacer"></td>
+      <td>TOTAL</td>
+      <td class="value">Rp {{ "{:,.0f}".format(doc.grand_total) }}</td>
+    </tr>
+  </table>
+
+  {% set terbilang_text = terbilang_id(doc.grand_total) %}
+  <div class="inv-terbilang">
+    <strong>Terbilang:</strong> {{ terbilang_text[:1].upper() ~ terbilang_text[1:] if terbilang_text else "" }}
+  </div>
+
+  <div class="inv-footer">
+    <div class="inv-payment-info">
+      <div class="pay-label">Catatan Pembayaran</div>
+      <div class="pay-detail">
+        <div class="pay-block">
+          <div class="pay-intro">• Pembayaran dapat dilakukan melalui transfer ke rekening berikut:</div>
+          <div class="pay-lines">
+            <div class="pay-line"><span class="pay-key">Nomor Rekening</span><span class="pay-sep">:</span>2215566321</div>
+            <div class="pay-line"><span class="pay-key">Bank</span><span class="pay-sep">:</span>Bank BCA</div>
+            <div class="pay-line"><span class="pay-key">An.</span><span class="pay-sep">:</span>Pemuda Patriot Rentalindo PT</div>
+          </div>
+          <div class="pay-note">Cantumkan nomor invoice pada keterangan transfer.</div>
+        </div>
+      </div>
+    </div>
+    <div class="inv-signature">
+      <div style="height: 50px;"></div>
+      <div class="sig-line">Hormat Kami,</div>
+      <div class="sig-name">{{ company.company_name }}</div>
+      <div style="font-size:9px;color:#9a3412;margin-top:2px;">Authorized Signature</div>
+    </div>
+  </div>
+
+</div>
