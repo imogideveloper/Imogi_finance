@@ -203,8 +203,14 @@ doc_events = {
             "imogi_finance.events.sales_invoice.fix_rounding_status",
             "imogi_finance.overrides.sales_invoice_towing.link_towing_delivery_orders_on_submit",
         ],
+        "before_cancel": [
+            "imogi_finance.overrides.delivery_order_towing.before_cancel_si_towing_cascade",
+        ],
         "on_cancel": [
             "imogi_finance.sales_order_payment_status.update_from_sales_invoice",
+        ],
+        "on_trash": [
+            "imogi_finance.overrides.delivery_order_towing.on_trash_si_towing_cascade",
         ],
         "on_update_after_submit": [
             "imogi_finance.events.sales_invoice.on_update_after_submit",

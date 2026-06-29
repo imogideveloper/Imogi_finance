@@ -4,6 +4,48 @@ from frappe.utils import flt, nowdate, add_days
 
 
 @frappe.whitelist()
+def set_komisi_override(delivery_order_towing, komisi):
+    """Simpan nilai komisi manual (override) pada DO Towing.
+
+    Dipakai dari report Rekap Komisi Driver saat user mengubah nilai komisi
+    yang tidak selalu sama dengan Towing Commission Rate.
+    Isi 0 / kosong untuk menghapus override (kembali ke nilai rate).
+    """
+    if not delivery_order_towing:
+        frappe.throw(_("Delivery Order Towing tidak boleh kosong."))
+
+    if not frappe.db.exists("Delivery Order Towing", delivery_order_towing):
+        frappe.throw(_("Delivery Order Towing {0} tidak ditemukan.").format(delivery_order_towing))
+
+    value = flt(komisi)
+    if value < 0:
+        frappe.throw(_("Nilai komisi tidak boleh negatif."))
+
+    # Tolak edit kalau komisi DO ini sudah dibayar (Driver Commission status Paid)
+    paid = frappe.db.sql(
+        """
+        SELECT 1
+        FROM `tabDriver Commission Item` dci
+        INNER JOIN `tabDriver Commission` dc ON dci.parent = dc.name
+        WHERE dci.delivery_order_towing = %(do)s
+          AND dc.docstatus != 2
+          AND dc.status = 'Paid'
+        LIMIT 1
+        """,
+        {"do": delivery_order_towing},
+    )
+    if paid:
+        frappe.throw(_("Komisi DO ini sudah dibayar (Paid), tidak bisa diubah."))
+
+    frappe.db.set_value(
+        "Delivery Order Towing", delivery_order_towing, "komisi_override", value
+    )
+    frappe.db.commit()
+
+    return {"delivery_order_towing": delivery_order_towing, "komisi": value}
+
+
+@frappe.whitelist()
 def create_payment_entry_from_report(do_names, supplier, driver_nama, total_komisi):
     """
     Flow:
@@ -54,6 +96,7 @@ def create_payment_entry_from_report(do_names, supplier, driver_nama, total_komi
     dc.to_date      = to_date
     dc.status       = "Draft"
 
+    computed_total = 0.0
     for do_name in do_names:
         do        = frappe.get_doc("Delivery Order Towing", do_name)
         item_code = frappe.db.get_value(
@@ -71,6 +114,13 @@ def create_payment_entry_from_report(do_names, supplier, driver_nama, total_komi
             rate_value    = flt(rate["rate_value"])
             komisi_amount = flt(calc_komisi_amount(rate_type, rate_value, do.harga_jasa))
 
+        # Override manual menggantikan nilai dari Towing Commission Rate (jika diisi).
+        override = flt(do.get("komisi_override"))
+        if override > 0:
+            komisi_amount = override
+
+        computed_total += komisi_amount
+
         dc.append("commissions", {
             "delivery_order_towing": do_name,
             "tanggal_do"           : do.tanggal_do,
@@ -86,6 +136,8 @@ def create_payment_entry_from_report(do_names, supplier, driver_nama, total_komi
             "komisi_amount"        : komisi_amount,
         })
 
+    # Pakai total hasil hitung (sudah termasuk override) supaya DC, PI, dan PE konsisten.
+    total_komisi    = flt(computed_total) or total_komisi
     dc.total_komisi = total_komisi
     dc.do_count     = len(do_names)
     dc.flags.ignore_permissions = True

@@ -1921,3 +1921,342 @@ def before_cancel_pi_auto_cancel_pe(doc, method=None):
             ),
             title=_("PE Cancel Gagal")
         )
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# CANCEL/DELETE CASCADE: Sales Invoice Towing → Delivery Order Towing (+ chain)
+# ══════════════════════════════════════════════════════════════════════════
+#
+# Hooks (registered di hooks.py):
+#   • before_cancel Sales Invoice → before_cancel_si_towing_cascade()
+#   • on_trash      Sales Invoice → on_trash_si_towing_cascade()
+#
+# Saat SI towing di-CANCEL:
+#   1. Cari semua DO Towing yang ditagih oleh SI ini.
+#   2. BLOCK kalau ada turunan yang sudah submitted/dibayar:
+#        - Payment Entry (uang jalan / komisi) aktif
+#        - Purchase Invoice submitted
+#        - Driver Commission submitted / status Paid
+#      → tampilkan daftar, minta user cancel manual dulu.
+#   3. Kalau aman → cancel tiap DO. Cabang uang jalan (PO/PI/PE draft)
+#      ikut di-cancel via hook before_cancel_do_towing. Sales Order TIDAK
+#      disentuh (hanya link DO yang diputus).
+#
+# Saat SI towing di-TRASH (delete):
+#   • Auto-hapus DO yang ter-cancel + seluruh cabang uang jalannya
+#     (Payment Entry → Purchase Invoice → Purchase Order → Driver Commission → DO).
+# ══════════════════════════════════════════════════════════════════════════
+
+
+def _is_towing_sales_invoice(doc) -> bool:
+    """Cek apakah Sales Invoice ini hasil expand item towing."""
+    if doc.doctype != "Sales Invoice":
+        return False
+    try:
+        from imogi_finance.overrides.sales_invoice_towing import _items_already_towing_expanded
+        return _items_already_towing_expanded(doc)
+    except Exception:
+        return False
+
+
+def _get_dos_billed_by_si(doc) -> list:
+    """Kumpulkan semua DO Towing yang ditagih oleh Sales Invoice ini."""
+    names = []
+    seen = set()
+
+    try:
+        from imogi_finance.overrides.sales_invoice_towing import extract_delivery_orders_from_doc
+        for name in extract_delivery_orders_from_doc(doc):
+            if name and name not in seen:
+                seen.add(name)
+                names.append(name)
+    except Exception:
+        pass
+
+    # Sumber andal saat cancel/delete: field sales_invoice di DO
+    for name in frappe.get_all(
+        "Delivery Order Towing",
+        filters={"sales_invoice": doc.name},
+        pluck="name",
+    ):
+        if name and name not in seen:
+            seen.add(name)
+            names.append(name)
+
+    return [n for n in names if frappe.db.exists("Delivery Order Towing", n)]
+
+
+def _get_driver_commission_blockers(do_name: str) -> list:
+    """Driver Commission submitted / Paid yang menahan cancel SI."""
+    blockers = []
+    try:
+        rows = frappe.get_all(
+            "Driver Commission Item",
+            filters={"delivery_order_towing": do_name},
+            fields=["parent"],
+        )
+    except Exception:
+        return blockers
+
+    seen = set()
+    for row in rows:
+        parent = row.get("parent")
+        if not parent or parent in seen:
+            continue
+        seen.add(parent)
+
+        dc = frappe.db.get_value(
+            "Driver Commission", parent, ["docstatus", "status"], as_dict=True
+        )
+        if not dc:
+            continue
+
+        status = (dc.get("status") or "")
+        if dc.get("docstatus") == 1 or status.lower() == "paid":
+            state = status or _docstatus_label(dc.get("docstatus", 0))
+            link = frappe.utils.get_link_to_form("Driver Commission", parent)
+            blockers.append(f"Driver Commission: {link} [{state}]")
+
+    return blockers
+
+
+def _get_si_cancel_blockers(do_name: str) -> list:
+    """Turunan DO yang sudah submitted/dibayar — menahan cancel Sales Invoice."""
+    blockers = []
+
+    # 1. Driver Commission submitted / Paid
+    blockers.extend(_get_driver_commission_blockers(do_name))
+
+    # 2. Uang jalan: PI submitted / Payment Entry aktif di PO milik DO ini
+    if _field_exists("Purchase Order", "custom_delivery_order"):
+        pos = frappe.get_all(
+            "Purchase Order",
+            filters={"custom_delivery_order": do_name, "docstatus": ["<", 2]},
+            fields=["name"],
+        )
+        for po in pos:
+            blockers.extend(
+                _get_active_linked_docs_for_po(po.name, include_pi_draft=False)
+            )
+
+    # 3. Purchase Invoice submitted yang nempel langsung ke DO
+    if _field_exists("Purchase Invoice", "custom_delivery_order"):
+        pis = frappe.get_all(
+            "Purchase Invoice",
+            filters={"custom_delivery_order": do_name, "docstatus": 1},
+            fields=["name", "status"],
+        )
+        for pi in pis:
+            link = frappe.utils.get_link_to_form("Purchase Invoice", pi.name)
+            blockers.append(f"Purchase Invoice: {link} [{pi.get('status') or 'Submitted'}]")
+
+    return list(dict.fromkeys(blockers))
+
+
+def before_cancel_si_towing_cascade(doc, method=None):
+    """Hook: before_cancel pada Sales Invoice towing. Cascade cancel DO ter-link."""
+    if frappe.flags.get("in_towing_purge"):
+        return
+    if doc.flags.get("skip_cancel_check"):
+        return
+    if not _is_towing_sales_invoice(doc):
+        return
+
+    do_names = _get_dos_billed_by_si(doc)
+    if not do_names:
+        return
+
+    # ── 1. PRE-FLIGHT: block kalau ada turunan submitted/dibayar ──────────
+    blocked = []
+    for do_name in do_names:
+        links = _get_si_cancel_blockers(do_name)
+        if links:
+            blocked.append((do_name, links))
+
+    if blocked:
+        msg_lines = [
+            _("❌ Sales Invoice <b>{0}</b> tidak bisa di-cancel karena ada dokumen "
+              "turunan yang sudah diproses/dibayar.").format(doc.name),
+            "",
+            _("Silakan <b>cancel/hapus dokumen berikut terlebih dahulu</b>, "
+              "lalu cancel Sales Invoice ini lagi:"),
+            "",
+        ]
+        for do_name, links in blocked:
+            do_link = frappe.utils.get_link_to_form("Delivery Order Towing", do_name)
+            msg_lines.append(f"<b>📋 DO: {do_link}</b>")
+            for link_desc in links:
+                msg_lines.append(f"&nbsp;&nbsp;&nbsp;&nbsp;• {link_desc}")
+            msg_lines.append("")
+
+        frappe.throw("<br>".join(msg_lines), title=_("Cancel Diblokir: Ada Turunan Diproses"))
+
+    # ── 2. CANCEL TIAP DO (cabang uang jalan draft ikut via hook DO) ──────
+    cancelled_dos = []
+    failed_dos = []
+
+    for do_name in do_names:
+        do_status = frappe.db.get_value("Delivery Order Towing", do_name, "docstatus")
+        if do_status == 2:
+            continue
+        try:
+            if do_status == 1:
+                do_doc = frappe.get_doc("Delivery Order Towing", do_name)
+                do_doc.flags.ignore_permissions = True
+                # JANGAN set skip_cancel_check → biar before_cancel_do_towing
+                # tetap handle/validasi cabang PO uang jalan.
+                do_doc.cancel()
+            else:
+                _clear_so_link_to_do(do_name)
+                frappe.db.set_value(
+                    "Delivery Order Towing", do_name,
+                    {"docstatus": 2, "status": "Cancelled"},
+                )
+            cancelled_dos.append(do_name)
+
+        except Exception as e:
+            failed_dos.append((do_name, str(e)))
+            frappe.log_error(
+                f"Gagal cancel DO Towing {do_name} dari SI {doc.name}: {e}",
+                "SI Towing Cascade Cancel Error",
+            )
+
+    if failed_dos:
+        err_lines = [f"• <b>{name}</b>: {err}" for name, err in failed_dos]
+        frappe.throw(
+            _("⚠️ {0} Delivery Order gagal di-cancel:<br>{1}<br><br>"
+              "Cancel Sales Invoice dibatalkan. Cek Error Log untuk detail.").format(
+                len(failed_dos), "<br>".join(err_lines)
+            ),
+            title=_("DO Cancel Gagal"),
+        )
+
+    if cancelled_dos:
+        do_links = "<br>".join(
+            f"• {frappe.utils.get_link_to_form('Delivery Order Towing', name)}"
+            for name in cancelled_dos
+        )
+        frappe.msgprint(
+            _("✅ {0} Delivery Order Towing ikut di-cancel:<br>{1}").format(
+                len(cancelled_dos), do_links
+            ),
+            title=_("DO Towing Auto-Cancelled"),
+            indicator="orange",
+        )
+
+
+def _purge_do_chain(do_name: str):
+    """Hapus DO + seluruh cabang uang jalan + Driver Commission.
+    Hanya dipanggil dalam konteks in_towing_purge (mis. on_trash SI)."""
+    from imogi_finance.api.towing_admin import _force_delete_document
+
+    po_names = []
+    if _field_exists("Purchase Order", "custom_delivery_order"):
+        po_names = frappe.get_all(
+            "Purchase Order",
+            filters={"custom_delivery_order": do_name},
+            pluck="name",
+        )
+
+    pi_names = set()
+    pe_names = set()
+
+    for po_name in po_names:
+        for pi in frappe.db.sql_list(
+            """SELECT DISTINCT pi.name
+               FROM `tabPurchase Invoice` pi
+               INNER JOIN `tabPurchase Invoice Item` pii ON pii.parent = pi.name
+               WHERE pii.purchase_order = %s""",
+            (po_name,),
+        ):
+            pi_names.add(pi)
+        for pe in frappe.db.sql_list(
+            """SELECT DISTINCT per.parent
+               FROM `tabPayment Entry Reference` per
+               WHERE per.reference_doctype IN ('Purchase Order', 'Purchase Invoice')
+                 AND per.reference_name = %s""",
+            (po_name,),
+        ):
+            pe_names.add(pe)
+
+    if _field_exists("Purchase Invoice", "custom_delivery_order"):
+        for pi in frappe.get_all(
+            "Purchase Invoice",
+            filters={"custom_delivery_order": do_name},
+            pluck="name",
+        ):
+            pi_names.add(pi)
+
+    for pi_name in list(pi_names):
+        for pe in frappe.db.sql_list(
+            """SELECT DISTINCT per.parent
+               FROM `tabPayment Entry Reference` per
+               WHERE per.reference_doctype = 'Purchase Invoice'
+                 AND per.reference_name = %s""",
+            (pi_name,),
+        ):
+            pe_names.add(pe)
+
+    dc_names = set()
+    try:
+        for row in frappe.get_all(
+            "Driver Commission Item",
+            filters={"delivery_order_towing": do_name},
+            fields=["parent"],
+        ):
+            if row.get("parent"):
+                dc_names.add(row["parent"])
+    except Exception:
+        pass
+
+    # Urutan dependency: PE → PI → PO → Driver Commission → DO
+    for pe in pe_names:
+        _force_delete_document("Payment Entry", pe)
+    for pi in pi_names:
+        _force_delete_document("Purchase Invoice", pi)
+    for po in po_names:
+        _force_delete_document("Purchase Order", po)
+    for dc in dc_names:
+        _force_delete_document("Driver Commission", dc)
+
+    _force_delete_document("Delivery Order Towing", do_name)
+
+
+def on_trash_si_towing_cascade(doc, method=None):
+    """Hook: on_trash pada Sales Invoice towing. Auto-hapus DO ter-cancel + cabangnya."""
+    if frappe.flags.get("in_towing_purge"):
+        return
+    if not _is_towing_sales_invoice(doc):
+        return
+
+    do_names = frappe.get_all(
+        "Delivery Order Towing",
+        filters={"sales_invoice": doc.name},
+        pluck="name",
+    )
+    if not do_names:
+        return
+
+    frappe.flags.in_towing_purge = True
+    deleted = []
+    try:
+        for do_name in do_names:
+            try:
+                _purge_do_chain(do_name)
+                deleted.append(do_name)
+            except Exception as e:
+                frappe.log_error(
+                    f"Gagal purge DO chain {do_name} dari SI {doc.name}: {e}",
+                    "SI Towing Cascade Delete Error",
+                )
+    finally:
+        frappe.flags.in_towing_purge = False
+
+    if deleted:
+        frappe.msgprint(
+            _("🗑️ {0} Delivery Order Towing + dokumen turunannya ikut dihapus.").format(
+                len(deleted)
+            ),
+            title=_("DO Towing Auto-Deleted"),
+            indicator="red",
+        )

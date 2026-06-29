@@ -4,15 +4,11 @@ frappe.query_reports["Rekap Komisi Driver"] = {
 			fieldname: "from_date",
 			label: __("From Date"),
 			fieldtype: "Date",
-			default: frappe.datetime.month_start(),
-			reqd: 1,
 		},
 		{
 			fieldname: "to_date",
 			label: __("To Date"),
 			fieldtype: "Date",
-			default: frappe.datetime.month_end(),
-			reqd: 1,
 		},
 		{
 			fieldname: "driver",
@@ -49,10 +45,76 @@ frappe.query_reports["Rekap Komisi Driver"] = {
 					value = `<a href="/app/delivery-order-towing/${do_name}" target="_blank">${do_name}</a>`;
 				}
 			}
+
+			if (column.fieldname === "komisi" && data) {
+				if (data.is_override) {
+					value = `${value} <span title="Nilai manual (override)" style="color:#2980b9;font-size:11px">✎</span>`;
+				} else if (data.status_komisi !== "Paid") {
+					value = `<span title="Klik ganda untuk ubah nilai" style="border-bottom:1px dashed #c8c8c8">${value}</span>`;
+				}
+			}
 		} catch(e) {
 			// jangan crash, return value apa adanya
 		}
 		return value;
+	},
+
+	get_datatable_options: function (options) {
+		return Object.assign(options, {
+			getEditor: function (colIndex, rowIndex, value, parent, column, row, data) {
+				// Hanya kolom Komisi yang bisa diedit
+				if (!column || column.fieldname !== "komisi") return false;
+				// Komisi yang sudah dibayar tidak boleh diubah
+				if (data && data.status_komisi === "Paid") {
+					frappe.show_alert({
+						message: __("Komisi sudah dibayar (Paid), tidak bisa diubah."),
+						indicator: "orange",
+					});
+					return false;
+				}
+
+				let $input = document.createElement("input");
+				$input.type = "number";
+				$input.step = "any";
+				$input.min = "0";
+				$input.className = "dt-input";
+				parent.appendChild($input);
+
+				return {
+					initValue: function () {
+						$input.focus();
+						$input.value = data && data.komisi != null ? data.komisi : "";
+						$input.select();
+					},
+					getValue: function () {
+						return $input.value;
+					},
+					setValue: function (val) {
+						let do_name = data ? data.delivery_order_towing : null;
+						let newVal = parseFloat(val) || 0;
+						if (!do_name) return Promise.reject();
+
+						return frappe
+							.call({
+								method: "imogi_finance.api.commission.set_komisi_override",
+								args: { delivery_order_towing: do_name, komisi: newVal },
+							})
+							.then(function (r) {
+								if (r && r.message) {
+									frappe.show_alert({
+										message: __("Komisi diperbarui: {0}", [format_currency(newVal)]),
+										indicator: "green",
+									});
+									// Reload report supaya nilai, penanda, dan summary ikut update
+									setTimeout(function () {
+										frappe.query_report.refresh();
+									}, 150);
+								}
+							});
+					},
+				};
+			},
+		});
 	},
 
 	onload: function (report) {

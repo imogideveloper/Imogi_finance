@@ -54,7 +54,8 @@ def get_columns():
             "fieldname": "komisi",
             "label": _("Komisi"),
             "fieldtype": "Currency",
-            "width": 120,
+            "width": 130,
+            "editable": 1,
         },
         {
             "fieldname": "status_komisi",
@@ -117,6 +118,7 @@ def get_data(filters):
             dot.driver_nama,
             dot.customer,
             dot.harga_jasa,
+            dot.komisi_override,
             drv.custom_supplier AS supplier
         FROM `tabDelivery Order Towing` dot
         LEFT JOIN `tabDriver` drv ON drv.name = dot.driver
@@ -137,9 +139,15 @@ def get_data(filters):
 
         rate = lookup_towing_commission_rate(item_code, do.tanggal_do) if item_code else None
 
-        komisi = 0.0
+        komisi_rate = 0.0
         if rate:
-            komisi = flt(calc_komisi_amount(rate["rate_type"], rate["rate_value"], do.harga_jasa))
+            komisi_rate = flt(calc_komisi_amount(rate["rate_type"], rate["rate_value"], do.harga_jasa))
+
+        # Nilai komisi yang diberikan tidak selalu sama dengan Towing Commission Rate.
+        # Jika user mengisi komisi_override (>0) pada DO, nilai itu yang dipakai.
+        override = flt(do.komisi_override)
+        is_override = override > 0
+        komisi = override if is_override else komisi_rate
 
         payment_info = paid_dos.get(do.delivery_order_towing)
         if payment_info:
@@ -170,6 +178,8 @@ def get_data(filters):
             "customer": do.customer or "",
             "so_item_code": item_code or "",
             "komisi": komisi,
+            "komisi_rate": komisi_rate,
+            "is_override": 1 if is_override else 0,
             "status_komisi": status_komisi,
             "payment_ref": payment_ref,
             "driver": do.driver or "",
