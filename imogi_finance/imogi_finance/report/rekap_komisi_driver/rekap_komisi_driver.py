@@ -131,6 +131,8 @@ def get_data(filters):
 
     paid_dos = _get_paid_do_map()
 
+    editable_cache: dict[str, int] = {}
+
     rows = []
     for do in dos:
         item_code = frappe.db.get_value(
@@ -171,8 +173,17 @@ def get_data(filters):
         if status_filter and status_filter != "Semua" and status_komisi != status_filter:
             continue
 
-        # Komisi hanya boleh diubah manual untuk rute POOL.
-        is_pool = 1 if "POOL" in (item_code or "").upper() else 0
+        # Komisi hanya boleh diubah manual jika item rute ditandai
+        # custom_komisi_editable di master Item (config, bukan hardcode).
+        is_editable = 0
+        if item_code:
+            if item_code not in editable_cache:
+                editable_cache[item_code] = (
+                    1
+                    if frappe.db.get_value("Item", item_code, "custom_komisi_editable")
+                    else 0
+                )
+            is_editable = editable_cache[item_code]
 
         rows.append({
             "delivery_order_towing": do.delivery_order_towing or "",
@@ -183,7 +194,7 @@ def get_data(filters):
             "komisi": komisi,
             "komisi_rate": komisi_rate,
             "is_override": 1 if is_override else 0,
-            "is_pool": is_pool,
+            "is_editable": is_editable,
             "status_komisi": status_komisi,
             "payment_ref": payment_ref,
             "driver": do.driver or "",
