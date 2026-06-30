@@ -54,13 +54,24 @@ function _hide_native_submit_btn(frm) {
     });
 }
 
-function _generate_detail_kendaraan(frm) {
-    var towing_items = (frm.doc.items || []).filter(function(item) {
-        return item.item_code && (
-            item.item_code.toUpperCase().includes('TOWING') ||
-            item.item_code.toUpperCase().includes('RDC')
-        );
+// Fallback keyword (case-insensitive) untuk item lama yang belum ditandai
+// flag custom_is_towing_rute. Penanda utama adalah field di master Item,
+// jadi item baru cukup dicentang tanpa perlu ubah kode ini.
+var TOWING_ITEM_KEYWORDS = ['TOWING', 'RDC', 'POOL'];
+
+function _is_towing_item(item) {
+    if (!item || !item.item_code) return false;
+    // Penanda utama: flag dari master Item (di-fetch ke Sales Order Item).
+    if (item.custom_is_towing_rute) return true;
+    // Fallback: deteksi keyword untuk item yang belum ditandai.
+    var code = item.item_code.toUpperCase();
+    return TOWING_ITEM_KEYWORDS.some(function(kw) {
+        return code.includes(kw);
     });
+}
+
+function _generate_detail_kendaraan(frm) {
+    var towing_items = (frm.doc.items || []).filter(_is_towing_item);
 
     if (towing_items.length === 0) {
         frappe.msgprint({

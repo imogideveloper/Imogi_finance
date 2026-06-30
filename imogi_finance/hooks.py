@@ -561,5 +561,3 @@ override_whitelisted_methods = {
 }
 
 ignore_links_on_delete = ["Payment Ledger Entry", "GL Entry"]
-
-on_session_creation = "imogi_finance.utils.patch_round_floats_compatibility"

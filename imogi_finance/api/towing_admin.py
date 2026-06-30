@@ -115,6 +115,7 @@ def _collect_linked_sales_orders(do_names: list[str]) -> set[str]:
 			FROM `tabSales Order Item` soi
 			WHERE UPPER(IFNULL(soi.item_code, '')) LIKE '%%TOWING%%'
 			   OR UPPER(IFNULL(soi.item_code, '')) LIKE '%%RDC%%'
+			   OR UPPER(IFNULL(soi.item_code, '')) LIKE '%%POOL%%'
 			"""
 		)
 	)

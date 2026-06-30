@@ -14,29 +14,49 @@ from .imogi_finance.utils import ensure_advances_allow_on_submit, ensure_coretax
 __all__ = ["ensure_coretax_export_doctypes", "ensure_advances_allow_on_submit"]
 
 def patch_round_floats_compatibility(bootinfo=None):
-    """Patch file ERPNext langsung — persistent, tidak hilang saat request."""
+    """One-time ERPNext compat patch (after_migrate). Idempotent, no stdout."""
     import os
-    
-    target = os.path.expanduser(
-        "~/frappe-bench/apps/erpnext/erpnext/controllers/taxes_and_totals.py"
-    )
-    
-    with open(target, "r") as f:
-        content = f.read()
-    
+
+    import frappe
+
+    try:
+        target = os.path.join(
+            frappe.get_app_path("erpnext"), "controllers", "taxes_and_totals.py"
+        )
+    except Exception:
+        return
+
+    if not os.path.isfile(target):
+        return
+
     old = "self.doc.round_floats_in(item, do_not_round_fields=do_not_round_fields)"
     new = "self.doc.round_floats_in(item)"
-    
-    if old in content:
-        content = content.replace(old, new)
-        with open(target, "w") as f:
-            f.write(content)
-        # Hapus pyc cache
-        pyc = target.replace(".py", ".cpython-310.pyc").replace(
-            "controllers/", "controllers/__pycache__/"
+
+    try:
+        with open(target, encoding="utf-8") as f:
+            content = f.read()
+    except OSError:
+        return
+
+    if old not in content:
+        return
+
+    try:
+        with open(target, "w", encoding="utf-8") as f:
+            f.write(content.replace(old, new))
+    except OSError as exc:
+        frappe.log_error(
+            f"Gagal patch round_floats di {target}: {exc}",
+            "ERPNext round_floats patch",
         )
-        if os.path.exists(pyc):
-            os.remove(pyc)
-        print("✅ Patch applied")
-    else:
-        print("✅ Already patched or not needed")
+        return
+
+    # Hapus .pyc agar perubahan langsung terbaca
+    cache_dir = os.path.join(os.path.dirname(target), "__pycache__")
+    if os.path.isdir(cache_dir):
+        for name in os.listdir(cache_dir):
+            if name.startswith("taxes_and_totals.") and name.endswith(".pyc"):
+                try:
+                    os.remove(os.path.join(cache_dir, name))
+                except OSError:
+                    pass
