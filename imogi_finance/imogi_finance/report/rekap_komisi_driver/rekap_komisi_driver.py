@@ -171,6 +171,9 @@ def get_data(filters):
         if status_filter and status_filter != "Semua" and status_komisi != status_filter:
             continue
 
+        # Komisi hanya boleh diubah manual untuk rute POOL.
+        is_pool = 1 if "POOL" in (item_code or "").upper() else 0
+
         rows.append({
             "delivery_order_towing": do.delivery_order_towing or "",
             "tanggal_do": do.tanggal_do,
@@ -180,6 +183,7 @@ def get_data(filters):
             "komisi": komisi,
             "komisi_rate": komisi_rate,
             "is_override": 1 if is_override else 0,
+            "is_pool": is_pool,
             "status_komisi": status_komisi,
             "payment_ref": payment_ref,
             "driver": do.driver or "",

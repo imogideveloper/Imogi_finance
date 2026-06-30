@@ -49,8 +49,9 @@ frappe.query_reports["Rekap Komisi Driver"] = {
 			if (column.fieldname === "komisi" && data) {
 				if (data.is_override) {
 					value = `${value} <span title="Nilai manual (override)" style="color:#2980b9;font-size:11px">✎</span>`;
-				} else if (data.status_komisi !== "Paid") {
-					value = `<span title="Klik ganda untuk ubah nilai" style="border-bottom:1px dashed #c8c8c8">${value}</span>`;
+				} else if (data.is_pool && data.status_komisi !== "Paid") {
+					// Hanya rute POOL yang boleh diubah manual.
+					value = `<span title="Klik ganda untuk ubah nilai (rute POOL)" style="border-bottom:1px dashed #c8c8c8">${value}</span>`;
 				}
 			}
 		} catch(e) {
@@ -64,6 +65,14 @@ frappe.query_reports["Rekap Komisi Driver"] = {
 			getEditor: function (colIndex, rowIndex, value, parent, column, row, data) {
 				// Hanya kolom Komisi yang bisa diedit
 				if (!column || column.fieldname !== "komisi") return false;
+				// Hanya rute POOL yang boleh diubah manual.
+				if (data && !data.is_pool) {
+					frappe.show_alert({
+						message: __("Komisi hanya bisa diubah untuk rute POOL."),
+						indicator: "orange",
+					});
+					return false;
+				}
 				// Komisi yang sudah dibayar tidak boleh diubah
 				if (data && data.status_komisi === "Paid") {
 					frappe.show_alert({

@@ -21,6 +21,13 @@ def set_komisi_override(delivery_order_towing, komisi):
     if value < 0:
         frappe.throw(_("Nilai komisi tidak boleh negatif."))
 
+    # Hanya rute POOL yang boleh diubah manual (RDC/lainnya terkunci).
+    item_code = frappe.db.get_value(
+        "SO Towing Kendaraan", {"delivery_order": delivery_order_towing}, "so_item_code"
+    )
+    if "POOL" not in (item_code or "").upper():
+        frappe.throw(_("Komisi hanya bisa diubah untuk rute POOL."))
+
     # Tolak edit kalau komisi DO ini sudah dibayar (Driver Commission status Paid)
     paid = frappe.db.sql(
         """
