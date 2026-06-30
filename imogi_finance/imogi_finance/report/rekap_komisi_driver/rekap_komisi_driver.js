@@ -52,6 +52,9 @@ frappe.query_reports["Rekap Komisi Driver"] = {
 				} else if (data.is_editable && data.status_komisi !== "Paid") {
 					// Hanya item rute yang ditandai komisi-editable yang boleh diubah.
 					value = `<span title="Klik ganda untuk ubah nilai" style="border-bottom:1px dashed #c8c8c8">${value}</span>`;
+				} else if (!data.is_editable) {
+					// Item rute tidak boleh diubah manual → tampilkan terkunci.
+					value = `<span title="Komisi item rute ini tidak bisa diubah manual" style="color:#9aa4ad">${value} <span style="font-size:11px">🔒</span></span>`;
 				}
 			}
 		} catch(e) {
