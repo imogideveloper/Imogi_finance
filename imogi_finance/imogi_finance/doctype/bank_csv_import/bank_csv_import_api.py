@@ -25,18 +25,21 @@ def run_import(docname):
     try:
         result = _process_import(doc)
 
-        frappe.db.set_value("Bank CSV Import", docname, {
-            "status": "Completed",
-            "total_rows": result["total"],
-            "created_rows": result["created"],
-            "skipped_rows": result["skipped"],
-            "error_rows": result["errors"],
-            "import_log": result["log"],
-            "opening_balance": result.get("opening_balance", 0),
-            "closing_balance": result.get("closing_balance", 0),
-            "statement_from_date": result.get("statement_from_date"),
-            "statement_to_date": result.get("statement_to_date"),
-        })
+        doc.reload()
+        doc.status = "Completed"
+        doc.total_rows = result["total"]
+        doc.created_rows = result["created"]
+        doc.skipped_rows = result["skipped"]
+        doc.error_rows = result["errors"]
+        doc.import_log = result["log"]
+        doc.opening_balance = result.get("opening_balance", 0)
+        doc.closing_balance = result.get("closing_balance", 0)
+        doc.statement_from_date = result.get("statement_from_date")
+        doc.statement_to_date = result.get("statement_to_date")
+        doc.set("import_rows", [])
+        for row in result.get("rows", []):
+            doc.append("import_rows", row)
+        doc.save(ignore_permissions=True)
         frappe.db.commit()
 
         return result
@@ -169,10 +172,24 @@ def _process_import(doc):
 
     # Proses setiap row
     log_lines = []
+    detail_rows = []
     total = created = skipped = errors = 0
     all_dates = []
     total_debit = 0.0
     total_credit = 0.0
+
+    def _add_detail(row_idx, date_val, desc, deposit_val, withdrawal_val, balance_val, status, note="", bank_transaction=None):
+        detail_rows.append({
+            "row_no": row_idx,
+            "date": date_val,
+            "description": desc,
+            "deposit": deposit_val or 0,
+            "withdrawal": withdrawal_val or 0,
+            "balance": balance_val or 0,
+            "status": status,
+            "note": note,
+            "bank_transaction": bank_transaction,
+        })
 
     for row_idx, row in enumerate(data_rows, start=1):
         if not row or all(not (v or "").strip() for v in row):
@@ -211,14 +228,18 @@ def _process_import(doc):
             reference_number = _clean(row_dict.get(field_map.get("reference_number"), "")) if "reference_number" in field_map else ""
             debit_str = _clean(row_dict.get(field_map.get("debit"), "")) if "debit" in field_map else ""
             credit_str = _clean(row_dict.get(field_map.get("credit"), "")) if "credit" in field_map else ""
+            balance_str = _clean(row_dict.get(field_map.get("balance"), "")) if "balance" in field_map else ""
+            balance_val = _parse_amount(balance_str) if balance_str else 0
 
             if not posting_date_str:
+                _add_detail(row_idx, None, description, 0, 0, balance_val, "Dilewati", "Tanggal kosong")
                 continue
 
             if skip_markers and any(
                 _normalize(posting_date_str).startswith(m) or m in _normalize(posting_date_str)
                 for m in skip_markers
             ):
+                _add_detail(row_idx, None, description, 0, 0, balance_val, "Dilewati", "Skip marker")
                 continue
 
             posting_date = _parse_date(posting_date_str, config.date_format)
@@ -228,6 +249,7 @@ def _process_import(doc):
                     continue
                 log_lines.append(f"Row {row_idx}: Tanggal tidak valid: '{posting_date_str}'")
                 errors += 1
+                _add_detail(row_idx, None, description, 0, 0, balance_val, "Error", f"Tanggal tidak valid: '{posting_date_str}'")
                 continue
 
             debit = _parse_amount(debit_str)
@@ -245,6 +267,7 @@ def _process_import(doc):
 
             if debit == 0 and credit == 0:
                 skipped += 1
+                _add_detail(row_idx, posting_date, description, 0, 0, balance_val, "Dilewati", "Nominal 0")
                 continue
 
             # Akumulasi untuk kalkulasi balance
@@ -266,6 +289,7 @@ def _process_import(doc):
             if existing_count > session_count:
                 log_lines.append(f'Row {row_idx}: Duplikat - {posting_date} {description[:30]}')
                 skipped += 1
+                _add_detail(row_idx, posting_date, description, credit, debit, balance_val, "Duplikat")
                 continue
             doc._import_session_counts[current_session_key] = session_count + 1
 
@@ -291,11 +315,20 @@ def _process_import(doc):
 
             created += 1
             log_lines.append(f"Row {row_idx}: OK - {posting_date} | {description[:40]} | D:{debit} C:{credit}")
+            _add_detail(row_idx, posting_date, description, credit, debit, balance_val, "OK", bank_transaction=bt.name)
 
         except Exception as e:
             errors += 1
             log_lines.append(f"Row {row_idx}: ERROR - {str(e)}")
             frappe.log_error(f"Bank CSV Import Row {row_idx}: {str(e)}")
+            _add_detail(
+                row_idx,
+                locals().get("posting_date"),
+                locals().get("description", ""),
+                0, 0, 0,
+                "Error",
+                str(e)[:140],
+            )
 
     # ── Kalkulasi From/To Date dari transaksi ──────────────────
     statement_from_date = None
@@ -359,6 +392,7 @@ def _process_import(doc):
         "skipped": skipped,
         "errors": errors,
         "log": log,
+        "rows": detail_rows,
         "opening_balance": opening_balance,
         "closing_balance": closing_balance,
         "statement_from_date": statement_from_date,

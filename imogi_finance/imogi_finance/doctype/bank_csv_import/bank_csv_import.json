@@ -16,9 +16,14 @@
   "import_log",
   "section_break_result",
   "total_rows",
+  "column_break_res1",
   "created_rows",
+  "column_break_res2",
   "skipped_rows",
-  "error_rows"
+  "column_break_res3",
+  "error_rows",
+  "section_break_detail",
+  "import_rows"
  ],
  "fields": [
   {
@@ -46,8 +51,7 @@
    "fieldtype": "Link",
    "label": "Company",
    "options": "Company",
-   "reqd": 1,
-   "default": "Inovasi Terbaik Bangsa"
+   "reqd": 1
   },
   {
    "fieldname": "import_file",
@@ -73,7 +77,8 @@
    "fieldname": "import_log",
    "fieldtype": "Long Text",
    "label": "Import Log",
-   "read_only": 1
+   "read_only": 1,
+   "hidden": 1
   },
   {
    "fieldname": "section_break_result",
@@ -115,11 +120,19 @@
    "read_only": 1
   },
   {
+   "fieldname": "column_break_res1",
+   "fieldtype": "Column Break"
+  },
+  {
    "fieldname": "created_rows",
    "fieldtype": "Int",
    "label": "Created",
    "read_only": 1,
    "in_list_view": 1
+  },
+  {
+   "fieldname": "column_break_res2",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "skipped_rows",
@@ -128,9 +141,25 @@
    "read_only": 1
   },
   {
+   "fieldname": "column_break_res3",
+   "fieldtype": "Column Break"
+  },
+  {
    "fieldname": "error_rows",
    "fieldtype": "Int",
    "label": "Errors",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_detail",
+   "fieldtype": "Section Break",
+   "label": "Detail Transaksi"
+  },
+  {
+   "fieldname": "import_rows",
+   "fieldtype": "Table",
+   "label": "Detail Transaksi",
+   "options": "Bank CSV Import Row",
    "read_only": 1
   }
  ],

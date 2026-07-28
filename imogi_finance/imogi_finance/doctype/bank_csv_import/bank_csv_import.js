@@ -95,6 +95,38 @@ frappe.ui.form.on('Bank CSV Import', {
         function format_currency(value) {
             return 'Rp ' + (value || 0).toLocaleString('id-ID', {minimumFractionDigits: 2});
         }
+
+        // ── Rapikan tampilan sesuai status ───────────────────────
+        const has_results = frm.doc.status === 'Completed' || frm.doc.status === 'Failed';
+
+        frm.toggle_display('section_break_result', has_results);
+        frm.toggle_display('section_break_detail', has_results && frm.doc.import_rows && frm.doc.import_rows.length > 0);
+        frm.toggle_display('import_log', frm.doc.status === 'Failed');
+
+        frm.dashboard.clear_headline();
+        frm.dashboard.reset(); // clear indicator pills from any previous refresh so they don't pile up
+        if (frm.doc.status === 'Draft') {
+            frm.set_intro(__('File CSV sudah terpasang. Klik tombol <b>Import CSV</b> di atas (menu Actions) untuk memproses dan menghasilkan Detail Transaksi.'), 'blue');
+        } else if (frm.doc.status === 'Processing') {
+            frm.set_intro(__('Sedang memproses import, mohon tunggu...'), 'orange');
+        } else if (frm.doc.status === 'Completed') {
+            frm.set_intro('');
+            frm.dashboard.add_indicator(__('{0} Total Baris', [frm.doc.total_rows || 0]), 'blue');
+            frm.dashboard.add_indicator(__('{0} Berhasil Dibuat', [frm.doc.created_rows || 0]), 'green');
+            if (frm.doc.skipped_rows) {
+                frm.dashboard.add_indicator(__('{0} Duplikat', [frm.doc.skipped_rows]), 'orange');
+            }
+            if (frm.doc.error_rows) {
+                frm.dashboard.add_indicator(__('{0} Error', [frm.doc.error_rows]), 'red');
+            }
+        } else if (frm.doc.status === 'Failed') {
+            frm.set_intro(__('Import gagal. Lihat <b>Import Log</b> di bagian bawah untuk detail error.'), 'red');
+        }
+
+        // ── Beri warna pada baris Detail Transaksi sesuai status ──
+        if (has_results && frm.doc.import_rows && frm.doc.import_rows.length) {
+            setTimeout(() => color_import_rows(frm), 300);
+        }
     },
 
     bank(frm) {
@@ -109,3 +141,23 @@ frappe.ui.form.on('Bank CSV Import', {
         }
     }
 });
+
+function color_import_rows(frm) {
+    const grid = frm.fields_dict.import_rows && frm.fields_dict.import_rows.grid;
+    if (!grid || !grid.grid_rows) return;
+
+    const row_style = {
+        'OK': { background: '#e6f4ea', color: '#1e7e34' },
+        'Duplikat': { background: '#fff4e5', color: '#a3670e' },
+        'Error': { background: '#fdecea', color: '#c62828' },
+        'Dilewati': { background: '#f1f3f4', color: '#5f6368' },
+    };
+
+    grid.grid_rows.forEach(function(row) {
+        const style = row_style[row.doc.status];
+        if (style && row.row) {
+            $(row.row).css('background-color', style.background);
+            $(row.row).find('.data-row .col').css('color', style.color);
+        }
+    });
+}
