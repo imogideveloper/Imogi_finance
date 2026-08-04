@@ -119,6 +119,7 @@ def get_data(filters):
             dot.customer,
             dot.harga_jasa,
             dot.komisi_override,
+            dot.komisi_is_override,
             drv.custom_supplier AS supplier
         FROM `tabDelivery Order Towing` dot
         LEFT JOIN `tabDriver` drv ON drv.name = dot.driver
@@ -146,9 +147,10 @@ def get_data(filters):
             komisi_rate = flt(calc_komisi_amount(rate["rate_type"], rate["rate_value"], do.harga_jasa))
 
         # Nilai komisi yang diberikan tidak selalu sama dengan Towing Commission Rate.
-        # Jika user mengisi komisi_override (>0) pada DO, nilai itu yang dipakai.
+        # komisi_is_override menandai override aktif (termasuk sengaja diisi 0),
+        # terpisah dari nilainya sendiri supaya 0 tidak disalahartikan sebagai "belum diisi".
         override = flt(do.komisi_override)
-        is_override = override > 0
+        is_override = bool(do.komisi_is_override)
         komisi = override if is_override else komisi_rate
 
         payment_info = paid_dos.get(do.delivery_order_towing)

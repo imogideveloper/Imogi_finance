@@ -68,5 +68,19 @@
   "modified": "2026-05-08 12:00:00.000000",
   "name": "Driver Commission",
   "total_fields": "5"
+ },
+ {
+  "allow_edit": 0,
+  "disable_auto_refresh": 0,
+  "disable_automatic_recency_filters": 0,
+  "disable_comment_count": 0,
+  "disable_count": 0,
+  "disable_sidebar_stats": 0,
+  "docstatus": 0,
+  "doctype": "List View Settings",
+  "fields": "[{\"fieldname\": \"status_field\", \"label\": \"Status\"}, {\"fieldname\": \"posting_date\", \"label\": \"Posting Date\"}, {\"fieldname\": \"grand_total\", \"label\": \"Grand Total\"}, {\"fieldname\": \"name\", \"label\": \"ID\"}, {\"fieldname\": \"due_date\", \"label\": \"Jatuh Tempo\"}]",
+  "modified": "2026-08-03 14:05:00.000000",
+  "name": "Sales Invoice",
+  "total_fields": "10"
  }
 ]

@@ -114,7 +114,7 @@ fixtures = [
     {"doctype": "Custom Field"},
     {"doctype": "Property Setter"},
     {"doctype": "Client Script", "filters": [["enabled", "=", 1]]},
-    {"doctype": "List View Settings", "filters": [["name", "in", ["Sales Order", "Expense Request", "Delivery Order Towing", "Driver Commission"]]]},
+    {"doctype": "List View Settings", "filters": [["name", "in", ["Sales Order", "Sales Invoice", "Expense Request", "Delivery Order Towing", "Driver Commission"]]]},
     
     # 3. Master Data
     {"doctype": "Item", "filters": [["name", "=", "JASA-TOWING-001"]]},
@@ -509,6 +509,7 @@ scheduler_events = {
     "daily": [
         "imogi_finance.reporting.tasks.run_daily_reporting",
         "imogi_finance.services.tax_invoice_service.sync_pending_tax_invoices",
+        "imogi_finance.events.sales_invoice.sync_overdue_days",
     ],
     "monthly": [
         "imogi_finance.reporting.tasks.run_monthly_reconciliation",

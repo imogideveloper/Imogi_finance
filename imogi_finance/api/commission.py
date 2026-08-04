@@ -4,12 +4,14 @@ from frappe.utils import flt, nowdate, add_days
 
 
 @frappe.whitelist()
-def set_komisi_override(delivery_order_towing, komisi):
+def set_komisi_override(delivery_order_towing, komisi=None):
     """Simpan nilai komisi manual (override) pada DO Towing.
 
     Dipakai dari report Rekap Komisi Driver saat user mengubah nilai komisi
     yang tidak selalu sama dengan Towing Commission Rate.
-    Isi 0 / kosong untuk menghapus override (kembali ke nilai rate).
+    Kosongkan (None / string kosong) untuk menghapus override dan kembali
+    ke nilai rate. Isi 0 tetap dianggap override aktif senilai Rp 0 — beda
+    dari "belum di-override".
     """
     if not delivery_order_towing:
         frappe.throw(_("Delivery Order Towing tidak boleh kosong."))
@@ -17,7 +19,8 @@ def set_komisi_override(delivery_order_towing, komisi):
     if not frappe.db.exists("Delivery Order Towing", delivery_order_towing):
         frappe.throw(_("Delivery Order Towing {0} tidak ditemukan.").format(delivery_order_towing))
 
-    value = flt(komisi)
+    is_clearing = komisi is None or str(komisi).strip() == ""
+    value = 0.0 if is_clearing else flt(komisi)
     if value < 0:
         frappe.throw(_("Nilai komisi tidak boleh negatif."))
 
@@ -45,11 +48,16 @@ def set_komisi_override(delivery_order_towing, komisi):
         frappe.throw(_("Komisi DO ini sudah dibayar (Paid), tidak bisa diubah."))
 
     frappe.db.set_value(
-        "Delivery Order Towing", delivery_order_towing, "komisi_override", value
+        "Delivery Order Towing",
+        delivery_order_towing,
+        {
+            "komisi_override": value,
+            "komisi_is_override": 0 if is_clearing else 1,
+        },
     )
     frappe.db.commit()
 
-    return {"delivery_order_towing": delivery_order_towing, "komisi": value}
+    return {"delivery_order_towing": delivery_order_towing, "komisi": value, "is_override": not is_clearing}
 
 
 @frappe.whitelist()
@@ -121,10 +129,10 @@ def create_payment_entry_from_report(do_names, supplier, driver_nama, total_komi
             rate_value    = flt(rate["rate_value"])
             komisi_amount = flt(calc_komisi_amount(rate_type, rate_value, do.harga_jasa))
 
-        # Override manual menggantikan nilai dari Towing Commission Rate (jika diisi).
-        override = flt(do.get("komisi_override"))
-        if override > 0:
-            komisi_amount = override
+        # Override manual menggantikan nilai dari Towing Commission Rate (jika aktif),
+        # termasuk kalau nilainya sengaja 0.
+        if do.get("komisi_is_override"):
+            komisi_amount = flt(do.get("komisi_override"))
 
         computed_total += komisi_amount
 

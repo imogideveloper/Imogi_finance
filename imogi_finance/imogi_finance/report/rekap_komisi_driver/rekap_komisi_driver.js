@@ -103,8 +103,13 @@ frappe.query_reports["Rekap Komisi Driver"] = {
 					},
 					setValue: function (val) {
 						let do_name = data ? data.delivery_order_towing : null;
-						let newVal = parseFloat(val) || 0;
 						if (!do_name) return Promise.reject();
+
+						// String kosong = hapus override (balik ke rate).
+						// Angka, termasuk 0, = override aktif dengan nilai itu.
+						let trimmed = (val ?? "").toString().trim();
+						let isClearing = trimmed === "";
+						let newVal = isClearing ? null : (parseFloat(trimmed) || 0);
 
 						return frappe
 							.call({
@@ -114,7 +119,9 @@ frappe.query_reports["Rekap Komisi Driver"] = {
 							.then(function (r) {
 								if (r && r.message) {
 									frappe.show_alert({
-										message: __("Komisi diperbarui: {0}", [format_currency(newVal)]),
+										message: isClearing
+											? __("Override dihapus, kembali ke nilai rate.")
+											: __("Komisi diperbarui: {0}", [format_currency(newVal)]),
 										indicator: "green",
 									});
 									// Reload report supaya nilai, penanda, dan summary ikut update

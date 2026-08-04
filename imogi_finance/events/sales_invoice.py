@@ -55,6 +55,37 @@ def on_update_after_submit(doc, method=None):
 				title=_("VAT OUT Batch Locked")
 			)
 
+def sync_overdue_days():
+	"""Recalculate imogi_late_days (Hari Terlambat) for all submitted Sales Invoices.
+
+	Runs daily via scheduler. Invoices past their due_date with outstanding
+	balance get the number of days overdue; everything else is reset to 0.
+	"""
+	try:
+		frappe.db.sql(
+			"""
+			UPDATE `tabSales Invoice`
+			SET imogi_late_days = DATEDIFF(CURDATE(), due_date)
+			WHERE docstatus = 1
+				AND outstanding_amount > 0
+				AND due_date IS NOT NULL
+				AND due_date < CURDATE()
+				AND imogi_late_days != DATEDIFF(CURDATE(), due_date)
+			"""
+		)
+		frappe.db.sql(
+			"""
+			UPDATE `tabSales Invoice`
+			SET imogi_late_days = 0
+			WHERE imogi_late_days != 0
+				AND (docstatus != 1 OR outstanding_amount <= 0 OR due_date IS NULL OR due_date >= CURDATE())
+			"""
+		)
+		frappe.db.commit()
+	except Exception as e:
+		frappe.logger().error(f"sync_overdue_days task failed: {e}", exc_info=True)
+
+
 def fix_rounding_status(doc, method=None):
     from frappe.utils import flt
     tolerance = 1.0
