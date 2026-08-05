@@ -151,6 +151,7 @@ def _process_import(doc):
 
     headers = rows[header_row_idx]
     data_rows = rows[header_row_idx + 1:]
+    default_year = _extract_statement_year(rows, header_row_idx)
 
     # Normalize headers
     normalized_headers = {_normalize(h): h for h in headers}
@@ -242,7 +243,7 @@ def _process_import(doc):
                 _add_detail(row_idx, None, description, 0, 0, balance_val, "Dilewati", "Skip marker")
                 continue
 
-            posting_date = _parse_date(posting_date_str, config.date_format)
+            posting_date = _parse_date(posting_date_str, config.date_format, default_year)
             if not posting_date:
                 row_text = _normalize(' '.join(str(v) for v in row_dict.values()))
                 if skip_markers and any(m in row_text for m in skip_markers):
@@ -341,7 +342,7 @@ def _process_import(doc):
     # ── Kalkulasi Opening Balance ──────────────────────────────
     # FIX 3: ganti "_, _" dengan nama variabel yang tidak conflict dengan fungsi _()
     csv_opening, csv_closing, _from_date, _to_date = _extract_balances_from_rows(
-        data_rows, headers, field_map, config
+        data_rows, headers, field_map, config, default_year
     )
 
     # Coba dari closing balance BCI sebelumnya (history)
@@ -423,7 +424,7 @@ def _clean(text):
     return (text or "").strip()
 
 
-def _parse_date(date_str, date_format=None):
+def _parse_date(date_str, date_format=None, default_year=None):
     import re
     date_str = date_str.strip()
 
@@ -452,7 +453,28 @@ def _parse_date(date_str, date_format=None):
         except Exception:
             continue
 
+    # Sebagian bank (mis. BCA) hanya menulis tanggal/bulan tanpa tahun di
+    # setiap baris (contoh: "01/05"), karena tahunnya cuma disebut sekali
+    # di baris "Periode" pada header laporan. Pakai tahun itu sebagai fallback.
+    if default_year:
+        for fmt in ("%d/%m", "%d-%m"):
+            try:
+                dt = datetime.strptime(date_str, fmt)
+                return dt.replace(year=default_year).strftime("%Y-%m-%d")
+            except Exception:
+                continue
+
     return None
+
+
+def _extract_statement_year(rows, header_row_idx):
+    """Cari tahun laporan dari baris sebelum header, mis. 'Periode : 01/05/2026 - 31/05/2026'."""
+    import re
+    preamble = " ".join(
+        " ".join(str(cell) for cell in row) for row in rows[:header_row_idx]
+    )
+    match = re.search(r"\b(20\d{2})\b", preamble)
+    return int(match.group(1)) if match else None
 
 
 def _parse_amount(value):
@@ -482,7 +504,7 @@ def _parse_amount(value):
         return 0.0
 
 
-def _extract_balances_from_rows(data_rows, headers, field_map, config):
+def _extract_balances_from_rows(data_rows, headers, field_map, config, default_year=None):
     """Extract saldo dari CSV jika ada kolom balance atau label eksplisit."""
     opening_balance = 0.0
     closing_balance = 0.0
@@ -503,7 +525,7 @@ def _extract_balances_from_rows(data_rows, headers, field_map, config):
             date_str = _clean(row_dict.get(field_map.get("posting_date", ""), ""))
 
             bal = _parse_amount(bal_str)
-            date = _parse_date(date_str, config.date_format) if date_str else None
+            date = _parse_date(date_str, config.date_format, default_year) if date_str else None
 
             if bal and date:
                 valid_entries.append((date, bal))
