@@ -140,6 +140,7 @@ override_doctype_class = {
     "Payment Request": "imogi_finance.overrides.payment_request.CustomPaymentRequest",
     "Bank Statement Import": "imogi_finance.overrides.bank_statement_import.CustomBankStatementImport",
     "Delivery Order Towing": "imogi_finance.overrides.delivery_order_towing.DeliveryOrderTowing",
+    "Bank Clearance": "imogi_finance.overrides.bank_clearance.CustomBankClearance",
 }
 
 # Document Events
