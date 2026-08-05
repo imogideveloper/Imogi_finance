@@ -357,6 +357,7 @@ def _build_si_item_from_do(
 		"cost_center": cost_center,
 		"conversion_factor": 1,
 		"sales_order": sales_order,
+		"custom_rute": do_item_map.get(do.name),
 	}
 
 
