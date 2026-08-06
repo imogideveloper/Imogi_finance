@@ -368,7 +368,7 @@ class DeliveryOrderTowing(Document):
             "items": [
                 {
                     "item_code"  : "JASA-TOWING-001",
-                    "item_name"  : f"Jasa Towing - {self.nomor_polisi}",
+                    "item_name"  : self.nomor_polisi,
                     "description": (
                         f"Jasa towing {self.merk_kendaraan or ''} "
                         f"{self.tipe_kendaraan or ''} ({self.nomor_polisi}) "

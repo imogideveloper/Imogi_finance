@@ -348,7 +348,7 @@ def _build_si_item_from_do(
 
 	return {
 		"item_code": item_code,
-		"item_name": f"Jasa Towing - {nomor_rangka}",
+		"item_name": nomor_rangka,
 		"description": description,
 		"qty": 1,
 		"rate": flt(do.get("harga_jasa") or 0),
