@@ -536,6 +536,7 @@ after_migrate = [
     "imogi_finance.setup.install_towing_doctypes",
     "imogi_finance.setup.ensure_towing_workflow_consistency",
     "imogi_finance.setup.ensure_finance_manager_role",
+    "imogi_finance.setup.ensure_expense_request_workflow",
 ]
 
 before_job = "imogi_finance.overrides.bank_statement_import.patch_start_import"

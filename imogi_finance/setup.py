@@ -328,6 +328,105 @@ def ensure_towing_workflow_consistency():
     frappe.db.commit()
 
 
+def ensure_expense_request_workflow():
+    """
+    Ensure an active Workflow exists for the Expense Request doctype.
+
+    ExpenseRequest already implements its own approval state machine in
+    Python (before_submit/before_workflow_action/on_workflow_action), but
+    those hooks only fire when a user clicks a workflow action button, and
+    Frappe only renders that button when an active Workflow record exists
+    for the doctype. Without it, Expense Request never gets Approve/Reject
+    buttons even when Expense Approval Setting is configured correctly.
+    Idempotent: safe to run repeatedly.
+    """
+    workflow_name = "Expense Request Workflow"
+    doctype_name = "Expense Request"
+
+    required_states = [
+        {"state": "Draft", "doc_status": "0", "allow_edit": "All"},
+        {"state": "Pending Review", "doc_status": "1", "allow_edit": "Expense Approver"},
+        {"state": "Approved", "doc_status": "1", "allow_edit": "Expense Approver"},
+        {"state": "Rejected", "doc_status": "1", "allow_edit": "System Manager"},
+        {"state": "PI Created", "doc_status": "1", "allow_edit": "Expense Approver"},
+        {"state": "Paid", "doc_status": "1", "allow_edit": "Expense Approver"},
+    ]
+
+    required_transitions = [
+        {"state": "Draft", "action": "Submit", "next_state": "Pending Review",
+         "allowed": "All", "allow_self_approval": 1},
+        {"state": "Pending Review", "action": "Approve", "next_state": "Approved",
+         "allowed": "Expense Approver", "allow_self_approval": 0},
+        {"state": "Pending Review", "action": "Reject", "next_state": "Rejected",
+         "allowed": "Expense Approver", "allow_self_approval": 0},
+        {"state": "Rejected", "action": "Reopen", "next_state": "Pending Review",
+         "allowed": "System Manager", "allow_self_approval": 1},
+    ]
+
+    for action_name in {t["action"] for t in required_transitions}:
+        if not frappe.db.exists("Workflow Action Master", action_name):
+            wam = frappe.new_doc("Workflow Action Master")
+            wam.workflow_action_name = action_name
+            wam.insert(ignore_permissions=True)
+            print(f"[Imogi Finance] Created Workflow Action Master: {action_name}")
+
+    if not frappe.db.exists("Workflow", workflow_name):
+        wf = frappe.new_doc("Workflow")
+        wf.workflow_name = workflow_name
+        wf.document_type = doctype_name
+        wf.is_active = 1
+        wf.override_status = 1
+        wf.send_email_alert = 0
+        wf.workflow_state_field = "workflow_state"
+        for state in required_states:
+            wf.append("states", state)
+        for transition in required_transitions:
+            wf.append("transitions", {**transition, "send_email_to_creator": 0})
+        wf.insert(ignore_permissions=True)
+        frappe.db.commit()
+        print(f"[Imogi Finance] Created Workflow: {workflow_name}")
+        frappe.clear_cache(doctype=doctype_name)
+        return
+
+    wf = frappe.get_doc("Workflow", workflow_name)
+    changed = False
+
+    if not wf.is_active:
+        wf.is_active = 1
+        changed = True
+        print(f"[Imogi Finance] Re-activated Workflow: {workflow_name}")
+
+    existing_states = {s.state for s in wf.states}
+    for state in required_states:
+        if state["state"] not in existing_states:
+            wf.append("states", state)
+            changed = True
+            print(f"[Imogi Finance] Added workflow state: {state['state']}")
+
+    for transition in required_transitions:
+        exists = any(
+            t.state == transition["state"]
+            and t.action == transition["action"]
+            and t.next_state == transition["next_state"]
+            and t.allowed == transition["allowed"]
+            for t in wf.transitions
+        )
+        if not exists:
+            wf.append("transitions", {**transition, "send_email_to_creator": 0})
+            changed = True
+            print(
+                f"[Imogi Finance] Added transition: {transition['state']} -> "
+                f"{transition['next_state']} [{transition['allowed']}]"
+            )
+
+    if changed:
+        wf.save(ignore_permissions=True)
+        frappe.db.commit()
+        print(f"[Imogi Finance] Updated Workflow: {workflow_name}")
+
+    frappe.clear_cache(doctype=doctype_name)
+
+
 def ensure_finance_manager_role():
     """
     Pastikan Role 'Finance Manager' ada di sistem.
