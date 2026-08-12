@@ -30,6 +30,7 @@ doctype_js = {
         "public/js/payment_entry.js",
         "public/js/payment_entry_djp.js",
         "public/js/transaction_price_lock.js",
+        "public/js/payment_entry_list.js",
     ],
     "Payment Request": "public/js/payment_request.js",
     "Purchase Invoice": [
@@ -80,6 +81,7 @@ doctype_list_js = {
     "Payment Entry": "public/js/payment_entry_list.js",
     "Budget": "public/js/budget_list.js",
     "Tax Invoice OCR Upload": "public/js/tax_invoice_ocr_upload_list.js",
+    "Sales Invoice": "public/js/sales_invoice_export_template_list.js",
 }
 
 # Jinja
@@ -107,6 +109,7 @@ fixtures = [
         "Towing Commission Rate",
         "Driver Commission",
         "Driver Commission Item",
+        "Unit Towing",
         # "SO Towing Kendaraan",  # temporary disabled to avoid deploy conflict
     ]]]},
     
@@ -136,6 +139,7 @@ fixtures = [
 ]
 # DocType Class
 override_doctype_class = {
+    "Payment Entry": "imogi_finance.overrides.payment_entry.CustomPaymentEntry",
     "Sales Invoice": "imogi_finance.overrides.sales_invoice.CustomSalesInvoice",
     "Payment Request": "imogi_finance.overrides.payment_request.CustomPaymentRequest",
     "Bank Statement Import": "imogi_finance.overrides.bank_statement_import.CustomBankStatementImport",
@@ -559,8 +563,10 @@ override_whitelisted_methods = {
         "imogi_finance.overrides.bank_reconciliation_tool.create_journal_entry_bts",
     "erpnext.accounts.doctype.bank_statement_import.bank_statement_import.start_import": 
         "imogi_finance.overrides.bank_statement_import.start_import",
-    "erpnext.accounts.doctype.bank_statement_import.bank_statement_import.form_start_import": 
-        "imogi_finance.overrides.bank_statement_import.form_start_import"
+    "erpnext.accounts.doctype.bank_statement_import.bank_statement_import.form_start_import":
+        "imogi_finance.overrides.bank_statement_import.form_start_import",
+    "frappe.core.doctype.data_import.data_import.download_template":
+        "imogi_finance.overrides.sales_invoice_export.download_template",
 }
 
 ignore_links_on_delete = ["Payment Ledger Entry", "GL Entry"]

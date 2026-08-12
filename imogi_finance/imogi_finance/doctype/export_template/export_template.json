@@ -1,0 +1,78 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "hash",
+ "creation": "2026-08-12 00:00:00",
+ "doctype": "DocType",
+ "editable_grid": 0,
+ "engine": "InnoDB",
+ "field_order": [
+  "template_name",
+  "reference_doctype",
+  "column_break_1",
+  "fields_json"
+ ],
+ "fields": [
+  {
+   "fieldname": "template_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Template Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "reference_doctype",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Reference Doctype",
+   "options": "DocType",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Map of MultiCheck field name (doctype or child table fieldname) to selected fieldnames, saved from the Export Data dialog.",
+   "fieldname": "fields_json",
+   "fieldtype": "Code",
+   "label": "Selected Fields (JSON)",
+   "options": "JSON",
+   "read_only": 1,
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 0,
+ "links": [],
+ "module": "Imogi Finance",
+ "name": "Export Template",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "if_owner": 1,
+   "read": 1,
+   "role": "All",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 0
+}

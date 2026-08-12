@@ -280,6 +280,9 @@ frappe.ui.form.on('Delivery Order Towing', {
 
     onload(frm) {
         install_do_status_indicator(frm);
+        frm.set_query('kendaraan_towing', () => ({
+            filters: { is_active: 1 },
+        }));
     },
 
     onload_post_render(frm) {

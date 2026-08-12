@@ -158,32 +158,12 @@ function _showSimpleCancelDialog(frm) {
   });
 }
 
-// ── List View ────────────────────────────────────────────────────────────────
-
-frappe.listview_settings["Payment Entry"] = {
-  add_fields: ["payment_type", "party", "paid_amount", "unallocated_amount", "references"],
-  get_indicator: function(doc) {
-    if (doc.docstatus === 2) return [__("Cancelled"), "red",    "docstatus,=,2"];
-    if (doc.docstatus === 0) return [__("Draft"),     "gray",   "docstatus,=,0"];
-    const unalloc = parseFloat(doc.unallocated_amount || 0);
-    if (unalloc > 0) return [__("Unallocated"), "orange", "unallocated_amount,>,0"];
-    return [__("Allocated"), "green", "unallocated_amount,=,0"];
-  },
-  onload: function(listview) {
-    listview.page.add_inner_button(__("Unallocated"), function() {
-      listview.filter_area.add([["Payment Entry", "unallocated_amount", ">", "0"]]);
-    }, __("Filter By"));
-    listview.page.add_inner_button(__("Allocated"), function() {
-      listview.filter_area.add([["Payment Entry", "unallocated_amount", "=", "0"]]);
-    }, __("Filter By"));
-  },
-  formatters: {
-    unallocated_amount: function(value, field, doc) {
-      if (!value || value === 0) return `<span style="color: green;">✓ ${format_currency(0)}</span>`;
-      return `<span style="color: orange; font-weight: bold;">⚠ ${format_currency(value)}</span>`;
-    }
-  }
-};
+// List View badge/indicator settings for Payment Entry live in
+// public/js/payment_entry_list.js — that file is loaded via BOTH doctype_js
+// (so the Form page-title badge is correct) and doctype_list_js (so the List
+// View row badge is correct), since frappe.get_indicator() reads the same
+// frappe.listview_settings[doctype].get_indicator either way, but doctype_js
+// only executes on Form views and doctype_list_js only on List views.
 
 // ── TOWING ───────────────────────────────────────────────────────────────────
 
