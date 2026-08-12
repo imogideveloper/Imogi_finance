@@ -7,24 +7,26 @@
 // both hooks to reliably show the right badge regardless of which page loads first.
 
 frappe.listview_settings["Payment Entry"] = {
-    add_fields: ["payment_type", "party", "paid_amount", "received_amount", "unallocated_amount", "posting_date"],
+    add_fields: ["payment_type", "party", "paid_amount", "received_amount", "unallocated_amount", "clearance_date", "posting_date"],
     get_indicator: function(doc) {
+        // Reconciled = matched against a Bank Transaction (clearance_date set),
+        // not just allocated to an invoice -- unallocated_amount usually hits 0
+        // the moment the entry is created, so it can't tell "done" from "just made".
         if (doc.docstatus === 2) return [__("Cancelled"), "red", "docstatus,=,2"];
         if (doc.docstatus === 0) return [__("Draft"), "gray", "docstatus,=,0"];
-        const unalloc = parseFloat(doc.unallocated_amount || 0);
-        if (unalloc > 0) return [__("Unallocated"), "orange", "unallocated_amount,>,0"];
-        return [__("Reconciled"), "green", "unallocated_amount,=,0"];
+        if (doc.clearance_date) return [__("Reconciled"), "green", "clearance_date,is,set"];
+        return [__("Unreconciled"), "orange", "clearance_date,is,not set"];
     },
     onload: function(listview) {
-        listview.page.add_inner_button(__("Unallocated"), function() {
+        listview.page.add_inner_button(__("Unreconciled"), function() {
             listview.filter_area.add([
-                ["Payment Entry", "unallocated_amount", ">", "0"],
+                ["Payment Entry", "clearance_date", "is", "not set"],
                 ["Payment Entry", "docstatus", "=", "1"]
             ]);
         }, __("Filter By"));
         listview.page.add_inner_button(__("Reconciled"), function() {
             listview.filter_area.add([
-                ["Payment Entry", "unallocated_amount", "=", "0"],
+                ["Payment Entry", "clearance_date", "is", "set"],
                 ["Payment Entry", "docstatus", "=", "1"]
             ]);
         }, __("Filter By"));
@@ -44,7 +46,7 @@ frappe.listview_settings["Payment Entry"] = {
             if (unalloc > 0) {
                 return `<span style="color: orange; font-weight: bold;">⚠ ${format_currency(unalloc)}</span>`;
             }
-            return `<span style="color: green;">✓ Reconciled</span>`;
+            return `<span style="color: green;">✓ Fully Allocated</span>`;
         }
     }
 };

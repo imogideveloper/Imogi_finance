@@ -9,12 +9,45 @@ def before_cancel(doc, *_):
         frappe.throw(_("Unreconciled Bank Transactions cannot be cancelled."))
 
 
+def sync_payment_entry_status(doc, method=None):
+    """Keep linked Payment Entries' status in sync with clearance_date.
+
+    Bank Reconciliation Tool sets/clears Payment Entry.clearance_date via a
+    direct frappe.db.set_value() (see
+    erpnext.accounts.doctype.bank_transaction.bank_transaction.
+    clear_linked_payment_entry), which bypasses the Payment Entry's own
+    save/validate pipeline entirely -- so CustomPaymentEntry.set_status()
+    never runs for that change. Recompute status here instead, right after
+    the Bank Transaction that triggered it finishes saving.
+    """
+    for row in doc.get("payment_entries") or []:
+        if row.payment_document != "Payment Entry" or not row.payment_entry:
+            continue
+
+        pe_docstatus, pe_clearance_date = frappe.db.get_value(
+            "Payment Entry", row.payment_entry, ["docstatus", "clearance_date"]
+        )
+
+        if pe_docstatus == 2:
+            new_status = "Cancelled"
+        elif pe_docstatus == 1:
+            new_status = "Reconciled" if pe_clearance_date else "Unreconciled"
+        else:
+            new_status = "Draft"
+
+        frappe.db.set_value(
+            "Payment Entry", row.payment_entry, "status", new_status, update_modified=False
+        )
+
+
 def on_update_after_submit(doc, method=None):
     """Handle Bank Transaction updates after submit.
 
     When a Bank Transaction is reconciled (status changes to Reconciled),
     update the status of related Purchase Invoices and Expense Requests.
     """
+    sync_payment_entry_status(doc)
+
     # Check if this is a reconciliation event
     if doc.status != "Reconciled":
         return

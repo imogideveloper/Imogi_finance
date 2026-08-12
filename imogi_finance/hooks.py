@@ -329,6 +329,11 @@ doc_events = {
         ],
     },
 
+    "Bank Transaction": {
+        "before_cancel": "imogi_finance.events.bank_transaction.before_cancel",
+        "on_update_after_submit": "imogi_finance.events.bank_transaction.on_update_after_submit",
+    },
+
     "Budget": {
         "before_delete": "imogi_finance.events.budget.before_delete",
         "on_trash": "imogi_finance.events.budget.before_delete",
@@ -541,6 +546,7 @@ after_migrate = [
     "imogi_finance.setup.ensure_towing_workflow_consistency",
     "imogi_finance.setup.ensure_finance_manager_role",
     "imogi_finance.setup.ensure_expense_request_workflow",
+    "imogi_finance.overrides.payment_entry.backfill_payment_entry_status",
 ]
 
 before_job = "imogi_finance.overrides.bank_statement_import.patch_start_import"

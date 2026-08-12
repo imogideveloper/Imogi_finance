@@ -4,7 +4,6 @@ Purchase Invoice overrides for Payment Entry creation
 import frappe
 from erpnext.accounts.doctype.payment_entry.payment_entry import PaymentEntry
 from erpnext.accounts.doctype.payment_entry.payment_entry import get_payment_entry as erpnext_get_payment_entry
-from frappe.utils import flt
 
 try:
     # HRMS also overrides the Payment Entry controller (party_type == "Employee"
@@ -16,17 +15,21 @@ except ImportError:
 
 
 class CustomPaymentEntry(_PaymentEntryBase):
-    """Splits the submitted state into "Unallocated" / "Reconciled" so it's
-    possible to tell at a glance which Payment Entries still need to be
-    reconciled against an invoice or bank transaction, instead of every
-    submitted entry just showing generic "Submitted".
+    """Splits the submitted state into "Unreconciled" / "Reconciled" based on
+    whether the entry has been matched against a Bank Transaction
+    (clearance_date), so it's possible to tell at a glance which payments
+    still need to go through Bank Reconciliation Tool -- instead of every
+    submitted entry just showing generic "Submitted" (or, as originally
+    tried, being "Reconciled" the moment it's allocated to an invoice, which
+    made every entry look done immediately since PEs are usually created
+    already fully allocated).
     """
 
     def set_status(self):
         if self.docstatus == 2:
             self.status = "Cancelled"
         elif self.docstatus == 1:
-            self.status = "Reconciled" if flt(self.unallocated_amount) <= 0 else "Unallocated"
+            self.status = "Reconciled" if self.clearance_date else "Unreconciled"
         else:
             self.status = "Draft"
 
@@ -63,3 +66,35 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
             )
     
     return payment_entry
+
+
+def backfill_payment_entry_status():
+    """Recompute status on existing Payment Entries to match the current
+    clearance_date-based logic (Reconciled / Unreconciled / Cancelled).
+
+    Runs on every migrate (see hooks.py after_migrate) so entries created
+    before this logic existed -- or under the earlier unallocated_amount-based
+    version -- get corrected without needing to be opened and resaved by
+    hand. Cheap no-op once everything is already in sync.
+    """
+    rows = frappe.db.sql(
+        """
+        select name, docstatus, clearance_date, status
+        from `tabPayment Entry`
+        where docstatus in (1, 2)
+        """,
+        as_dict=True,
+    )
+
+    for row in rows:
+        if row.docstatus == 2:
+            correct_status = "Cancelled"
+        else:
+            correct_status = "Reconciled" if row.clearance_date else "Unreconciled"
+
+        if row.status != correct_status:
+            frappe.db.set_value(
+                "Payment Entry", row.name, "status", correct_status, update_modified=False
+            )
+
+    frappe.db.commit()
