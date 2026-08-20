@@ -292,9 +292,13 @@ def _populate_towing_from_references(doc):
         return
 
     try:
-        # Simpan link DO ke PE
+        # Simpan link DO ke PE — update_modified=False, jangan sampai bikin
+        # timestamp PE berubah di DB tanpa diketahui object in-memory (penyebab TimestampMismatchError)
         if do_name:
-            frappe.db.set_value(doc.doctype, doc.name, "delivery_order_towing", do_name)
+            frappe.db.set_value(
+                doc.doctype, doc.name, "delivery_order_towing", do_name,
+                update_modified=False,
+            )
 
         # ✅ Copy dari PI dulu (data sudah pasti benar 1 row)
         if pi_name:

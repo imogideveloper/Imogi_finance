@@ -181,13 +181,22 @@ doc_events = {
             "imogi_finance.imogi_finance.doctype.tax_period_closing.tax_period_closing.check_period_is_closed",
         ],
         "after_insert": "imogi_finance.events.purchase_invoice.after_insert",
-        "on_submit": "imogi_finance.events.purchase_invoice.on_submit",
-        "on_update_after_submit": "imogi_finance.events.purchase_invoice.sync_expense_request_status_from_pi",
+        "on_submit": [
+            "imogi_finance.events.purchase_invoice.on_submit",
+            "imogi_finance.purchase_order_payment_status.update_from_purchase_invoice",
+        ],
+        "on_update_after_submit": [
+            "imogi_finance.events.purchase_invoice.sync_expense_request_status_from_pi",
+            "imogi_finance.purchase_order_payment_status.update_from_purchase_invoice",
+        ],
         "before_cancel": [
             "imogi_finance.overrides.delivery_order_towing.before_cancel_pi_auto_cancel_pe",
             "imogi_finance.events.purchase_invoice.before_cancel",
         ],
-        "on_cancel": "imogi_finance.events.purchase_invoice.on_cancel",
+        "on_cancel": [
+            "imogi_finance.events.purchase_invoice.on_cancel",
+            "imogi_finance.purchase_order_payment_status.update_from_purchase_invoice",
+        ],
         "before_delete": "imogi_finance.events.purchase_invoice.before_delete",
         "on_trash": "imogi_finance.events.purchase_invoice.on_trash",
     },
@@ -451,6 +460,7 @@ doc_events = {
             "imogi_finance.transfer_application.payment_entry_hooks.on_submit",
             "imogi_finance.events.sales_order.update_sales_order_outstanding_from_payment",
             "imogi_finance.sales_order_payment_status.update_from_payment_entry",
+            "imogi_finance.purchase_order_payment_status.update_from_payment_entry",
             "imogi_finance.imogi_finance.doctype.expense_request.expense_request.update_er_status_on_payment",
             "imogi_finance.overrides.delivery_order_towing.update_do_payment_status",
             "imogi_finance.doctype.driver_commission.driver_commission.mark_paid_on_payment_submit",
@@ -458,6 +468,7 @@ doc_events = {
         "on_update_after_submit": [
             "imogi_finance.events.payment_entry.on_update_after_submit",
             "imogi_finance.sales_order_payment_status.update_from_payment_entry",
+            "imogi_finance.purchase_order_payment_status.update_from_payment_entry",
         ],
         "before_cancel": [
             "imogi_finance.events.payment_entry.before_cancel",
@@ -469,6 +480,7 @@ doc_events = {
             "imogi_finance.transfer_application.payment_entry_hooks.on_cancel",
             "imogi_finance.events.sales_order.update_sales_order_outstanding_from_payment",
             "imogi_finance.sales_order_payment_status.update_from_payment_entry",
+            "imogi_finance.purchase_order_payment_status.update_from_payment_entry",
             "imogi_finance.imogi_finance.doctype.expense_request.expense_request.revert_er_status_on_payment_cancel",
             "imogi_finance.doctype.driver_commission.driver_commission.revert_paid_on_payment_cancel",
         ],
@@ -493,11 +505,23 @@ doc_events = {
     },
     "Purchase Order": {
         "validate": "imogi_finance.events.transaction_price_lock.validate_no_price_change",
-        "after_insert": "imogi_finance.events.purchase_order_towing.after_insert",
+        "after_insert": [
+            "imogi_finance.events.purchase_order_towing.after_insert",
+            "imogi_finance.purchase_order_payment_status.update_from_purchase_order",
+        ],
         "on_update": "imogi_finance.overrides.delivery_order_towing.update_do_from_po",
-        "on_submit": "imogi_finance.overrides.delivery_order_towing.update_do_from_po",
+        "on_submit": [
+            "imogi_finance.overrides.delivery_order_towing.update_do_from_po",
+            "imogi_finance.purchase_order_payment_status.update_from_purchase_order",
+        ],
+        "on_update_after_submit": [
+            "imogi_finance.purchase_order_payment_status.update_from_purchase_order",
+        ],
         "before_cancel": "imogi_finance.overrides.delivery_order_towing.before_cancel_po_uang_jalan",
-        "on_cancel": "imogi_finance.overrides.delivery_order_towing.update_do_from_po",
+        "on_cancel": [
+            "imogi_finance.overrides.delivery_order_towing.update_do_from_po",
+            "imogi_finance.purchase_order_payment_status.update_from_purchase_order",
+        ],
         "on_trash": "imogi_finance.overrides.delivery_order_towing.on_trash_po_uang_jalan",
     },
     "Workspace UI Settings": {
