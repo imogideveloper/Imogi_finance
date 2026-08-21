@@ -38,6 +38,12 @@ def _add_table_field():
 			"options": CHILD_DOCTYPE,
 			"insert_after": "section_break_7",
 			"description": "Klik Add Row, pilih Salary Component, isi nilai bulanan (per hari jika pakai payment_days di formula).",
+			# Explicit user request (2026-08-19): Komponen Gaji stays editable
+			# (values + add row) even after the contract is Submitted, instead
+			# of only via a new Assignment Contract - see
+			# validate_salary_structure_assignment's own comment for the
+			# audit-trail tradeoff this opts out of.
+			"allow_on_submit": 1,
 		}
 	).insert(ignore_permissions=True)
 

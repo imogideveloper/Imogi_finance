@@ -238,8 +238,15 @@ def _replacement_assignment_applies(replacement_name: str, lookup_date) -> bool:
 
 
 def validate_payroll_period(doc, method=None):
-	"""Auto-generate baris 25–24 jika child table kosong."""
+	"""Auto-generate baris cutoff (default 25-24, bisa di-custom per Payroll
+	Period lewat field cutoff_start_day/cutoff_end_day) jika child table kosong.
+
+	Sengaja hanya generate saat "periods" masih kosong - kalau sudah ada baris
+	(apalagi yang sudah dipakai Payroll Entry/Salary Slip), mengubah cutoff
+	tidak boleh diam-diam menimpa tanggal historis yang sudah terpakai.
+	"""
 	_sync_period_row_labels(doc)
+	_validate_cutoff_days(doc)
 	if doc.get("periods"):
 		return
 	if not doc.get("start_date") or not doc.get("end_date"):
@@ -247,6 +254,8 @@ def validate_payroll_period(doc, method=None):
 	generated = build_cutoff_sub_periods(
 		getdate(doc.start_date),
 		getdate(doc.end_date),
+		cutoff_start_day=doc.get("cutoff_start_day") or DEFAULT_CUTOFF_START_DAY,
+		cutoff_end_day=doc.get("cutoff_end_day") or DEFAULT_CUTOFF_END_DAY,
 	)
 	for item in generated:
 		row = {"start_date": item["start_date"], "end_date": item["end_date"]}
@@ -267,6 +276,15 @@ def _sync_period_row_labels(doc) -> None:
 		row.period_label = _format_sub_period_label(
 			getdate(row.start_date), getdate(row.end_date)
 		)
+
+
+def _validate_cutoff_days(doc) -> None:
+	if not frappe.get_meta("Payroll Period").has_field("cutoff_start_day"):
+		return
+	for fieldname in ("cutoff_start_day", "cutoff_end_day"):
+		value = doc.get(fieldname)
+		if value and not (1 <= int(value) <= 31):
+			frappe.throw(_("{0} harus di antara 1 dan 31.").format(frappe.bold(fieldname)))
 
 
 def ensure_payroll_period_sub_periods(payroll_period: str) -> None:

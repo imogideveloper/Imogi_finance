@@ -12,7 +12,7 @@ TABLE_FIELD = "salary_component_amounts"
 def execute():
 	_create_tracking_fields()
 	_update_status_options()
-	_lock_component_table_on_submit()
+	_unlock_component_table_on_submit()
 	_refresh_contract_statuses()
 	_clear_contract_types()
 	frappe.clear_cache(doctype=PARENT_DOCTYPE)
@@ -161,14 +161,20 @@ def _update_status_options():
 	_set_property(PARENT_DOCTYPE, "status", "options", options, "Text")
 
 
-def _lock_component_table_on_submit():
-	_set_custom_field_allow_on_submit(PARENT_DOCTYPE, TABLE_FIELD, 0)
-	_set_property(PARENT_DOCTYPE, TABLE_FIELD, "allow_on_submit", "0", "Check")
+def _unlock_component_table_on_submit():
+	# Historically this locked the table (allow_on_submit=0) after submit for
+	# audit-trail integrity. Explicit user request (2026-08-19): keep the
+	# Komponen Gaji grid editable even on Submitted documents, prioritizing
+	# editability over the audit lock. This runs on every after_migrate, so
+	# it must keep re-asserting allow_on_submit=1 rather than 0, otherwise a
+	# routine migrate silently re-locks the grid again.
+	_set_custom_field_allow_on_submit(PARENT_DOCTYPE, TABLE_FIELD, 1)
+	_set_property(PARENT_DOCTYPE, TABLE_FIELD, "allow_on_submit", "1", "Check")
 
 	if frappe.db.exists("DocType", CHILD_DOCTYPE):
 		for fieldname in ("salary_component", "amount"):
-			_set_docfield_allow_on_submit(CHILD_DOCTYPE, fieldname, 0)
-			_set_property(CHILD_DOCTYPE, fieldname, "allow_on_submit", "0", "Check")
+			_set_docfield_allow_on_submit(CHILD_DOCTYPE, fieldname, 1)
+			_set_property(CHILD_DOCTYPE, fieldname, "allow_on_submit", "1", "Check")
 
 
 def _refresh_contract_statuses():

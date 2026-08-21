@@ -78,11 +78,12 @@ doctype_list_js = {
         "public/js/sales_invoice_list.js",
         "public/js/sales_invoice_list_toolbar.js",
     ],
-    "Sales Order": [
-        "public/js/sales_order_list_toolbar.js",
-        "public/js/sales_order_list.js",
-        "public/js/item_tax_mapping.js",
-    ],
+    # "Sales Order" list JS intentionally NOT registered here - garage app
+    # already owns Sales Order's list view (colored status-badge card
+    # layout, see garage/public/js/sales_order_list.js) for this site, and
+    # having both apps register doctype_list_js for the same doctype meant
+    # whichever loaded last silently overrode the other's rendering -
+    # explicit user request (2026-08-19) to keep garage's card view intact.
     "Bank Statement": "imogi_finance/imogi_finance/doctype/bank_csv_import/bank_csv_import_list.js",
     "Bank CSV Import": "imogi_finance/imogi_finance/doctype/bank_csv_import/bank_csv_import_list.js",
     "Administrative Payment Voucher": "imogi_finance/doctype/administrative_payment_voucher/administrative_payment_voucher_list.js",

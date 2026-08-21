@@ -17,6 +17,7 @@ frappe.ui.form.on("Payroll Entry", {
 		ensure_payroll_frequency_default(frm);
 		toggle_auto_payroll_period_fields(frm);
 		ensure_sub_period_dates(frm);
+		match_periode_gaji_width_to_company(frm);
 		if (frm.is_new() && frm.doc.company && !frm.doc.payroll_period) {
 			auto_apply_payroll_period(frm);
 		}
@@ -233,6 +234,63 @@ const PAYROLL_PERIOD_DETAIL_FIELDS = [
 	"employer_contributions_summary",
 ];
 
+function match_periode_gaji_width_to_company(frm) {
+	// Periode Gaji (Bulan) lives alone in its own full-width Section Break
+	// (needed so it doesn't share a row with Company - see
+	// fix_pe_pp_layout_v2.py). Explicit user request (2026-08-20): rather
+	// than stretching it edge-to-edge, cap it to the exact same rendered
+	// width as the Company field above it, so the two lines up visually.
+	// Clean up the old always-100%-width <style> tag from an earlier
+	// iteration of this fix - Frappe desk is an SPA, so a leftover
+	// <style> injected into document.head during a previous visit this
+	// session survives route changes until a hard reload.
+	const stale_style = document.getElementById("pe-widen-periode-style");
+	if (stale_style) {
+		stale_style.remove();
+	}
+
+	const $company = frm.fields_dict.company && frm.fields_dict.company.$wrapper;
+	const $periode = frm.fields_dict.payroll_sub_period && frm.fields_dict.payroll_sub_period.$wrapper;
+	if (!$company || !$company.length || !$periode || !$periode.length) {
+		return;
+	}
+	const company_width = $company.width();
+	if (!company_width) {
+		return;
+	}
+
+	// garage_desk.css forces `.frappe-control[data-fieldtype="Select"]
+	// select { width: 150px !important }` (and other wrapper-level
+	// !important rules) site-wide. A plain jQuery .css() call sets a
+	// NORMAL inline style, which always loses to ANY !important rule from
+	// an external stylesheet, no matter how it's targeted. An inline
+	// !important (via the native setProperty(..., "important") API) is the
+	// only thing that reliably wins over that - CSS origin/importance
+	// ordering puts author-!important-inline above author-!important-sheet
+	// regardless of selector specificity.
+	const force = ($el, props) => {
+		$el.each(function () {
+			Object.entries(props).forEach(([prop, value]) => {
+				this.style.setProperty(prop, value, "important");
+			});
+		});
+	};
+
+	// .form-column's children are flex items with flex-grow:1 by default,
+	// which would stretch straight past a plain width/max-width regardless
+	// of value - flex-basis pins the actual size.
+	force($periode, {
+		"max-width": `${company_width}px`,
+		"width": `${company_width}px`,
+		"flex": `0 0 ${company_width}px`,
+	});
+	force($periode.find(".control-input, .control-input-wrapper, select, input"), {
+		"max-width": "100%",
+		"width": "100%",
+		"flex": "none",
+	});
+}
+
 function hide_payroll_period_detail_fields(frm) {
 	[...PAYROLL_PERIOD_DETAIL_FIELDS, "payroll_period"].forEach((fieldname) => {
 		if (frm.fields_dict[fieldname]) {
@@ -242,9 +300,15 @@ function hide_payroll_period_detail_fields(frm) {
 }
 
 function toggle_auto_payroll_period_fields(frm) {
+	// Periode Gaji (Bulan) auto-fills from the current month on a new
+	// Payroll Entry, but explicit user request (2026-08-19): keep it
+	// editable while Draft so a user can pick a different month (e.g.
+	// running payroll late for a prior period) instead of only ever
+	// accepting whatever auto_apply_payroll_period() detected. Locked
+	// again once Submitted, same as the rest of the document.
 	const auto_mode = frm.doc.docstatus === 0;
 	if (frm.fields_dict.payroll_sub_period) {
-		frm.set_df_property("payroll_sub_period", "read_only", auto_mode ? 1 : 0);
+		frm.set_df_property("payroll_sub_period", "read_only", auto_mode ? 0 : 1);
 		frm.toggle_reqd("payroll_sub_period", auto_mode && !!frm.doc.payroll_period);
 	}
 }
@@ -347,6 +411,12 @@ function load_sub_period_options(frm, selected, posting_date) {
 				frm.refresh_field("payroll_sub_period");
 				mark_form_clean_if_submitted(frm);
 			}
+
+			// set_df_property("options", ...) / refresh_field() above rebuild
+			// the <select> control's DOM, wiping out any inline style applied
+			// during the earlier synchronous refresh() - reapply once that
+			// settles instead of only right after refresh().
+			match_periode_gaji_width_to_company(frm);
 		},
 	});
 }

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import frappe
 from frappe import _
-from frappe.utils import add_days, date_diff, flt, getdate, strip_html, today
+from frappe.utils import add_days, date_diff, flt, fmt_money, getdate, strip_html, today
 
 # Map nama komponen ke field standar/custom SSA (untuk formula slip gaji).
 COMPONENT_FIELD_MAP = {
@@ -129,7 +129,12 @@ CONTRACT_PERIOD_FIELDS = ("from_date", "end_date")
 
 
 def validate_salary_structure_assignment(doc, method=None):
-	validate_submitted_component_contract_unchanged(doc)
+	# Komponen Gaji lock-after-submit intentionally disabled - explicit user
+	# request (2026-08-19) to let Nilai be edited (and rows added) directly
+	# on a Submitted contract, trading away the "changes only via a new
+	# contract" audit trail for direct editability. See
+	# validate_submitted_component_contract_unchanged's own docstring for
+	# what this used to enforce.
 	validate_submitted_contract_period_unchanged(doc)
 	validate_assignment_contract_chain(doc)
 	validate_change_reason_for_contract_change(doc)
@@ -140,7 +145,6 @@ def validate_salary_structure_assignment(doc, method=None):
 
 
 def update_submitted_salary_structure_assignment(doc, method=None):
-	validate_submitted_component_contract_unchanged(doc)
 	validate_submitted_contract_period_unchanged(doc)
 	validate_change_reason_for_contract_change(doc)
 	validate_assignment_end_date(doc)
@@ -616,6 +620,116 @@ def get_assignment_contract_history(employee: str, salary_structure: str | None 
 		fields=sorted(available_fields),
 		order_by="from_date desc, creation desc",
 	)
+
+
+@frappe.whitelist()
+def get_assignment_contract_change_log(source_name: str) -> list[dict]:
+	"""Riwayat perubahan field-level pada satu Assignment Contract (kapan/apa/siapa).
+
+	Dibangun dari Version doctype standar Frappe - Salary Structure Assignment
+	sudah punya track_changes=1, jadi setiap save (termasuk edit Nilai/Komponen
+	Gaji setelah Submitted) sudah otomatis tercatat lengkap dengan diff per
+	field. Fungsi ini hanya membaca dan memformat data yang sudah ada,
+	tidak butuh hook logging tambahan.
+	"""
+	import json
+
+	if not source_name or not frappe.db.exists("Salary Structure Assignment", source_name):
+		return []
+
+	meta = frappe.get_meta("Salary Structure Assignment")
+	field_labels = {df.fieldname: (df.label or df.fieldname) for df in meta.fields}
+
+	component_names = {
+		row.name: row.salary_component
+		for row in frappe.get_all(
+			"Salary Structure Assignment Component",
+			filters={"parent": source_name, "parenttype": "Salary Structure Assignment"},
+			fields=["name", "salary_component"],
+		)
+	}
+
+	entries = []
+
+	for version in frappe.get_all(
+		"Version",
+		filters={"ref_doctype": "Salary Structure Assignment", "docname": source_name},
+		fields=["name", "owner", "creation", "data"],
+		order_by="creation desc",
+	):
+		try:
+			data = json.loads(version.data or "{}")
+		except ValueError:
+			continue
+
+		changes = []
+
+		for fieldname, old_value, new_value in data.get("changed") or []:
+			if fieldname == "docstatus":
+				# Submit/cancel transitions - covered by the timeline's own
+				# docstatus badge on the form, not useful noise here.
+				continue
+			changes.append(
+				{
+					"kind": "field",
+					"label": field_labels.get(fieldname, fieldname),
+					"old": old_value,
+					"new": new_value,
+				}
+			)
+
+		for tablefield, _idx, row_name, row_diff in data.get("row_changed") or []:
+			if tablefield != COMPONENT_TABLE_FIELD:
+				continue
+			component = component_names.get(row_name, _("Komponen (dihapus)"))
+			for fieldname, old_value, new_value in row_diff:
+				label = field_labels.get(fieldname, fieldname) if fieldname != "amount" else _("Nilai")
+				changes.append(
+					{
+						"kind": "edit",
+						"component": component,
+						"label": label,
+						"old": old_value,
+						"new": new_value,
+					}
+				)
+
+		for tablefield, row in data.get("added") or []:
+			if tablefield != COMPONENT_TABLE_FIELD:
+				continue
+			row = row if isinstance(row, dict) else {}
+			changes.append(
+				{
+					"kind": "add",
+					"component": row.get("salary_component") or _("(tanpa nama)"),
+					"amount": fmt_money(row.get("amount") or 0, currency="IDR"),
+				}
+			)
+
+		for tablefield, row in data.get("removed") or []:
+			if tablefield != COMPONENT_TABLE_FIELD:
+				continue
+			row = row if isinstance(row, dict) else {}
+			changes.append(
+				{
+					"kind": "remove",
+					"component": row.get("salary_component") or _("(tanpa nama)"),
+					"amount": fmt_money(row.get("amount") or 0, currency="IDR"),
+				}
+			)
+
+		if not changes:
+			continue
+
+		entries.append(
+			{
+				"creation": version.creation,
+				"user": version.owner,
+				"changes": changes,
+			}
+		)
+
+	return entries
 
 
 def _get_assigner_user() -> str:

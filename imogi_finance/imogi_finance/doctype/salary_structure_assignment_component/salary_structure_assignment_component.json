@@ -15,7 +15,8 @@
    "label": "Name",
    "options": "Salary Component",
    "reqd": 1,
-   "columns": 7
+   "columns": 7,
+   "allow_on_submit": 1
   },
   {
    "fieldname": "amount",
@@ -23,7 +24,8 @@
    "in_list_view": 1,
    "label": "Nilai",
    "reqd": 1,
-   "columns": 3
+   "columns": 3,
+   "allow_on_submit": 1
   }
  ],
  "istable": 1,
