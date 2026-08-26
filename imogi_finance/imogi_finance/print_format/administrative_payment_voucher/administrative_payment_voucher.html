@@ -1,0 +1,310 @@
+<style>
+  :root {
+    --primary:      #1a1a2e;
+    --border:       #e2e8f0;
+    --bg-light:     #f8fafc;
+    --text:         #1e293b;
+    --text-muted:   #64748b;
+    --text-light:   #94a3b8;
+    --green:        #166534;
+    --green-bg:     #dcfce7;
+    --amber:        #92400e;
+    --amber-bg:     #fef3c7;
+    --red:          #991b1b;
+    --red-bg:       #fee2e2;
+  }
+
+  * {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body { font-size: 10.5pt; color: var(--text); line-height: 1.45; }
+
+  .apv-wrap { width: 100%; background: white; }
+
+  /* HEADER */
+  .apv-header {
+    display: table; width: 100%;
+    border-bottom: 2.5pt solid var(--primary);
+    padding-bottom: 10pt; margin-bottom: 14pt;
+  }
+  .apv-header-left  { display: table-cell; vertical-align: middle; }
+  .apv-header-right { display: table-cell; vertical-align: top; text-align: right; width: 160pt; }
+  .apv-logo  { max-height: 60pt; max-width: 160pt; width: auto; height: auto; object-fit: contain; display: block; margin: 0 0 8pt auto; }
+  .apv-title { font-size: 17pt; font-weight: 700; color: var(--primary); letter-spacing: -0.3pt; margin-bottom: 2pt; }
+  .apv-docid { font-size: 9pt; color: var(--text-muted); letter-spacing: 0.3pt; }
+
+  .badge { display: inline-block; padding: 4pt 12pt; font-size: 8pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6pt; border-radius: 3pt; }
+  .badge-approved { background: var(--primary); color: white; }
+  .badge-pending  { background: var(--amber-bg); color: var(--amber); border: 1pt solid #fde68a; }
+  .badge-rejected { background: var(--red-bg);   color: var(--red);   border: 1pt solid #fecaca; }
+  .badge-default  { background: var(--bg-light);  color: var(--text-muted); border: 1pt solid var(--border); }
+
+  .section-label {
+    font-size: 7.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8pt;
+    color: var(--text-muted); margin: 0 0 6pt 0; padding-bottom: 4pt; border-bottom: 1pt solid var(--border);
+  }
+
+  .info-grid { display: table; width: 100%; margin-bottom: 12pt; }
+  .info-grid-cell { display: table-cell; width: 50%; vertical-align: top; }
+  .info-grid-cell:first-child { padding-right: 6pt; }
+  .info-grid-cell:last-child  { padding-left:  6pt; }
+  .card { background: white; border: 1pt solid var(--border); border-radius: 5pt; padding: 10pt 12pt; height: 100%; }
+  .card-header-accent { border-top: 3pt solid var(--primary); }
+  .info-row { display: table; width: 100%; padding: 2.5pt 0; font-size: 9.5pt; }
+  .info-label { display: table-cell; width: 42%; color: var(--text-muted); vertical-align: top; }
+  .info-value { display: table-cell; font-weight: 600; color: var(--text); text-align: right; vertical-align: top; }
+  .info-divider { border: none; border-top: 1pt solid var(--border); margin: 6pt 0; }
+
+  .notes { background: var(--bg-light); border-left: 3pt solid var(--primary); padding: 7pt 11pt; margin-bottom: 12pt; border-radius: 0 4pt 4pt 0; }
+  .notes-label { font-size: 7.5pt; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 3pt; }
+  .notes-text  { font-size: 9.5pt; color: var(--text); line-height: 1.5; }
+
+  .amount-box { width: 55%; margin-left: auto; margin-bottom: 12pt; border-radius: 5pt; overflow: hidden; background: var(--primary); color: white; padding: 10pt 14pt; text-align: right; }
+  .amount-label { font-size: 8pt; text-transform: uppercase; letter-spacing: 0.5pt; opacity: 0.8; }
+  .amount-value { font-size: 15pt; font-weight: 700; }
+
+  /* EMPLOYEE BREAKDOWN TABLE */
+  .items-section-label {
+    font-size: 9pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5pt;
+    color: var(--primary); margin: 16pt 0 6pt 0; padding-bottom: 4pt; border-bottom: 2pt solid var(--primary);
+  }
+  .items-table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+  .items-table thead tr { background: var(--primary); }
+  .items-table thead th { padding: 7pt 9pt; font-size: 8pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3pt; color: white; text-align: left; }
+  .items-table thead th.num   { text-align: center; }
+  .items-table thead th.right { text-align: right; }
+  .items-table tbody td { padding: 6pt 9pt; border-bottom: 1pt solid var(--border); color: var(--text); vertical-align: top; }
+  .items-table tbody td.num   { text-align: center; color: var(--text-muted); }
+  .items-table tbody td.right { text-align: right; font-weight: 500; }
+  .items-table tbody tr:nth-child(even) { background: var(--bg-light); }
+  .items-table tfoot tr:first-child td { border-top: 2pt solid var(--primary); }
+  .items-table tfoot td { padding: 6pt 9pt; font-size: 9pt; background: var(--bg-light); }
+  .items-table tfoot td.right { text-align: right; font-weight: 700; color: var(--primary); }
+
+  .mismatch-notice { margin-top: 6pt; padding: 6pt 10pt; background: var(--red-bg); color: var(--red); border-radius: 4pt; font-size: 8.5pt; font-weight: 600; }
+
+  /* SIGNATURE */
+  .sig-section { margin-top: 22pt; page-break-inside: avoid; }
+  .sig-section-label {
+    font-size: 9pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5pt;
+    color: var(--primary); margin-bottom: 12pt; padding-bottom: 4pt; border-bottom: 2pt solid var(--primary);
+  }
+  .sig-table { width: 100%; border-collapse: separate; border-spacing: 8pt 0; }
+  .sig-table td { width: 33.3%; vertical-align: top; padding: 0; }
+  .sig-box { border: 1pt solid var(--border); border-radius: 5pt; padding: 9pt 8pt; background: white; text-align: center; }
+  .sig-box.approved-box { border-color: #86efac; background: #f0fdf4; }
+  .sig-role  { font-size: 7.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4pt; color: var(--text-muted); margin-bottom: 5pt; }
+  .sig-area  { height: 42pt; margin: 0 4pt; border-bottom: 1pt solid var(--primary); }
+  .sig-name  { font-size: 8.5pt; font-weight: 600; color: var(--primary); margin-top: 5pt; min-height: 11pt; }
+  .sig-date  { font-size: 7.5pt; color: var(--text-muted); margin-top: 2pt; min-height: 9pt; }
+
+  .apv-footer { margin-top: 24pt; padding-top: 8pt; border-top: 1pt solid var(--border); text-align: center; }
+  .apv-footer p { font-size: 7.5pt; color: var(--text-light); line-height: 1.7; font-style: italic; }
+
+  @media print {
+    @page { size: A4 portrait; margin: 14mm 12mm; }
+    body { font-size: 10pt; }
+    .items-table thead tr, .amount-box, .badge-approved {
+      background: var(--primary) !important;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .sig-box.approved-box { background: #f0fdf4 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .sig-section  { page-break-inside: avoid; }
+    .amount-box   { page-break-inside: avoid; }
+  }
+</style>
+
+{%- set status = doc.workflow_state or doc.status or 'Draft' -%}
+{%- set status_classes = {
+    'Approved': 'badge-approved',
+    'Posted':   'badge-approved',
+    'Pending Approval': 'badge-pending',
+    'Draft':    'badge-default',
+    'Rejected': 'badge-rejected',
+    'Cancelled':'badge-rejected'
+} -%}
+{%- set badge_cls = status_classes.get(status, 'badge-default') -%}
+{%- set is_payroll = doc.reference_doctype == 'Payroll Entry' and doc.reference_name -%}
+
+<div class="apv-wrap">
+
+  <!-- HEADER -->
+  <div class="apv-header">
+    <div class="apv-header-left">
+      <div class="apv-title">{{ _("Bukti Otorisasi Pembayaran") }}</div>
+      <div class="apv-docid">{{ doc.name }} &nbsp;&middot;&nbsp; {{ frappe.utils.formatdate(doc.posting_date, "dd MMMM yyyy") }}</div>
+    </div>
+    <div class="apv-header-right">
+      {%- set company_logo = frappe.db.get_value("Company", doc.company, "company_logo") -%}
+      {%- if company_logo %}
+      <img src="{{ company_logo }}" alt="{{ doc.company }}" class="apv-logo">
+      {%- endif %}
+      <span class="badge {{ badge_cls }}">{{ status }}</span>
+    </div>
+  </div>
+
+  <!-- INFO CARDS -->
+  <div class="info-grid">
+    <div class="info-grid-cell">
+      <div class="card card-header-accent">
+        <div class="section-label">{{ _("Detail Pembayaran") }}</div>
+        <div class="info-row">
+          <span class="info-label">{{ _("Tanggal") }}</span>
+          <span class="info-value">{{ frappe.utils.formatdate(doc.posting_date, "dd MMM yyyy") }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">{{ _("Arah") }}</span>
+          <span class="info-value">{{ _("Pembayaran") if doc.direction == "Pay" else _("Penerimaan") }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">{{ _("Dari / Ke Akun") }}</span>
+          <span class="info-value">{{ doc.bank_cash_account }}</span>
+        </div>
+        {%- if doc.mode_of_payment %}
+        <div class="info-row">
+          <span class="info-label">{{ _("Mode Pembayaran") }}</span>
+          <span class="info-value">{{ doc.mode_of_payment }}</span>
+        </div>
+        {%- endif %}
+        <hr class="info-divider">
+        <div class="info-row">
+          <span class="info-label">{{ _("Akun Tujuan") }}</span>
+          <span class="info-value">{{ doc.target_gl_account }}</span>
+        </div>
+        {%- if doc.cost_center %}
+        <div class="info-row">
+          <span class="info-label">{{ _("Cost Center") }}</span>
+          <span class="info-value">{{ doc.cost_center }}</span>
+        </div>
+        {%- endif %}
+      </div>
+    </div>
+
+    <div class="info-grid-cell">
+      <div class="card card-header-accent">
+        <div class="section-label">{{ _("Referensi") }}</div>
+        <div class="info-row">
+          <span class="info-label">{{ _("Untuk") }}</span>
+          <span class="info-value">{{ doc.justification or "-" }}</span>
+        </div>
+        {%- if doc.reference_doctype and doc.reference_name %}
+        <div class="info-row">
+          <span class="info-label">{{ doc.reference_doctype }}</span>
+          <span class="info-value">{{ doc.reference_name }}</span>
+        </div>
+        {%- endif %}
+        <hr class="info-divider">
+        {%- if doc.payment_entry %}
+        <div class="info-row">
+          <span class="info-label">{{ _("Payment Entry") }}</span>
+          <span class="info-value">{{ doc.payment_entry }}</span>
+        </div>
+        {%- else %}
+        <div class="info-row">
+          <span class="info-label">{{ _("Status") }}</span>
+          <span class="info-value">{{ status }}</span>
+        </div>
+        {%- endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- AMOUNT -->
+  <div class="amount-box">
+    <div class="amount-label">{{ _("Total Nilai Pembayaran") }}</div>
+    <div class="amount-value">{{ frappe.utils.fmt_money(doc.amount or 0, currency=frappe.db.get_value("Company", doc.company, "default_currency")) }}</div>
+  </div>
+
+  <!-- EMPLOYEE BREAKDOWN (payroll only) -->
+  {%- if is_payroll %}
+  {%- set slips = frappe.get_all(
+        "Salary Slip",
+        filters={"payroll_entry": doc.reference_name, "docstatus": 1},
+        fields=["employee", "employee_name", "net_pay"],
+        order_by="employee_name asc"
+      ) -%}
+  <div class="items-section-label">{{ _("Rincian Per Karyawan") }}</div>
+  <table class="items-table">
+    <thead>
+      <tr>
+        <th class="num" style="width:6%">#</th>
+        <th style="width:18%">{{ _("NIK") }}</th>
+        <th style="width:46%">{{ _("Nama Karyawan") }}</th>
+        <th class="right" style="width:30%">{{ _("Take Home Pay") }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {%- set total_slips = namespace(value=0) -%}
+      {%- for row in slips %}
+      <tr>
+        <td class="num">{{ loop.index }}</td>
+        <td>{{ row.employee }}</td>
+        <td>{{ row.employee_name }}</td>
+        <td class="right">{{ frappe.utils.fmt_money(row.net_pay, currency=frappe.db.get_value("Company", doc.company, "default_currency")) }}</td>
+      </tr>
+      {%- set total_slips.value = total_slips.value + (row.net_pay or 0) %}
+      {%- endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="3" style="text-align:right;">{{ _("Total") }}</td>
+        <td class="right">{{ frappe.utils.fmt_money(total_slips.value, currency=frappe.db.get_value("Company", doc.company, "default_currency")) }}</td>
+      </tr>
+    </tfoot>
+  </table>
+  {%- if (total_slips.value | round(2)) != (doc.amount | round(2)) %}
+  <div class="mismatch-notice">
+    {{ _("Peringatan: total rincian karyawan ({0}) tidak sama dengan Total Nilai Pembayaran ({1}).").format(
+      frappe.utils.fmt_money(total_slips.value, currency=frappe.db.get_value("Company", doc.company, "default_currency")),
+      frappe.utils.fmt_money(doc.amount or 0, currency=frappe.db.get_value("Company", doc.company, "default_currency"))
+    ) }}
+  </div>
+  {%- endif %}
+  {%- endif %}
+
+  <!-- SIGNATURE SECTION -->
+  <div class="sig-section">
+    <div class="sig-section-label">{{ _("Tanda Tangan &amp; Persetujuan") }}</div>
+    <table class="sig-table">
+      <tr>
+        <td>
+          <div class="sig-box">
+            <div class="sig-role">{{ _("Dibuat Oleh") }}</div>
+            <div class="sig-area"></div>
+            <div class="sig-name">{{ (doc.created_by_user or doc.owner or "").split('@')[0] }}</div>
+            <div class="sig-date">{{ frappe.utils.formatdate(doc.creation, "dd MMM yyyy") if doc.creation else '' }}</div>
+          </div>
+        </td>
+        <td>
+          <div class="sig-box">
+            <div class="sig-role">{{ _("Diperiksa Oleh") }}</div>
+            <div class="sig-area"></div>
+            <div class="sig-name">&nbsp;</div>
+            <div class="sig-date">&nbsp;</div>
+          </div>
+        </td>
+        <td>
+          <div class="sig-box {{ 'approved-box' if doc.approved_by else '' }}">
+            <div class="sig-role">{{ _("Disetujui Oleh") }}</div>
+            <div class="sig-area"></div>
+            <div class="sig-name">{{ (doc.approved_by or "").split('@')[0] }}</div>
+            <div class="sig-date">{{ frappe.utils.formatdate(doc.approved_on, "dd MMM yyyy") if doc.approved_on else '' }}</div>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="apv-footer">
+    <p>
+      Dokumen ini dibuat melalui modul <strong>IMOGI Finance &mdash; Administrative Payment Voucher</strong><br>
+      {{ frappe.utils.formatdate(frappe.utils.nowdate(), "dd MMMM yyyy") }} {{ frappe.utils.nowtime()[:5] }}
+    </p>
+  </div>
+
+</div>

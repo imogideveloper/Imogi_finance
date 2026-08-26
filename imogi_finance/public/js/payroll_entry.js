@@ -21,6 +21,7 @@ frappe.ui.form.on("Payroll Entry", {
 		if (frm.is_new() && frm.doc.company && !frm.doc.payroll_period) {
 			auto_apply_payroll_period(frm);
 		}
+		add_request_payment_button(frm);
 	},
 
 	company(frm) {
@@ -162,6 +163,37 @@ function auto_apply_payroll_period(frm) {
 		error() {
 			frm.doc.__auto_applying_payroll_period = false;
 		},
+	});
+}
+
+function add_request_payment_button(frm) {
+	// Payroll disbursement goes through an Administrative Payment Voucher
+	// (wet-signature approval + Payment Entry posting) instead of the raw
+	// "Make Bank Entry" button, so it can't be paid without going through
+	// approval first. Only offer this once the payroll run itself is final.
+	if (frm.doc.docstatus !== 1) {
+		return;
+	}
+
+	if (frm.doc.linked_payment_voucher) {
+		frm.add_custom_button(__("Lihat Payment Voucher"), () => {
+			frappe.set_route("Form", "Administrative Payment Voucher", frm.doc.linked_payment_voucher);
+		});
+		return;
+	}
+
+	frm.add_custom_button(__("Request Payment"), () => {
+		frappe.call({
+			method: "imogi_finance.payroll.payroll_payment.request_payroll_payment",
+			args: { payroll_entry_name: frm.doc.name },
+			freeze: true,
+			freeze_message: __("Membuat Payment Voucher..."),
+			callback(r) {
+				if (r.message && r.message.payment_voucher) {
+					frappe.set_route("Form", "Administrative Payment Voucher", r.message.payment_voucher);
+				}
+			},
+		});
 	});
 }
 
