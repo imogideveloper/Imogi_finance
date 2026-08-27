@@ -31,6 +31,7 @@ frappe.ui.form.on('Budget Reclass Request', {
 		}
 		
 		// Show amount and cost centers in the title
+		frm.dashboard.clear_headline();
 		if (frm.doc.amount) {
 			frm.set_intro(__('Reclass Amount: {0}', [format_currency(frm.doc.amount, frm.doc.company)]), 'blue');
 		}

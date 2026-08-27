@@ -31,6 +31,7 @@ frappe.ui.form.on('Additional Budget Request', {
 		}
 		
 		// Show amount and cost center in the title
+		frm.dashboard.clear_headline();
 		if (frm.doc.amount) {
 			frm.set_intro(__('Additional Budget Amount: {0}', [format_currency(frm.doc.amount, frm.doc.company)]), 'blue');
 		}

@@ -76,10 +76,17 @@ class AdditionalBudgetRequest(Document):
 		if getattr(self, "workflow_state", None):
 			self.db_set("status", self.workflow_state, update_modified=False)
 
-		# Execute budget supplement only once when final approval is reached
-		if self.workflow_state == "Approved" and not hasattr(self, "_budget_executed"):
+		# Execute budget supplement only on the save that actually transitions
+		# into Approved, not on any later resave while already Approved -
+		# `not hasattr(self, "_budget_executed")` only ever guarded against
+		# re-running twice within the SAME Python object's lifetime (one
+		# request), not across separate opens/saves of an already-Approved
+		# document - service.record_supplement()/ledger.post_entry() have no
+		# idempotency check of their own, so without has_value_changed()
+		# here, simply re-opening and saving an Approved request would post
+		# another SUPPLEMENT entry and inflate the budget again each time.
+		if self.workflow_state == "Approved" and self.has_value_changed("workflow_state"):
 			self._execute_budget_supplement()
-			self._budget_executed = True
 
 	def _execute_budget_supplement(self):
 		"""Execute budget supplement after approval."""

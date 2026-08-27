@@ -79,10 +79,15 @@ class BudgetReclassRequest(Document):
 		if getattr(self, "workflow_state", None):
 			self.db_set("status", self.workflow_state, update_modified=False)
 
-		# Execute budget reclass only once when final approval is reached
-		if self.workflow_state == "Approved" and not hasattr(self, "_budget_executed"):
+		# Execute budget reclass only on the save that actually transitions
+		# into Approved, not on any later resave while already Approved -
+		# same reasoning as additional_budget_request.py's own
+		# on_update_after_submit: `not hasattr(self, "_budget_executed")`
+		# only guarded within one Python object's lifetime, not across
+		# separate opens/saves of an already-Approved document, and the
+		# underlying ledger post has no idempotency check of its own.
+		if self.workflow_state == "Approved" and self.has_value_changed("workflow_state"):
 			self._execute_budget_reclass()
-			self._budget_executed = True
 
 	def _execute_budget_reclass(self):
 		"""Execute budget reclass after approval."""

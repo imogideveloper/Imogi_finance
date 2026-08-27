@@ -2,7 +2,6 @@
   "doctype": "DocType",
   "name": "Budget Reclass Request",
   "module": "Imogi Finance",
-  "custom": 1,
   "istable": 0,
   "is_submittable": 1,
   "track_changes": 1,

@@ -4,6 +4,7 @@
 frappe.ui.form.on('Internal Charge Request', {
   refresh: function(frm) {
     // Add custom indicators and buttons
+    frm.dashboard.clear_headline();
     calculateLineTotals(frm);
     validateAccountTotals(frm);
     
