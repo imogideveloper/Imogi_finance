@@ -135,11 +135,56 @@ fixtures = [
     {"doctype": "Item", "filters": [["name", "=", "JASA-TOWING-001"]]},
     
     # 4. Workflow (urutan penting!)
-    {"doctype": "Workflow State", "filters": [["workflow_state_name", "in", 
-        ["Draft", "Assigned", "Pick Up", "Delivered", "Done", "Cancelled"]]]},
-    {"doctype": "Workflow Action Master", "filters": [["workflow_action_name", "in", 
-        ["Assign Driver", "Konfirmasi Pick Up", "Konfirmasi Delivered", "Selesaikan DO", "Cancel"]]]},
-    {"doctype": "Workflow", "filters": [["name", "=", "DO Towing Workflow"]]},
+    # Was scoped to DO Towing's own states/actions/workflow only (set when
+    # DO Towing fixtures were first added, 2026-04-23) - the other 9 finance
+    # workflows (Budget Request, Expense Request, Payment Voucher, etc.)
+    # already existed and worked locally the whole time, but were never
+    # actually in this fixture net, so they never made it to any deploy.
+    # Widened to cover those 9 and everything their own states/transitions
+    # reference - explicit request (2026-08-27).
+    #
+    # "DO Towing Workflow" itself is deliberately left OUT of this list, not
+    # merged back in: its own document_type, "Delivery Order Towing", isn't
+    # actually an installed DocType on either this bench or production
+    # (frappe.get_meta("Delivery Order Towing") raises DoesNotExistError on
+    # both - a pre-existing break, unrelated to this change) - and Frappe's
+    # fixture sync SKIPS THE ENTIRE FILE, not just the one bad entry, the
+    # moment any Workflow in it references a document_type that doesn't
+    # resolve. With "DO Towing Workflow" still in the list that took every
+    # other workflow down with it on every single migrate, silently (no
+    # error - just a log line, "Skipping fixture syncing from the file
+    # workflow.json"). Confirmed live: it already was silently failing this
+    # way before this change too, so this isn't a regression - fixing DO
+    # Towing's own missing DocType is a separate, unrelated task.
+    {"doctype": "Workflow State", "filters": [["workflow_state_name", "in",
+        ["Approved", "Approved for Transfer", "Awaiting Bank Confirmation",
+         "Cancelled", "Draft", "Finance Review", "Generated", "Issued",
+         "PI Created", "Paid", "Partially Approved", "Partially Paid",
+         "Pending Approval", "Pending L1 Approval", "Pending L2 Approval",
+         "Pending L3 Approval", "Pending Review", "Posted", "Printed",
+         "Rejected"]]]},
+    # Most of these 9 workflows' own transitions reference an "action" that
+    # has no matching Workflow Action Master record at all (a required Link
+    # field - e.g. "Submit for Approval" is used by 3+ transitions but no
+    # such master record exists anywhere in this database). That's already
+    # true right now, on the already-working local copies of these
+    # workflows - not something this change introduces or should paper
+    # over by inventing new master records nobody asked for. Only "Approve"
+    # and "Reject" both exist AND are used here; that's all there is to
+    # export.
+    {"doctype": "Workflow Action Master", "filters": [["workflow_action_name", "in",
+        ["Approve", "Reject"]]]},
+    {"doctype": "Workflow", "filters": [["name", "in", [
+        "Additional Budget Request Workflow",
+        "Administrative Payment Voucher Workflow",
+        "Advanced Expense Request Workflow",
+        "Budget Reclass Request Workflow",
+        "Cash Bank Daily Report Workflow",
+        "Customer Receipt Workflow",
+        "Expense Request Workflow",
+        "Internal Charge Request Workflow",
+        "Transfer Application Workflow",
+    ]]]},
     
     # 5. Reports & UI
     {"doctype": "Report"},

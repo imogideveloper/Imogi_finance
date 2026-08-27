@@ -3,6 +3,33 @@
   "docstatus": 0,
   "doctype": "Workflow State",
   "icon": null,
+  "modified": "2026-08-26 17:36:02.659989",
+  "name": "Approved",
+  "style": "Success",
+  "workflow_state_name": "Approved"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": null,
+  "modified": "2026-08-19 10:48:22.281376",
+  "name": "Approved for Transfer",
+  "style": "Success",
+  "workflow_state_name": "Approved for Transfer"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": null,
+  "modified": "2026-08-19 10:48:22.290059",
+  "name": "Awaiting Bank Confirmation",
+  "style": "Warning",
+  "workflow_state_name": "Awaiting Bank Confirmation"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": null,
   "modified": "2026-03-10 11:30:56.116861",
   "name": "Cancelled",
   "style": "Danger",
@@ -20,37 +47,136 @@
  {
   "docstatus": 0,
   "doctype": "Workflow State",
-  "icon": "",
-  "modified": "2026-04-23 14:07:29.109947",
-  "name": "Assigned",
+  "icon": null,
+  "modified": "2026-08-19 10:48:22.272311",
+  "name": "Finance Review",
   "style": "Warning",
-  "workflow_state_name": "Assigned"
+  "workflow_state_name": "Finance Review"
  },
  {
   "docstatus": 0,
   "doctype": "Workflow State",
-  "icon": "",
-  "modified": "2026-04-23 14:07:29.133398",
-  "name": "Pick Up",
+  "icon": null,
+  "modified": "2026-08-19 10:48:22.342889",
+  "name": "Generated",
   "style": "Info",
-  "workflow_state_name": "Pick Up"
+  "workflow_state_name": "Generated"
  },
  {
   "docstatus": 0,
   "doctype": "Workflow State",
-  "icon": "",
-  "modified": "2026-04-23 14:07:29.137068",
-  "name": "Delivered",
-  "style": "Success",
-  "workflow_state_name": "Delivered"
+  "icon": null,
+  "modified": "2026-08-19 10:48:22.362034",
+  "name": "Issued",
+  "style": "Info",
+  "workflow_state_name": "Issued"
  },
  {
   "docstatus": 0,
   "doctype": "Workflow State",
-  "icon": "",
-  "modified": "2026-04-23 14:07:29.141017",
-  "name": "Done",
+  "icon": null,
+  "modified": "2026-08-26 17:36:02.678743",
+  "name": "PI Created",
+  "style": "Primary",
+  "workflow_state_name": "PI Created"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": null,
+  "modified": "2026-08-26 17:36:02.686650",
+  "name": "Paid",
   "style": "Success",
-  "workflow_state_name": "Done"
+  "workflow_state_name": "Paid"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": null,
+  "modified": "2026-08-19 10:48:22.334145",
+  "name": "Partially Approved",
+  "style": "Warning",
+  "workflow_state_name": "Partially Approved"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": null,
+  "modified": "2026-08-19 10:48:22.371492",
+  "name": "Partially Paid",
+  "style": "Warning",
+  "workflow_state_name": "Partially Paid"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": null,
+  "modified": "2026-08-19 10:48:22.246028",
+  "name": "Pending Approval",
+  "style": "Warning",
+  "workflow_state_name": "Pending Approval"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": null,
+  "modified": "2026-08-19 10:48:22.307285",
+  "name": "Pending L1 Approval",
+  "style": "Warning",
+  "workflow_state_name": "Pending L1 Approval"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": null,
+  "modified": "2026-08-19 10:48:22.315603",
+  "name": "Pending L2 Approval",
+  "style": "Warning",
+  "workflow_state_name": "Pending L2 Approval"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": null,
+  "modified": "2026-08-19 10:48:22.325063",
+  "name": "Pending L3 Approval",
+  "style": "Warning",
+  "workflow_state_name": "Pending L3 Approval"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": null,
+  "modified": "2026-08-26 17:36:02.652089",
+  "name": "Pending Review",
+  "style": "Warning",
+  "workflow_state_name": "Pending Review"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": null,
+  "modified": "2026-08-19 10:48:22.254683",
+  "name": "Posted",
+  "style": "Success",
+  "workflow_state_name": "Posted"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": null,
+  "modified": "2026-08-19 10:48:22.352131",
+  "name": "Printed",
+  "style": "Success",
+  "workflow_state_name": "Printed"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": null,
+  "modified": "2026-08-26 17:36:02.669344",
+  "name": "Rejected",
+  "style": "Danger",
+  "workflow_state_name": "Rejected"
  }
 ]
