@@ -161,7 +161,7 @@ function computeTotals(frm) {
   let totalPpn = 0;
   if (frm.doc.docstatus === 0) {
     if (frm.doc.is_ppn_applicable) {
-      const ppnRate = flt(frm._ppn_rate || 0);
+      const ppnRate = flt(frm.doc.__ppn_rate || 0);
       totalPpn = (totalExpense * ppnRate) / 100;
     }
   } else {

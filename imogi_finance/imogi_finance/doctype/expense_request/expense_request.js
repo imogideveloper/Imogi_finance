@@ -160,7 +160,7 @@ function computeTotals(frm) {
   if (frm.doc.docstatus === 0) {
     // Draft mode: Calculate PPN from items total using template rate
     if (frm.doc.is_ppn_applicable) {
-      const ppnRate = flt(frm._ppn_rate || 0);
+      const ppnRate = flt(frm.doc.__ppn_rate || 0);
       totalPpn = (totalExpense * ppnRate) / 100;
     }
   } else {
