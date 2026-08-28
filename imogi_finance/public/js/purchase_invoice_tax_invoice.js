@@ -102,6 +102,14 @@ function lockPiTaxInvoiceFields(frm) {
   Object.values(PI_TAX_INVOICE_FIELDS).forEach((field) => {
     frm.set_df_property(field, 'read_only', true);
   });
+
+  // Faktur Pajak was inherited from the source Purchase Order - don't let
+  // users relink a different upload here, it has to be corrected on the PO.
+  if (frm.doc.ti_locked_from_po) {
+    frm.set_df_property('ti_tax_invoice_upload', 'read_only', true);
+    frm.set_df_property('ti_tax_invoice_upload', 'description',
+      __('Locked: this Faktur Pajak was inherited from the Purchase Order. Change it there instead.'));
+  }
 }
 
 async function setPiUploadQuery(frm) {
@@ -163,5 +171,8 @@ frappe.ui.form.on('Purchase Invoice', {
 
   async ti_tax_invoice_upload(frm) {
     await syncPiUpload(frm);
+    if (frm.doc.ti_tax_invoice_upload) {
+      await frm.set_value({ ppn_exclude: 1, ppn_include: 0, ppn_non: 0 });
+    }
   },
 });

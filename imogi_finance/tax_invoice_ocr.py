@@ -596,7 +596,7 @@ def _get_upload_link_field(doctype: str) -> str | None:
 def get_linked_tax_invoice_uploads(
     *, exclude_doctype: str | None = None, exclude_name: str | None = None
 ) -> set[str]:
-    targets = ("Purchase Invoice", "Expense Request")
+    targets = ("Purchase Invoice", "Purchase Order", "Expense Request")
     uploads: set[str] = set()
 
     for target in targets:
@@ -622,7 +622,7 @@ def get_linked_tax_invoice_uploads(
 def _find_existing_upload_link(
     upload_name: str, current_doctype: str, current_name: str | None = None
 ) -> tuple[str | None, str | None]:
-    targets = ("Purchase Invoice", "Expense Request")
+    targets = ("Purchase Invoice", "Purchase Order", "Expense Request")
 
     for target in targets:
         fieldname = _get_upload_link_field(target)
@@ -666,6 +666,15 @@ def validate_tax_invoice_upload_link(doc: Any, doctype: str):
 
     existing_doctype, existing_name = _find_existing_upload_link(upload, doctype, getattr(doc, "name", None))
     if existing_doctype and existing_name:
+        if existing_doctype == "Purchase Order" and doctype == "Purchase Invoice":
+            po_names = {
+                item.get("purchase_order")
+                for item in (doc.get("items") or [])
+                if item.get("purchase_order")
+            }
+            if existing_name in po_names:
+                return
+
         if existing_doctype == "Expense Request" and doctype == "Purchase Invoice":
             request_name = doc.get("imogi_expense_request") or doc.get("expense_request")
             expense_request = frappe.db.get_value(
@@ -3623,6 +3632,33 @@ def sync_tax_invoice_upload(doc: Any, doctype: str, upload_name: str | None = No
         "status": _get_value(upload_doc, "Tax Invoice OCR Upload", "status"),
         "recommended_ppn_template": getattr(upload_doc, "recommended_ppn_template", None),
     }
+
+
+def carry_tax_invoice_from_purchase_order(pi_doc: Any, po_name: str) -> bool:
+    """Copy Faktur Pajak data from a submitted Purchase Order onto a new Purchase Invoice.
+
+    Only acts if the PO actually has a Tax Invoice OCR Upload linked; PO-level
+    OCR is optional, so most POs won't have anything to carry. Locks the PI's
+    tax invoice fields (via ti_locked_from_po) so users can't relink a
+    different Faktur Pajak on the PI once it's inherited from its PO.
+    """
+    po_link_field = _get_upload_link_field("Purchase Order")
+    if not po_link_field:
+        return False
+
+    po_upload = frappe.db.get_value("Purchase Order", po_name, po_link_field)
+    if not po_upload:
+        return False
+
+    po_doc = frappe.get_doc("Purchase Order", po_name)
+    _copy_tax_invoice_fields(po_doc, "Purchase Order", pi_doc, "Purchase Invoice")
+
+    pi_link_field = _get_upload_link_field("Purchase Invoice")
+    if pi_link_field:
+        setattr(pi_doc, pi_link_field, getattr(po_doc, po_link_field, None))
+
+    pi_doc.ti_locked_from_po = 1
+    return True
 
 
 def verify_tax_invoice(doc: Any, *, doctype: str, force: bool = False) -> dict[str, Any]:

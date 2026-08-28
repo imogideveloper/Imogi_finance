@@ -29,6 +29,7 @@ DEFAULT_STANDARD_FIELD_MAP = {
 
 DEFAULT_FIELD_MAP: dict[str, dict[str, str]] = {
     "Purchase Invoice": deepcopy(DEFAULT_STANDARD_FIELD_MAP),
+    "Purchase Order": deepcopy(DEFAULT_STANDARD_FIELD_MAP),
     "Expense Request": deepcopy(DEFAULT_STANDARD_FIELD_MAP),
     "Sales Invoice": {
         "fp_no": "out_fp_no",
@@ -122,6 +123,7 @@ FIELD_MAP, COPY_KEYS = _load_field_map_data()
 
 UPLOAD_LINK_FIELDS: dict[str, str] = {
     "Purchase Invoice": "ti_tax_invoice_upload",
+    "Purchase Order": "ti_tax_invoice_upload",
     "Expense Request": "ti_tax_invoice_upload",
     "Sales Invoice": "out_fp_tax_invoice_upload",
 }

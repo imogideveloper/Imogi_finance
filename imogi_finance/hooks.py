@@ -48,7 +48,10 @@ doctype_js = {
     "Delivery Order Towing": "public/js/delivery_order_towing.js",
     "Workspace UI Settings": "public/js/workspace_ui_settings.js",
     "Quotation":       "public/js/item_tax_mapping.js", 
-    "Purchase Order":  "public/js/item_tax_mapping.js", 
+    "Purchase Order":  [
+        "public/js/item_tax_mapping.js",
+        "public/js/purchase_order_tax_invoice.js",
+    ],
     "Item Tax Mapping": "public/js/item_tax_mapping.js",
     "Salary Structure Assignment": "public/js/salary_structure_assignment.js",
     "Salary Structure": "public/js/salary_structure.js",
@@ -218,7 +221,12 @@ doc_events = {
         "before_submit": "imogi_finance.imogi_finance.events.bank_statement_import_handler.bank_statement_import_before_submit",
     },
 
+    "Purchase Order": {
+        "before_submit": "imogi_finance.events.purchase_order.validate_before_submit",
+    },
+
     "Purchase Invoice": {
+        "before_insert": "imogi_finance.events.purchase_invoice.carry_tax_invoice_from_po",
         "onload": "imogi_finance.events.utils.normalize_tax_invoice_ppn_types",
         "validate": [
             "imogi_finance.events.purchase_invoice.prevent_double_wht_validate",

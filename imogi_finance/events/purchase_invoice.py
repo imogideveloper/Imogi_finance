@@ -12,6 +12,7 @@ from imogi_finance.events.utils import (
     get_expense_request_status,
 )
 from imogi_finance.tax_invoice_ocr import (
+    carry_tax_invoice_from_purchase_order,
     get_settings,
     normalize_npwp,
     sync_tax_invoice_upload,
@@ -24,6 +25,24 @@ from imogi_finance.budget_control.workflow import (
 )
 from imogi_finance.budget_control import utils as budget_utils
 from imogi_finance.budget_control import service as budget_service
+
+
+def carry_tax_invoice_from_po(doc, method=None):
+    """Inherit Faktur Pajak/OCR data from the source Purchase Order, if any.
+
+    PI items created via "Create > Purchase Invoice" from a PO carry a
+    per-row `purchase_order` reference. If that PO has a Tax Invoice OCR
+    Upload linked (PO-level OCR is optional), pull its data onto this new PI
+    so users don't have to re-upload/re-verify the same Faktur Pajak twice.
+    """
+    po_name = next(
+        (item.get("purchase_order") for item in (doc.get("items") or []) if item.get("purchase_order")),
+        None,
+    )
+    if not po_name:
+        return
+
+    carry_tax_invoice_from_purchase_order(doc, po_name)
 
 
 def sync_expense_request_status_from_pi(doc, method=None):
@@ -168,11 +187,24 @@ def manage_ppn_variance_validate(doc, method=None):
 
     elif len(ppn_var_rows) == 0:
         # CREATE: No variance row exists, create new one
+        # Cost Center is required on any P&L account row - fall back to an
+        # existing item's cost center, then the company default, since the
+        # top-level doc.cost_center is often left empty on PI (set per-item
+        # instead), which would otherwise leave this synthetic row with no
+        # cost center at all and fail submit with "Missing Cost Center".
+        variance_cost_center = (
+            getattr(doc, "cost_center", None)
+            or next(
+                (getattr(i, "cost_center", None) for i in doc.get("items") or [] if getattr(i, "cost_center", None)),
+                None,
+            )
+            or frappe.get_cached_value("Company", doc.company, "cost_center")
+        )
         new_item = doc.append("items", {
             "item_name": "PPN Variance",
             "description": "PPN Variance (OCR adjustment)",
             "expense_account": variance_account,
-            "cost_center": getattr(doc, "cost_center", None),
+            "cost_center": variance_cost_center,
             "qty": 1,
             "uom": "Nos",
             "rate": variance,
@@ -362,6 +394,15 @@ def manage_direct_pi_ppn_variance(doc, method=None):
         row.amount = variance
         row.rate = variance
         row.description = "PPN Variance (OCR adjustment)"
+        if not getattr(row, "cost_center", None):
+            row.cost_center = (
+                getattr(doc, "cost_center", None)
+                or next(
+                    (getattr(i, "cost_center", None) for i in doc.get("items") or [] if getattr(i, "cost_center", None) and i.name != row.name),
+                    None,
+                )
+                or frappe.get_cached_value("Company", doc.company, "cost_center")
+            )
         frappe.logger().info(f"[DIRECT PI VARIANCE] PI {doc.name}: Updated variance row = {variance}")
 
     else:
