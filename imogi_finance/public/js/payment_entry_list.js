@@ -7,15 +7,19 @@
 // both hooks to reliably show the right badge regardless of which page loads first.
 
 frappe.listview_settings["Payment Entry"] = {
-    add_fields: ["payment_type", "party", "paid_amount", "received_amount", "unallocated_amount", "clearance_date", "posting_date"],
+    add_fields: ["payment_type", "party", "paid_amount", "received_amount", "unallocated_amount", "clearance_date", "posting_date", "status"],
     get_indicator: function(doc) {
-        // Reconciled = matched against a Bank Transaction (clearance_date set),
-        // not just allocated to an invoice -- unallocated_amount usually hits 0
-        // the moment the entry is created, so it can't tell "done" from "just made".
-        if (doc.docstatus === 2) return [__("Cancelled"), "red", "docstatus,=,2"];
-        if (doc.docstatus === 0) return [__("Draft"), "gray", "docstatus,=,0"];
-        if (doc.clearance_date) return [__("Reconciled"), "green", "clearance_date,is,set"];
-        return [__("Unreconciled"), "orange", "clearance_date,is,not set"];
+        // Trust the server-computed `status` (see CustomPaymentEntry.set_status in
+        // overrides/payment_entry.py) instead of re-deriving it from clearance_date
+        // here -- that duplicated the Cash-mode-is-always-Reconciled rule, and this
+        // copy didn't know about it, so Cash entries showed "Unreconciled" forever.
+        const status_colors = {
+            Cancelled: "red",
+            Draft: "gray",
+            Reconciled: "green",
+            Unreconciled: "orange",
+        };
+        return [__(doc.status), status_colors[doc.status] || "gray", "status,=," + doc.status];
     },
     onload: function(listview) {
         listview.page.add_inner_button(__("Unreconciled"), function() {

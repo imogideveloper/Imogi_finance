@@ -117,7 +117,7 @@ fixtures = [
     {"doctype": "Custom Field"},
     {"doctype": "Property Setter"},
     {"doctype": "Client Script", "filters": [["enabled", "=", 1]]},
-    {"doctype": "List View Settings", "filters": [["name", "in", ["Sales Order", "Sales Invoice", "Expense Request", "Delivery Order Towing", "Driver Commission"]]]},
+    {"doctype": "List View Settings", "filters": [["name", "in", ["Sales Order", "Sales Invoice", "Expense Request", "Delivery Order Towing", "Driver Commission", "Purchase Invoice"]]]},
     
     # 3. Master Data
     {"doctype": "Item", "filters": [["name", "=", "JASA-TOWING-001"]]},

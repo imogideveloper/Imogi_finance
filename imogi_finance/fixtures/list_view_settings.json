@@ -82,5 +82,19 @@
   "modified": "2026-08-03 14:05:00.000000",
   "name": "Sales Invoice",
   "total_fields": "10"
+ },
+ {
+  "allow_edit": 0,
+  "disable_auto_refresh": 0,
+  "disable_automatic_recency_filters": 0,
+  "disable_comment_count": 0,
+  "disable_count": 0,
+  "disable_sidebar_stats": 0,
+  "docstatus": 0,
+  "doctype": "List View Settings",
+  "fields": "[\n {\n  \"fieldname\": \"status_field\",\n  \"label\": \"Status\"\n },\n {\n  \"fieldname\": \"name\",\n  \"label\": \"ID\"\n },\n {\n  \"fieldname\": \"posting_date\",\n  \"label\": \"Posting Date\"\n },\n {\n  \"fieldname\": \"custom_expense_account_display\",\n  \"label\": \"Expense Account\"\n },\n {\n  \"fieldname\": \"grand_total\",\n  \"label\": \"Grand Total\"\n }\n]",
+  "modified": "2026-09-01 16:20:02.931373",
+  "name": "Purchase Invoice",
+  "total_fields": "10"
  }
 ]
