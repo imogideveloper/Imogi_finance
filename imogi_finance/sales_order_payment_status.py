@@ -9,7 +9,7 @@ def update_sales_order_payment_status(sales_order_name: str):
     so = frappe.db.get_value(
         "Sales Order",
         sales_order_name,
-        ["name", "docstatus"],
+        ["name", "docstatus", "rounded_total", "grand_total"],
         as_dict=True
     )
 
@@ -27,14 +27,17 @@ def update_sales_order_payment_status(sales_order_name: str):
         )
         return
 
-    # Ambil semua Sales Invoice yang linked ke Sales Order
+    # Ambil semua Sales Invoice yang linked ke Sales Order.
+    # so_amount = porsi invoice ini yang beneran punya SO ini (bukan grand_total
+    # invoice utuh, karena 1 SI towing bisa gabungan beberapa SO).
     invoices = frappe.db.sql("""
         SELECT
             si.name,
             si.docstatus,
             si.outstanding_amount,
             si.grand_total,
-            si.status
+            si.status,
+            SUM(sii.amount) AS so_amount
         FROM `tabSales Invoice` si
         INNER JOIN `tabSales Invoice Item` sii
             ON sii.parent = si.name
@@ -46,13 +49,17 @@ def update_sales_order_payment_status(sales_order_name: str):
     # Belum ada invoice
     if not invoices:
         payment_status = "Draft"
+        so_invoiced = 0
     else:
         total_grand = 0
         total_outstanding = 0
 
         for inv in invoices:
-            total_grand += flt(inv.grand_total)
-            total_outstanding += flt(inv.outstanding_amount)
+            so_amount = flt(inv.so_amount)
+            total_grand += so_amount
+            if flt(inv.grand_total) > 0:
+                # Prorate outstanding invoice berdasarkan porsi SO ini
+                total_outstanding += so_amount * (flt(inv.outstanding_amount) / flt(inv.grand_total))
 
         paid_amount = total_grand - total_outstanding
         tolerance = 1.0
@@ -66,11 +73,23 @@ def update_sales_order_payment_status(sales_order_name: str):
         else:
             payment_status = "SI Created"
 
+        so_invoiced = total_grand
+
+    # per_billed field standar Frappe biasanya diupdate lewat mekanisme
+    # so_detail, tapi invoice towing gak selalu ngisi so_detail (dibuat dari
+    # Delivery Order Towing, bukan "Make Sales Invoice" biasa) jadi field
+    # itu suka telat/gak update. Hitung ulang langsung dari data invoice
+    # yang beneran ke-link, sama seperti logic status di atas.
+    so_total = flt(so.rounded_total) or flt(so.grand_total)
+    per_billed = min((flt(so_invoiced) / so_total * 100), 100) if so_total > 0 else 0
+
     frappe.db.set_value(
         "Sales Order",
         sales_order_name,
-        "custom_payment_status",
-        payment_status,
+        {
+            "custom_payment_status": payment_status,
+            "per_billed": per_billed,
+        },
         update_modified=False
     )
 
