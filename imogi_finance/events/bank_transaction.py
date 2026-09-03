@@ -5,8 +5,7 @@ from frappe import _
 
 
 def before_cancel(doc, method=None):
-    if doc.status == "Unreconciled":
-        frappe.throw(_("Unreconciled Bank Transactions cannot be cancelled."))
+    pass
 
 
 def sync_payment_entry_status(doc, method=None):
