@@ -1,0 +1,287 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2026-09-02 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "asset_description",
+  "supplier",
+  "company",
+  "column_break_1",
+  "asset_price",
+  "down_payment",
+  "down_payment_date",
+  "principal_amount",
+  "section_break_interest",
+  "interest_rate_per_period",
+  "installment_amount",
+  "column_break_interest",
+  "total_interest",
+  "total_payable",
+  "section_break_accounts",
+  "principal_payable_account",
+  "column_break_accounts",
+  "interest_expense_account",
+  "section_break_tenor",
+  "tenor",
+  "tenor_unit",
+  "start_date",
+  "status",
+  "section_break_schedule",
+  "installment_schedule",
+  "section_break_summary",
+  "total_scheduled",
+  "total_po_created",
+  "outstanding_amount"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "IPP-.YYYY.-",
+   "reqd": 1
+  },
+  {
+   "fieldname": "asset_description",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Asset Description",
+   "reqd": 1
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Supplier",
+   "options": "Supplier",
+   "reqd": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "asset_price",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Asset Price",
+   "reqd": 1
+  },
+  {
+   "fieldname": "down_payment",
+   "fieldtype": "Currency",
+   "label": "Down Payment (DP)",
+   "reqd": 1
+  },
+  {
+   "fieldname": "down_payment_date",
+   "fieldtype": "Date",
+   "label": "Down Payment Date"
+  },
+  {
+   "fieldname": "principal_amount",
+   "fieldtype": "Currency",
+   "label": "Principal Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_interest",
+   "fieldtype": "Section Break",
+   "label": "Bunga & Angsuran (Metode Anuitas)"
+  },
+  {
+   "description": "Rate bunga per periode (sesuai Tenor Unit). Periode pertama selalu 0% bunga (full pokok); periode berikutnya dihitung dari sisa saldo pokok (declining balance).",
+   "fieldname": "interest_rate_per_period",
+   "fieldtype": "Percent",
+   "label": "Interest Rate per Period (%)",
+   "reqd": 1
+  },
+  {
+   "fieldname": "installment_amount",
+   "fieldtype": "Currency",
+   "label": "Installment Amount (Fixed per Period)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_interest",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_interest",
+   "fieldtype": "Currency",
+   "label": "Total Interest",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_payable",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Total Payable",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_accounts",
+   "fieldtype": "Section Break",
+   "label": "Akun GL untuk Auto-generated PO"
+  },
+  {
+   "fieldname": "principal_payable_account",
+   "fieldtype": "Link",
+   "label": "Principal Payable Account",
+   "options": "Account",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_accounts",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "interest_expense_account",
+   "fieldtype": "Link",
+   "label": "Interest Expense Account",
+   "options": "Account",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_tenor",
+   "fieldtype": "Section Break",
+   "label": "Tenor & Jadwal"
+  },
+  {
+   "fieldname": "tenor",
+   "fieldtype": "Int",
+   "label": "Tenor",
+   "reqd": 1
+  },
+  {
+   "default": "Month",
+   "fieldname": "tenor_unit",
+   "fieldtype": "Select",
+   "label": "Tenor Unit",
+   "options": "Month\nYear",
+   "reqd": 1
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date (First Installment)",
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Draft\nActive\nCompleted\nCancelled",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_schedule",
+   "fieldtype": "Section Break",
+   "label": "Jadwal Cicilan"
+  },
+  {
+   "fieldname": "installment_schedule",
+   "fieldtype": "Table",
+   "label": "Installment Schedule",
+   "options": "Installment Purchase Plan Detail",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_summary",
+   "fieldtype": "Section Break",
+   "label": "Summary"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "total_scheduled",
+   "fieldtype": "Currency",
+   "label": "Total Scheduled",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "total_po_created",
+   "fieldtype": "Currency",
+   "label": "Total PO Created",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "outstanding_amount",
+   "fieldtype": "Currency",
+   "label": "Outstanding Amount",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-09-02 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Imogi Finance",
+ "name": "Installment Purchase Plan",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1,
+   "cancel": 1,
+   "amend": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1,
+   "cancel": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts User",
+   "share": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "asset_description",
+ "track_changes": 1
+}

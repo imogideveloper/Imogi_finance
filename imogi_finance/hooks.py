@@ -544,6 +544,7 @@ scheduler_events = {
         "imogi_finance.reporting.tasks.run_daily_reporting",
         "imogi_finance.services.tax_invoice_service.sync_pending_tax_invoices",
         "imogi_finance.events.sales_invoice.sync_overdue_days",
+        "imogi_finance.imogi_finance.doctype.installment_purchase_plan.installment_purchase_plan.create_due_purchase_orders",
     ],
     "monthly": [
         "imogi_finance.reporting.tasks.run_monthly_reconciliation",
@@ -564,6 +565,7 @@ after_migrate = [
     "imogi_finance.utils.ensure_coretax_export_doctypes",
     "imogi_finance.utils.ensure_advances_allow_on_submit",
     "imogi_finance.imogi_finance.utils.ensure_budget_control_settings",
+    "imogi_finance.imogi_finance.utils.ensure_installment_items",
     "imogi_finance.setup.set_workspace_order",
     "imogi_finance.utils.patch_round_floats_compatibility",
     "imogi_finance.setup.install_towing_doctypes",

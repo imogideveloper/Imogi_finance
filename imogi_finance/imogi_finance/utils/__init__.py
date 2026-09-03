@@ -134,3 +134,36 @@ def ensure_budget_control_settings():
             frappe.db.commit()
     except Exception as e:
         frappe.log_error(title="ensure_budget_control_settings failed", message=str(e))
+
+
+def ensure_installment_items():
+    """Create default non-stock Items used by auto-generated Installment Purchase Orders.
+
+    2 item terpisah (pokok & bunga) supaya tiap baris PO bisa di-override
+    expense_account-nya masing-masing untuk split GL yang benar.
+    """
+    import frappe
+
+    item_codes = ["Angsuran Pokok", "Angsuran Bunga"]
+
+    for item_code in item_codes:
+        if frappe.db.exists("Item", item_code):
+            continue
+
+        try:
+            item_group = "Services" if frappe.db.exists("Item Group", "Services") else "All Item Groups"
+            stock_uom = frappe.db.get_single_value("Stock Settings", "stock_uom") or "Nos"
+
+            item = frappe.new_doc("Item")
+            item.item_code = item_code
+            item.item_name = item_code
+            item.item_group = item_group
+            item.stock_uom = stock_uom
+            item.is_stock_item = 0
+            item.include_item_in_manufacturing = 0
+            item.is_purchase_item = 1
+            item.description = "Item generik untuk baris Purchase Order cicilan/angsuran yang dibuat otomatis"
+            item.insert(ignore_permissions=True)
+            frappe.db.commit()
+        except Exception as e:
+            frappe.log_error(title="ensure_installment_items failed", message=f"{item_code}: {e}")
