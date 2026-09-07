@@ -146,6 +146,18 @@ def sync_expense_request_status_from_pi(doc, method=None):
 
 
 
+def sync_nomor_rangka_filter(doc, method=None):
+    """
+    Salin Nomor Rangka dari tabel Detail Kendaraan Towing ke field flat
+    custom_nomor_rangka, supaya bisa dipakai standard filter di list view.
+    """
+    rows = doc.get("custom_towing_kendaraan") or []
+    nomor_rangka_list = list(dict.fromkeys(
+        (row.nomor_rangka or "").strip() for row in rows if (row.nomor_rangka or "").strip()
+    ))
+    doc.custom_nomor_rangka = ", ".join(nomor_rangka_list)
+
+
 def prevent_double_wht_validate(doc, method=None):
     """Prevent double WHT on validate hook - called before other validations.
 

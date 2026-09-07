@@ -625,6 +625,18 @@ def _populate_towing_table(doctype: str, docname: str, towing_rows: list) -> boo
                 )
             )
 
+        # ✅ Sync custom_nomor_rangka (field flat dipakai standard filter di list view)
+        if _field_exists(doctype, "custom_nomor_rangka"):
+            nomor_rangka_list = list(dict.fromkeys(
+                (row.get("nomor_rangka") or "").strip()
+                for row in towing_rows
+                if (row.get("nomor_rangka") or "").strip()
+            ))
+            frappe.db.set_value(
+                doctype, docname, "custom_nomor_rangka",
+                ", ".join(nomor_rangka_list), update_modified=False
+            )
+
         frappe.db.commit()
         return True
 

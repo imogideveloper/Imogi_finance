@@ -8,9 +8,6 @@ app_color = "#2490EF"
 
 from imogi_finance.api.payroll_sync import is_payroll_installed
 
-# Includes in <head>
-app_include_css = "/assets/imogi_finance/css/custom.css"
-
 # include js in doctype views
 doctype_js = {
     "User": "public/js/towing_admin_tools.js",
@@ -66,6 +63,7 @@ app_include_js = [
     "/assets/imogi_finance/js/imogi_finance.js",
     "/assets/imogi_finance/js/workspace_visibility.js",
     "/assets/imogi_finance/js/form_field_visibility.js",
+    "/assets/imogi_finance/js/export_template.js",
 ]
 
 boot_session = "imogi_finance.workspace_visibility.update_boot_session"
@@ -81,7 +79,6 @@ doctype_list_js = {
     "Payment Entry": "public/js/payment_entry_list.js",
     "Budget": "public/js/budget_list.js",
     "Tax Invoice OCR Upload": "public/js/tax_invoice_ocr_upload_list.js",
-    "Sales Invoice": "public/js/sales_invoice_export_template_list.js",
 }
 
 # Jinja
@@ -175,6 +172,7 @@ doc_events = {
             "imogi_finance.events.purchase_invoice.manage_ppn_variance_validate",
             "imogi_finance.events.purchase_invoice.manage_direct_pi_ppn_variance",
             "imogi_finance.events.transaction_price_lock.validate_no_price_change",
+            "imogi_finance.events.purchase_invoice.sync_nomor_rangka_filter",
         ],
         "before_submit": [
             "imogi_finance.events.purchase_invoice.validate_before_submit",
@@ -208,6 +206,7 @@ doc_events = {
             "imogi_finance.validators.finance_validator.validate_document_tax_fields",
             "imogi_finance.events.transaction_price_lock.validate_no_price_change",
             "imogi_finance.overrides.sales_invoice_towing.validate_towing_payment_terms",
+            "imogi_finance.overrides.sales_invoice_towing.sync_nomor_rangka_filter",
         ],
         "before_submit": [
             "imogi_finance.imogi_finance.doctype.tax_period_closing.tax_period_closing.check_period_is_closed",
@@ -240,6 +239,7 @@ doc_events = {
         "validate": [
             "imogi_finance.events.sales_order.compute_outstanding_amount",
             "imogi_finance.events.transaction_price_lock.validate_no_price_change",
+            "imogi_finance.events.sales_order.sync_nomor_rangka_filter",
         ],
         "on_update_after_submit": [
             "imogi_finance.events.sales_order.compute_outstanding_amount",
@@ -504,7 +504,10 @@ doc_events = {
         "on_trash": "imogi_finance.overrides.delivery_order_towing.on_trash_do_towing",
     },
     "Purchase Order": {
-        "validate": "imogi_finance.events.transaction_price_lock.validate_no_price_change",
+        "validate": [
+            "imogi_finance.events.transaction_price_lock.validate_no_price_change",
+            "imogi_finance.events.purchase_order_towing.sync_nomor_rangka_filter",
+        ],
         "after_insert": [
             "imogi_finance.events.purchase_order_towing.after_insert",
             "imogi_finance.purchase_order_payment_status.update_from_purchase_order",

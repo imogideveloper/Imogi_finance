@@ -38,6 +38,18 @@ def update_outstanding_on_payment(sales_order_name: str):
     frappe.db.set_value("Sales Order", sales_order_name, "outstanding_amount", outstanding, update_modified=False)
 
 
+def sync_nomor_rangka_filter(doc, method=None):
+    """
+    Salin Nomor Rangka dari tabel Detail Kendaraan Towing ke field flat
+    custom_nomor_rangka, supaya bisa dipakai standard filter di list view.
+    """
+    rows = doc.get("custom_towing_kendaraan") or []
+    nomor_rangka_list = list(dict.fromkeys(
+        (row.nomor_rangka or "").strip() for row in rows if (row.nomor_rangka or "").strip()
+    ))
+    doc.custom_nomor_rangka = ", ".join(nomor_rangka_list)
+
+
 def update_sales_order_outstanding_from_payment(doc, method=None):
     """
     Update Sales Order outstanding amount from Payment Entry.

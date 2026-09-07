@@ -972,6 +972,25 @@ def before_insert(doc, method):
 	_apply_payment_terms_to_doc(doc, sales_orders)
 
 
+def sync_nomor_rangka_filter(doc, method=None):
+	"""
+	Salin Nomor Rangka dari Delivery Order Towing yang ter-link ke field flat
+	custom_nomor_rangka, supaya bisa dipakai standard filter di list view.
+	"""
+	if not _items_already_towing_expanded(doc):
+		return
+
+	nomor_rangka_list = []
+	for do_name in extract_delivery_orders_from_doc(doc):
+		do = _get_delivery_order(do_name)
+		nomor_rangka = (do.nomor_rangka if do else "") or ""
+		nomor_rangka = nomor_rangka.strip()
+		if nomor_rangka and nomor_rangka not in nomor_rangka_list:
+			nomor_rangka_list.append(nomor_rangka)
+
+	doc.custom_nomor_rangka = ", ".join(nomor_rangka_list)
+
+
 def validate_towing_payment_terms(doc, method=None):
 	"""Pastikan due date mengikuti payment terms saat SI towing disimpan."""
 	if not _items_already_towing_expanded(doc):

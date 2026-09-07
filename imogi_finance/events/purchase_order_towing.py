@@ -9,6 +9,18 @@ import frappe
 from frappe.utils import now_datetime
 
 
+def sync_nomor_rangka_filter(doc, method=None):
+    """
+    Salin Nomor Rangka dari tabel Detail Kendaraan Towing ke field flat
+    custom_nomor_rangka, supaya bisa dipakai standard filter di list view.
+    """
+    rows = doc.get("custom_towing_kendaraan") or []
+    nomor_rangka_list = list(dict.fromkeys(
+        (row.nomor_rangka or "").strip() for row in rows if (row.nomor_rangka or "").strip()
+    ))
+    doc.custom_nomor_rangka = ", ".join(nomor_rangka_list)
+
+
 def after_insert(doc, method=None):
     """Auto-populate Detail Kendaraan Towing dari DO jika PO linked ke Delivery Order Towing."""
     do_name = doc.get("custom_delivery_order")

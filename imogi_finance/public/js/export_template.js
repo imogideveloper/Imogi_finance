@@ -1,13 +1,11 @@
 // Adds "Load Template" / "Save as Template" controls to the standard
-// Frappe "Export Data" dialog for Sales Invoice, so users can save a
-// set of checked export fields (per-user) and re-apply them later
-// instead of re-checking fields manually every time.
+// Frappe "Export Data" dialog, for any doctype, so users can save a
+// set of checked export fields and re-apply them later instead of
+// re-checking fields manually every time.
 
 (function () {
 	if (frappe.__export_template_patch_applied) return;
 	frappe.__export_template_patch_applied = true;
-
-	const TARGET_DOCTYPE = "Sales Invoice";
 
 	frappe.require("data_import_tools.bundle.js").then(patch_data_exporter);
 
@@ -18,9 +16,7 @@
 
 		frappe.data_import.DataExporter.prototype.make_dialog = function () {
 			original_make_dialog.call(this);
-			if (this.doctype === TARGET_DOCTYPE) {
-				setup_export_template_controls(this);
-			}
+			setup_export_template_controls(this);
 		};
 	}
 
@@ -55,19 +51,26 @@
 
 	function setup_export_template_controls(exporter) {
 		let $host = $(`
-			<div class="mb-3 export-template-controls">
+			<div class="mb-4 export-template-controls">
+				<h6 class="form-section-heading uppercase">${__("Export Template")}</h6>
 				<div class="d-flex align-items-center flex-wrap" style="gap: 6px;">
-					<select class="form-control" style="max-width: 220px; display: inline-block;">
+					<select class="form-control" style="max-width: 240px; flex: 1 1 auto;">
 						<option value="">${__("Load Template...")}</option>
 					</select>
-					<button class="btn btn-default btn-xs" data-action="load_template">
+					<button class="btn btn-default btn-xs" data-action="load_template" disabled>
 						${__("Load")}
 					</button>
+					<a
+						class="text-muted export-template-delete"
+						data-action="delete_template"
+						title="${__("Delete template")}"
+						style="display: none; cursor: pointer; line-height: 1;"
+					>
+						${frappe.utils.icon("delete", "xs")}
+					</a>
+					<span class="flex-grow-1"></span>
 					<button class="btn btn-default btn-xs" data-action="save_template">
 						${__("Save as Template")}
-					</button>
-					<button class="btn btn-default btn-xs text-danger" data-action="delete_template" style="display:none;">
-						${__("Delete")}
 					</button>
 				</div>
 			</div>
@@ -76,7 +79,14 @@
 		exporter.dialog.get_field("select_all_buttons").$wrapper.before($host);
 
 		let $select = $host.find("select");
+		let $load_btn = $host.find('[data-action="load_template"]');
 		let $delete_btn = $host.find('[data-action="delete_template"]');
+
+		function update_control_state() {
+			let has_selection = !!$select.val();
+			$load_btn.prop("disabled", !has_selection);
+			$delete_btn.toggle(has_selection);
+		}
 
 		function refresh_options(select_name) {
 			frappe.call({
@@ -99,13 +109,11 @@
 					);
 				});
 				if (select_name) $select.val(select_name);
-				$delete_btn.toggle(!!$select.val());
+				update_control_state();
 			});
 		}
 
-		$select.on("change", () => {
-			$delete_btn.toggle(!!$select.val());
-		});
+		$select.on("change", update_control_state);
 
 		$host.find('[data-action="load_template"]').on("click", () => {
 			let template_name = $select.val();
