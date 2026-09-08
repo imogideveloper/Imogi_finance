@@ -23,7 +23,7 @@
   "enforce_cost_center": 1,
   "gl_account_mappings": [
    {
-    "account": "Biaya Materai Digital",
+    "account": "62301003 - DOCUMENTARY TAX - PPR",
     "account_parent": "",
     "account_type": "Expense Account",
     "company": "",
@@ -35,7 +35,7 @@
     "purpose": "digital_stamp_expense"
    },
    {
-    "account": "Kas",
+    "account": "11110010 - CASH - PPR",
     "account_parent": "",
     "account_type": "Cash",
     "company": "",
@@ -47,7 +47,7 @@
     "purpose": "digital_stamp_payment"
    },
    {
-    "account": "Kas",
+    "account": "11110010 - CASH - PPR",
     "account_parent": "",
     "account_type": "Cash",
     "company": "",
@@ -59,7 +59,7 @@
     "purpose": "default_paid_from"
    },
    {
-    "account": "Beban Dibayar Dimuka",
+    "account": "1171001 - ADVANCE PAYMENT = UANG MUKA PEMBELIAN - PPR",
     "account_parent": "",
     "account_type": "Expense Account",
     "company": "",
@@ -71,7 +71,7 @@
     "purpose": "default_prepaid"
    },
    {
-    "account": "Selisih DPP",
+    "account": "6321004 - OTHER EXPENSES - PPR",
     "account_parent": "",
     "account_type": "Expense Account",
     "company": "",
@@ -83,7 +83,7 @@
     "purpose": "dpp_variance"
    },
    {
-    "account": "Selisih PPN",
+    "account": "62301005 - TAX DISCREPANCY - PPR",
     "account_parent": "",
     "account_type": "Tax",
     "company": "",
@@ -93,6 +93,18 @@
     "parentfield": "gl_account_mappings",
     "parenttype": "Finance Control Settings",
     "purpose": "ppn_variance"
+   },
+   {
+    "account": "5111001 - COST OF GOODS SOLD - PPR",
+    "account_parent": "",
+    "account_type": "Cost of Goods Sold",
+    "company": "",
+    "description": "Default expense account for Driver Commission Purchase Invoice (towing)",
+    "is_required": 0,
+    "parent": "Finance Control Settings",
+    "parentfield": "gl_account_mappings",
+    "parenttype": "Finance Control Settings",
+    "purpose": "driver_commission_expense"
    }
   ],
   "inherit_branch_from_cost_center": 1,
