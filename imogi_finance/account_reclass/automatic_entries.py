@@ -1,16 +1,13 @@
 """Server-side handlers for the "Automatic Entries" reclass dialog on the Trial Balance report.
 
-Lets an accountant move a balance from one GL account to another (e.g. fixing a
-misclassified salary/allowance sub-ledger) without leaving the report, by
-creating and submitting a Journal Entry: Debit the destination account,
-Credit the source account.
+Lets an accountant move a balance between any two GL accounts without leaving
+the report, by creating and submitting a Journal Entry: Debit the destination
+account, Credit the source account.
 
-This only makes sense as a "move a balance" operation when both accounts sit
-on the same normal-balance side (both Expense, both Income, both Asset, ...).
-Debiting one Expense account while crediting another Expense account moves
-the balance across; debiting an Expense account while crediting an Income
-account instead *increases both* (Income's normal balance is Credit), so
-`create_reclass_entry` requires both accounts to share the same root_type.
+Any two accounts can be picked — the client shows the resulting increase/
+decrease effect on each side (which depends on each account's own normal
+balance) before the user confirms, rather than this restricting which pairs
+are allowed. Whether a given pair makes accounting sense is the user's call.
 """
 
 from __future__ import annotations
@@ -89,18 +86,6 @@ def create_reclass_entry(
     amount = flt(amount)
     if amount <= 0:
         frappe.throw(_("Amount must be greater than zero."))
-
-    from_root_type = frappe.db.get_value("Account", from_account, "root_type")
-    to_root_type = frappe.db.get_value("Account", to_account, "root_type")
-    if from_root_type != to_root_type:
-        frappe.throw(
-            _(
-                "{0} is a {1} account and {2} is a {3} account — reclassing between "
-                "different account natures isn't a simple debit/credit swap "
-                "(it would increase both instead of moving a balance). Pick two "
-                "accounts of the same type (e.g. two Expense accounts)."
-            ).format(from_account, _(from_root_type), to_account, _(to_root_type))
-        )
 
     je = frappe.new_doc("Journal Entry")
     je.voucher_type = "Journal Entry"

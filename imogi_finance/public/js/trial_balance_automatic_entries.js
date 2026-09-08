@@ -2,12 +2,30 @@
 // menu, opening a dialog to reclass a balance from one account to another
 // (creates & submits a Journal Entry: Debit destination, Credit source).
 //
+// Any two accounts can be picked (no type restriction) — whether debiting
+// one and crediting the other increases or decreases each of them depends
+// on that account's own normal balance side, so the dialog shows a live
+// preview of that effect for both accounts instead of guessing what the
+// user meant.
+//
 // Trial Balance is a standard ERPNext report, so instead of editing core
 // files we patch QueryReport.prototype.add_card_button_to_toolbar — the same
 // place Frappe itself adds the "Create Card" button — which only runs once
 // per report load, right after the Actions toolbar is (re)built.
 (function () {
 	const REPORT_NAME = "Trial Balance";
+
+	// Asset/Expense accounts normally sit in Debit; Liability/Equity/Income
+	// normally sit in Credit. Debiting or crediting an account moves its
+	// balance up or down depending on which side is its normal side.
+	const NORMAL_DEBIT_ROOT_TYPES = new Set(["Asset", "Expense"]);
+
+	function effect_label(root_type, side) {
+		if (!root_type) return "";
+		const normal_debit = NORMAL_DEBIT_ROOT_TYPES.has(root_type);
+		const increases = (side === "debit") === normal_debit;
+		return increases ? __("increases") : __("decreases");
+	}
 
 	function get_filter_value(report, fieldname) {
 		try {
@@ -23,11 +41,10 @@
 		const to_date = get_filter_value(report, "to_date") || frappe.datetime.get_today();
 		const cost_center = get_filter_value(report, "cost_center");
 
-		// A reclass is only a valid "move a balance" operation when both accounts
-		// sit on the same normal-balance side (e.g. two Expense accounts). Mixing
-		// e.g. Income and Expense would increase both instead of moving anything,
-		// so To Account is restricted to the same root_type as From Account.
+		// Tracked purely to render the live effect preview below — no longer
+		// used to restrict which accounts can be picked.
 		let from_account_root_type = null;
+		let to_account_root_type = null;
 
 		const dialog = new frappe.ui.Dialog({
 			title: __("Automatic Entries — Account Reclass"),
@@ -96,11 +113,12 @@
 					options: "Account",
 					reqd: 1,
 					get_query: () => ({
-						filters: Object.assign(
-							{ company: dialog.get_value("company"), is_group: 0 },
-							from_account_root_type ? { root_type: from_account_root_type } : {}
-						),
+						filters: { company: dialog.get_value("company"), is_group: 0 },
 					}),
+				},
+				{
+					fieldname: "effect_html",
+					fieldtype: "HTML",
 				},
 				{
 					fieldname: "cost_center",
@@ -138,7 +156,7 @@
 					fieldname: "note_html",
 					fieldtype: "HTML",
 					options: `<div class="text-muted small">${__(
-						"The system will Debit the destination account and Credit the source account for the amount above, then create & submit a Journal Entry. Both accounts must be the same type (e.g. two Expense accounts) — otherwise this would increase both balances instead of moving one to the other."
+						"The system will Debit the destination account and Credit the source account for the amount above, then create & submit a Journal Entry. Check the effect preview above the accounts — whether that increases or decreases each balance depends on that account's own type."
 					)}</div>`,
 				},
 			],
@@ -177,37 +195,55 @@
 		});
 
 		dialog.fields_dict.from_account.df.onchange = on_from_account_change;
+		dialog.fields_dict.to_account.df.onchange = on_to_account_change;
 		dialog.fields_dict.from_date.df.onchange = fetch_balance;
 		dialog.fields_dict.to_date.df.onchange = fetch_balance;
 		dialog.fields_dict.cost_center.df.onchange = fetch_balance;
 		dialog.refresh();
 
-		async function on_from_account_change() {
+		async function get_root_type(account) {
+			if (!account) return null;
+			const r = await frappe.db.get_value("Account", account, "root_type");
+			return (r && r.message && r.message.root_type) || null;
+		}
+
+		function render_effect_preview() {
+			const $el = dialog.fields_dict.effect_html.$wrapper;
 			const from_account = dialog.get_value("from_account");
-			from_account_root_type = null;
-
-			if (from_account) {
-				const r = await frappe.db.get_value("Account", from_account, "root_type");
-				from_account_root_type = (r && r.message && r.message.root_type) || null;
-			}
-
-			dialog.fields_dict.to_account.df.description = from_account_root_type
-				? __("Only showing {0} accounts — same type as From Account.", [__(from_account_root_type)])
-				: "";
-			dialog.fields_dict.to_account.refresh();
-
-			// If the previously picked To Account no longer matches, clear it
-			// instead of silently leaving an invalid pair selected.
 			const to_account = dialog.get_value("to_account");
-			if (to_account && from_account_root_type) {
-				const r2 = await frappe.db.get_value("Account", to_account, "root_type");
-				const to_root_type = r2 && r2.message && r2.message.root_type;
-				if (to_root_type && to_root_type !== from_account_root_type) {
-					dialog.set_value("to_account", "");
-				}
+			const rows = [];
+
+			if (from_account && from_account_root_type) {
+				rows.push(
+					`<div>${__("From")}: <strong>${frappe.utils.escape_html(from_account)}</strong> ` +
+						`(${__(from_account_root_type)}) → ${__("Credited")}, ${__("balance")} ` +
+						`<strong>${effect_label(from_account_root_type, "credit")}</strong></div>`
+				);
+			}
+			if (to_account && to_account_root_type) {
+				rows.push(
+					`<div>${__("To")}: <strong>${frappe.utils.escape_html(to_account)}</strong> ` +
+						`(${__(to_account_root_type)}) → ${__("Debited")}, ${__("balance")} ` +
+						`<strong>${effect_label(to_account_root_type, "debit")}</strong></div>`
+				);
 			}
 
+			$el.html(
+				rows.length
+					? `<div class="text-muted small" style="line-height:1.7">${rows.join("")}</div>`
+					: ""
+			);
+		}
+
+		async function on_from_account_change() {
+			from_account_root_type = await get_root_type(dialog.get_value("from_account"));
+			render_effect_preview();
 			fetch_balance();
+		}
+
+		async function on_to_account_change() {
+			to_account_root_type = await get_root_type(dialog.get_value("to_account"));
+			render_effect_preview();
 		}
 
 		function fetch_balance() {
