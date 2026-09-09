@@ -36,19 +36,28 @@ function has_towing_kendaraan(frm) {
 // ════════════════════════════════════════════════════════════════════
 
 function cancel_so_towing_custom(frm) {
-    frappe.confirm(
-        __("Yakin ingin cancel Sales Order ini?<br><br>" +
-           "<b>Catatan:</b><br>" +
-           "• Delivery Order Towing yang ter-link akan ikut di-cancel<br>" +
-           "• Kalau ada DO yang punya turunan (PO/PI/PE/dll) <b>aktif</b>, akan diblokir<br>" +
-           "• Anda harus cancel turunan DO tersebut terlebih dahulu"),
-        function() {
+    frappe.prompt(
+        [
+            {
+                fieldname: "reason",
+                fieldtype: "Small Text",
+                label: __("Alasan Pembatalan"),
+                reqd: 1,
+                description: __(
+                    "Delivery Order Towing yang ter-link akan ikut di-cancel. " +
+                    "Kalau ada DO yang punya turunan (PO/PI/PE/dll) aktif, akan diblokir " +
+                    "— cancel turunan DO tersebut terlebih dahulu."
+                ),
+            },
+        ],
+        function(values) {
             frappe.dom.freeze(__("Membatalkan Sales Order..."));
 
             frappe.call({
                 method: "imogi_finance.overrides.delivery_order_towing.cancel_so_with_cleanup",
                 args: {
-                    so_name: frm.doc.name
+                    so_name: frm.doc.name,
+                    reason: values.reason
                 },
                 callback: function(r) {
                     frappe.dom.unfreeze();
@@ -78,7 +87,9 @@ function cancel_so_towing_custom(frm) {
                     // Frappe akan otomatis tampilkan error message dari frappe.throw()
                 }
             });
-        }
+        },
+        __("Alasan Pembatalan"),
+        __("Konfirmasi Cancel")
     );
 }
 

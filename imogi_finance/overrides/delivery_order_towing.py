@@ -1155,6 +1155,13 @@ def cancel_do_from_sales_order(doc, method=None):
 
             cancelled_dos.append(do_name)
 
+            if reason:
+                frappe.db.set_value(
+                    "Delivery Order Towing", do_name,
+                    "custom_cancellation_reason", reason,
+                    update_modified=False,
+                )
+
         except Exception as e:
             failed_dos.append((do_name, str(e)))
             frappe.log_error(
@@ -1362,7 +1369,7 @@ def before_cancel_po_uang_jalan(doc, method=None):
 # ──────────────────────────────────────────────────────────────────────────
 
 @frappe.whitelist()
-def cancel_so_with_cleanup(so_name: str):
+def cancel_so_with_cleanup(so_name: str, reason: str | None = None):
     """
     Cancel Sales Order dengan cleanup link DO duluan, supaya Frappe tidak
     munculin dialog "Cancel All Documents". Dipanggil dari tombol custom JS.
@@ -1374,6 +1381,10 @@ def cancel_so_with_cleanup(so_name: str):
          - Clear link delivery_order di SO Towing Kendaraan
          - Cancel DO (Draft → set docstatus=2; Submitted → cancel())
       4. Cancel SO sendiri
+
+    ``reason`` (kalau diisi) disimpan ke field custom_cancellation_reason
+    di SO dan di setiap DO yang ikut ter-cancel, karena dokumen yang sudah
+    Cancelled tidak bisa diedit lagi lewat form.
     """
     if not frappe.db.exists("Sales Order", so_name):
         frappe.throw(_("Sales Order {0} tidak ditemukan.").format(so_name))
@@ -1490,6 +1501,13 @@ def cancel_so_with_cleanup(so_name: str):
             "SO Cancel Error"
         )
         frappe.throw(_("Gagal cancel Sales Order {0}: {1}").format(so_name, str(e)))
+
+    if reason:
+        frappe.db.set_value(
+            "Sales Order", so_name,
+            "custom_cancellation_reason", reason,
+            update_modified=False,
+        )
 
     return {
         "success": True,
@@ -2107,6 +2125,16 @@ def before_cancel_si_towing_cascade(doc, method=None):
     cancelled_dos = []
     failed_dos = []
 
+    # Reason yang diisi user di dialog cancel SI (kalau ada) ikut dicatat
+    # di tiap DO yang ke-cascade cancel, supaya jejak alasannya jelas juga
+    # di sisi DO — bukan cuma di SI.
+    si_reason = (doc.get("custom_cancellation_reason") or "").strip()
+    do_reason = (
+        _("Cascade dari cancel Sales Invoice {0}: {1}").format(doc.name, si_reason)
+        if si_reason
+        else None
+    )
+
     for do_name in do_names:
         do_status = frappe.db.get_value("Delivery Order Towing", do_name, "docstatus")
         if do_status == 2:
@@ -2125,6 +2153,13 @@ def before_cancel_si_towing_cascade(doc, method=None):
                     {"docstatus": 2, "status": "Cancelled"},
                 )
             cancelled_dos.append(do_name)
+
+            if do_reason:
+                frappe.db.set_value(
+                    "Delivery Order Towing", do_name,
+                    "custom_cancellation_reason", do_reason,
+                    update_modified=False,
+                )
 
         except Exception as e:
             failed_dos.append((do_name, str(e)))

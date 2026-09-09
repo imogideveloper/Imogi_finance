@@ -15,6 +15,7 @@ doctype_js = {
         "public/js/sales_order.js",
         "public/js/delivery_order_towing.js",
         "public/js/transaction_price_lock.js",
+        "public/js/towing_cancellation_reason.js",
     ],
     "Tax Invoice OCR Upload": "public/js/tax_invoice_ocr_upload_form.js",
     "VAT OUT Batch": "public/js/vat_out_batch_form.js",
@@ -28,6 +29,7 @@ doctype_js = {
         "public/js/payment_entry_djp.js",
         "public/js/transaction_price_lock.js",
         "public/js/payment_entry_list.js",
+        "public/js/towing_cancellation_reason.js",
     ],
     "Payment Request": "public/js/payment_request.js",
     "Purchase Invoice": [
@@ -36,6 +38,7 @@ doctype_js = {
         "public/js/purchase_invoice_amortization.js",
         "public/js/purchase_invoice_towing.js",
         "public/js/transaction_price_lock.js",
+        "public/js/towing_cancellation_reason.js",
     ],
     "Expense Claim": [
         "public/js/expense_claim.js",
@@ -49,11 +52,16 @@ doctype_js = {
         "public/js/payment_reconciliation_helper.js",
         "public/js/transaction_price_lock.js",
         "public/js/sales_invoice_towing.js",
+        "public/js/towing_cancellation_reason.js",
     ],
-    "Delivery Order Towing": "public/js/delivery_order_towing.js",
+    "Delivery Order Towing": [
+        "public/js/delivery_order_towing.js",
+        "public/js/towing_cancellation_reason.js",
+    ],
     "Purchase Order": [
         "public/js/purchase_order_towing.js",
         "public/js/transaction_price_lock.js",
+        "public/js/towing_cancellation_reason.js",
     ],
     "Item Price": "public/js/item_price.js",
     "Workspace UI Settings": "public/js/workspace_ui_settings.js",

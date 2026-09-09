@@ -358,6 +358,7 @@ def _build_si_item_from_do(
 		"conversion_factor": 1,
 		"sales_order": sales_order,
 		"custom_rute": do_item_map.get(do.name),
+		"custom_tipe_model": tipe,
 	}
 
 
@@ -896,6 +897,7 @@ def get_towing_delivery_order_query(
 			do.name,
 			so.company,
 			do.nomor_polisi,
+			do.tipe_kendaraan,
 			do.customer_name,
 			do.tanggal_do,
 			do.status,
