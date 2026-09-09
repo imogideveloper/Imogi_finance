@@ -697,6 +697,90 @@ def populate_towing_to_linked_docs(doc, method=None):
 # AUTO-GENERATE DO DARI SALES ORDER
 # ──────────────────────────────────────────────────────────────
 
+def _kendaraan_has_valid_do(kendaraan) -> bool:
+    """
+    True kalau baris kendaraan ini sudah punya DO yang beneran masih hidup.
+
+    Sengaja gak cuma ngecek "field delivery_order ada isinya" — kalau DO-nya
+    udah dihapus atau di-cancel, field itu bisa aja masih nyimpen nama DO
+    lama yang udah gak valid (stale reference). Baris kayak gitu harus
+    dianggap "belum punya DO" juga, supaya bisa di-regenerate.
+    """
+    do_name = kendaraan.get("delivery_order")
+    if not do_name:
+        return False
+
+    do_docstatus = frappe.db.get_value("Delivery Order Towing", do_name, "docstatus")
+    if do_docstatus is None:
+        return False  # DO-nya udah gak ada (kehapus)
+    if do_docstatus == 2:
+        return False  # DO-nya Cancelled, dianggap butuh DO baru
+
+    return True
+
+
+def _create_do_for_kendaraan(doc, kendaraan):
+    """
+    Bikin 1 Delivery Order Towing dari 1 baris custom_towing_kendaraan.
+    doc = Sales Order. Return nama DO yang baru dibuat.
+    """
+    item_code     = kendaraan.get("so_item_code")
+    harga_jasa    = 0
+    lokasi_pickup = ""
+    lokasi_tujuan = ""
+
+    if item_code:
+        for so_item in doc.items:
+            if so_item.item_code == item_code:
+                harga_jasa = so_item.rate or 0
+                break
+        item_doc = frappe.get_cached_doc("Item", item_code)
+
+        # Prioritas 1: custom field lokasi di Item
+        lokasi_pickup = getattr(item_doc, "custom_lokasi_pickup", "") or ""
+        lokasi_tujuan = getattr(item_doc, "custom_lokasi_tujuan", "") or ""
+
+        # Prioritas 2: parse dari item_name jika format "Pickup - Tujuan"
+        if not lokasi_pickup and not lokasi_tujuan:
+            item_name = item_doc.item_name or item_code
+            if " - " in item_name:
+                parts = item_name.split(" - ", 1)
+                lokasi_pickup = parts[0].strip()
+                lokasi_tujuan = parts[1].strip()
+
+    do = frappe.new_doc("Delivery Order Towing")
+    do.sales_order     = doc.name
+    do.customer        = doc.customer
+    do.customer_name   = doc.customer_name
+    do.tanggal_do      = doc.transaction_date
+    do.status          = "Draft"
+    do.currency        = doc.currency or "IDR"
+    do.harga_jasa      = harga_jasa
+    do.lokasi_pickup   = lokasi_pickup or ""
+    do.lokasi_tujuan   = lokasi_tujuan or ""
+    # Jika nomor_polisi kosong, fallback ke nomor_rangka
+    # (karena nomor_polisi adalah title_field di DO, harus terisi)
+    _nomor_polisi = (kendaraan.get("nomor_polisi") or "").strip()
+    _nomor_rangka = (kendaraan.get("nomor_rangka") or "-").strip()
+    do.nomor_polisi    = _nomor_polisi if _nomor_polisi else _nomor_rangka
+    do.nomor_rangka    = _nomor_rangka
+    do.tahun_kendaraan = kendaraan.get("tahun_kendaraan") or 0
+    do.tipe_kendaraan  = kendaraan.get("tipe_model") or "-"
+    do.nomor_mesin     = kendaraan.get("nomor_mesin") or "-"
+    do.merk_kendaraan  = "-"
+
+    do.insert(ignore_permissions=True)
+
+    frappe.db.set_value(
+        "SO Towing Kendaraan",
+        kendaraan.get("name"),
+        "delivery_order",
+        do.name
+    )
+
+    return do.name
+
+
 def create_do_from_sales_order(doc, method=None):
     """
     Dipanggil dari hooks.py saat Sales Order di-submit.
@@ -715,66 +799,11 @@ def create_do_from_sales_order(doc, method=None):
     errors      = []
 
     for kendaraan in kendaraan_list:
-        if kendaraan.get("delivery_order"):
+        if _kendaraan_has_valid_do(kendaraan):
             continue
 
         try:
-            item_code     = kendaraan.get("so_item_code")
-            harga_jasa    = 0
-            lokasi_pickup = ""
-            lokasi_tujuan = ""
-
-            if item_code:
-                for so_item in doc.items:
-                    if so_item.item_code == item_code:
-                        harga_jasa = so_item.rate or 0
-                        break
-                item_doc = frappe.get_cached_doc("Item", item_code)
-
-                # Prioritas 1: custom field lokasi di Item
-                lokasi_pickup = getattr(item_doc, "custom_lokasi_pickup", "") or ""
-                lokasi_tujuan = getattr(item_doc, "custom_lokasi_tujuan", "") or ""
-
-                # Prioritas 2: parse dari item_name jika format "Pickup - Tujuan"
-                if not lokasi_pickup and not lokasi_tujuan:
-                    item_name = item_doc.item_name or item_code
-                    if " - " in item_name:
-                        parts = item_name.split(" - ", 1)
-                        lokasi_pickup = parts[0].strip()
-                        lokasi_tujuan = parts[1].strip()
-
-            do = frappe.new_doc("Delivery Order Towing")
-            do.sales_order     = doc.name
-            do.customer        = doc.customer
-            do.customer_name   = doc.customer_name
-            do.tanggal_do      = doc.transaction_date
-            do.status          = "Draft"
-            do.currency        = doc.currency or "IDR"
-            do.harga_jasa      = harga_jasa
-            do.lokasi_pickup   = lokasi_pickup or ""
-            do.lokasi_tujuan   = lokasi_tujuan or ""
-            # Jika nomor_polisi kosong, fallback ke nomor_rangka
-            # (karena nomor_polisi adalah title_field di DO, harus terisi)
-            _nomor_polisi = (kendaraan.get("nomor_polisi") or "").strip()
-            _nomor_rangka = (kendaraan.get("nomor_rangka") or "-").strip()
-            do.nomor_polisi    = _nomor_polisi if _nomor_polisi else _nomor_rangka
-            do.nomor_rangka    = _nomor_rangka
-            do.tahun_kendaraan = kendaraan.get("tahun_kendaraan") or 0
-            do.tipe_kendaraan  = kendaraan.get("tipe_model") or "-"
-            do.nomor_mesin     = kendaraan.get("nomor_mesin") or "-"
-            do.merk_kendaraan  = "-"
-
-            do.insert(ignore_permissions=True)
-
-            frappe.db.set_value(
-                "SO Towing Kendaraan",
-                kendaraan.get("name"),
-                "delivery_order",
-                do.name
-            )
-
-            created_dos.append(do.name)
-
+            created_dos.append(_create_do_for_kendaraan(doc, kendaraan))
         except Exception as e:
             errors.append(f"Nopol {kendaraan.get('nomor_polisi', '?')}: {str(e)}")
             frappe.log_error(
@@ -802,6 +831,87 @@ def create_do_from_sales_order(doc, method=None):
             title="Sebagian DO Gagal",
             indicator="orange"
         )
+
+
+# ──────────────────────────────────────────────────────────────
+# REGENERATE DO YANG HILANG (SO SUDAH SUBMITTED)
+# ──────────────────────────────────────────────────────────────
+
+@frappe.whitelist()
+def preview_regenerate_missing_do(sales_order: str):
+    """
+    Whitelisted: preview sebelum regenerate — dipanggil tombol JS buat
+    nampilin baris mana yang bakal dibuatin DO baru vs yang di-skip,
+    sebelum user konfirmasi eksekusi beneran.
+    """
+    doc = frappe.get_doc("Sales Order", sales_order)
+    doc.check_permission("write")
+
+    kendaraan_list = doc.get("custom_towing_kendaraan", [])
+    to_create = []
+    to_skip   = []
+
+    for kendaraan in kendaraan_list:
+        row = {
+            "nomor_rangka": kendaraan.get("nomor_rangka") or "-",
+            "nomor_polisi": kendaraan.get("nomor_polisi") or "-",
+            "so_item_code": kendaraan.get("so_item_code") or "-",
+            "delivery_order": kendaraan.get("delivery_order") or None,
+        }
+        if _kendaraan_has_valid_do(kendaraan):
+            to_skip.append(row)
+        else:
+            to_create.append(row)
+
+    return {"to_create": to_create, "to_skip": to_skip}
+
+
+@frappe.whitelist()
+def regenerate_missing_do(sales_order: str):
+    """
+    Whitelisted: bikin ulang DO Towing cuma buat baris kendaraan di SO yang
+    belum punya DO valid (kosong, DO-nya kehapus, atau DO-nya Cancelled).
+    Baris yang udah punya DO aktif/valid TIDAK disentuh sama sekali.
+
+    Beda dari tombol "Generate Detail Kendaraan" yang lama — itu selalu
+    hapus & bikin ulang SEMUA baris. Ini dirancang khusus buat recovery
+    setelah DO ke-hapus tanpa sengaja, tanpa kehilangan data baris lain.
+    """
+    doc = frappe.get_doc("Sales Order", sales_order)
+    doc.check_permission("write")
+
+    if doc.docstatus != 1:
+        frappe.throw(_("Sales Order harus Submitted untuk regenerate DO."))
+
+    kendaraan_list = doc.get("custom_towing_kendaraan", [])
+    if not kendaraan_list:
+        frappe.throw(_("Tidak ada kendaraan di tabel Detail Kendaraan Towing."))
+
+    created_dos = []
+    skipped     = []
+    errors      = []
+
+    for kendaraan in kendaraan_list:
+        if _kendaraan_has_valid_do(kendaraan):
+            skipped.append(kendaraan.get("nomor_rangka") or kendaraan.get("name"))
+            continue
+
+        try:
+            created_dos.append(_create_do_for_kendaraan(doc, kendaraan))
+        except Exception as e:
+            errors.append(f"Nopol {kendaraan.get('nomor_polisi', '?')}: {str(e)}")
+            frappe.log_error(
+                f"Gagal regenerate DO {kendaraan.get('nomor_polisi')} dari SO {doc.name}: {e}",
+                "DO Towing Regenerate Error"
+            )
+
+    frappe.db.commit()
+
+    return {
+        "created": created_dos,
+        "skipped": skipped,
+        "errors": errors,
+    }
 
 def update_do_from_po(doc, method=None):
     """

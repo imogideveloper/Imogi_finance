@@ -15,6 +15,15 @@ frappe.ui.form.on('Sales Order', {
         // agar user pakai tombol "Cancel SO Towing" yang sudah ada validasinya
         if (frm.doc.docstatus === 1) {
             _hide_native_cancel_btn(frm);
+
+            // Recovery: DO yang ke-hapus/ke-cancel bisa dibuatin ulang tanpa
+            // nyentuh baris kendaraan lain yang DO-nya masih valid — beda
+            // dari "Generate Detail Kendaraan" yang selalu hapus semua baris.
+            // Tombolnya CUMA muncul kalau beneran ada kendaraan yang belum
+            // punya DO valid — bukan nongol di semua SO Towing.
+            if ((frm.doc.custom_towing_kendaraan || []).length > 0) {
+                _maybe_show_regenerate_button(frm);
+            }
         }
 
         _inject_generate_button_on_items_grid(frm);
@@ -108,6 +117,156 @@ function _generate_detail_kendaraan(frm) {
             }, 5);
         }
     );
+}
+
+// ════════════════════════════════════════════════════════════════════
+// REGENERATE DO YANG HILANG — recovery setelah DO ke-hapus/ke-cancel,
+// tanpa nyentuh baris kendaraan lain yang DO-nya masih valid.
+// ════════════════════════════════════════════════════════════════════
+
+// Cek dulu ke server (ringan, cuma baca) apakah SO ini beneran punya
+// kendaraan tanpa DO valid. Tombol cuma ditambahkan kalau iya — jadi gak
+// nongol di SO yang semua kendaraannya udah lengkap DO-nya.
+function _maybe_show_regenerate_button(frm) {
+    frappe.call({
+        method: 'imogi_finance.overrides.delivery_order_towing.preview_regenerate_missing_do',
+        args: { sales_order: frm.doc.name },
+        callback: function(r) {
+            var preview = r.message || { to_create: [] };
+            if (preview.to_create.length === 0) return;
+
+            frm.add_custom_button(__('Regenerate DO yang Hilang') + ' (' + preview.to_create.length + ')', function() {
+                _regenerate_missing_do(frm);
+            }, __('Towing'));
+        }
+    });
+}
+
+function _regenerate_missing_do(frm) {
+    frappe.call({
+        method: 'imogi_finance.overrides.delivery_order_towing.preview_regenerate_missing_do',
+        args: { sales_order: frm.doc.name },
+        freeze: true,
+        freeze_message: __('Mengecek kendaraan...'),
+        callback: function(r) {
+            var preview = r.message || { to_create: [], to_skip: [] };
+
+            if (preview.to_create.length === 0) {
+                frappe.msgprint({
+                    title: __('Tidak Ada yang Perlu Dibuat'),
+                    message: __('Semua kendaraan di SO ini sudah punya DO yang valid.'),
+                    indicator: 'blue'
+                });
+                return;
+            }
+
+            _show_regenerate_confirm_dialog(frm, preview);
+        }
+    });
+}
+
+function _esc(val) {
+    return frappe.utils.escape_html(val == null ? '' : String(val));
+}
+
+function _show_regenerate_confirm_dialog(frm, preview) {
+    var create_rows = preview.to_create.map(function(k) {
+        return (
+            '<tr>' +
+                '<td>' + _esc(k.nomor_rangka) + '</td>' +
+                '<td class="text-muted">' + _esc(k.so_item_code) + '</td>' +
+            '</tr>'
+        );
+    }).join('');
+
+    var skip_rows = preview.to_skip.map(function(k) {
+        var do_link = '/app/delivery-order-towing/' + encodeURIComponent(k.delivery_order);
+        return (
+            '<tr>' +
+                '<td>' + _esc(k.nomor_rangka) + '</td>' +
+                '<td><a href="' + do_link + '" target="_blank">' + _esc(k.delivery_order) + '</a></td>' +
+            '</tr>'
+        );
+    }).join('');
+
+    var skip_section = '';
+    if (preview.to_skip.length > 0) {
+        skip_section = (
+            '<details style="margin-top: 14px;">' +
+                '<summary style="cursor: pointer; color: var(--text-muted);">' +
+                    __('Lihat {0} kendaraan yang di-skip (DO sudah ada)', [preview.to_skip.length]) +
+                '</summary>' +
+                '<div style="max-height: 220px; overflow-y: auto; border: 1px solid var(--border-color); ' +
+                    'border-radius: var(--border-radius); margin-top: 8px;">' +
+                    '<table class="table table-sm" style="margin: 0;">' +
+                        '<thead style="position: sticky; top: 0; background: var(--fg-color);">' +
+                            '<tr><th>' + __('Nomor Rangka') + '</th><th>' + __('DO Terkait') + '</th></tr>' +
+                        '</thead>' +
+                        '<tbody>' + skip_rows + '</tbody>' +
+                    '</table>' +
+                '</div>' +
+            '</details>'
+        );
+    }
+
+    var html = (
+        '<div>' +
+            '<div style="margin-bottom: 12px;">' +
+                '<span class="indicator-pill green">' +
+                    __('{0} DO akan dibuat', [preview.to_create.length]) +
+                '</span>' +
+                (preview.to_skip.length > 0
+                    ? ' <span class="indicator-pill gray">' +
+                        __('{0} dilewati', [preview.to_skip.length]) +
+                      '</span>'
+                    : '') +
+            '</div>' +
+            '<div style="max-height: 260px; overflow-y: auto; border: 1px solid var(--border-color); ' +
+                'border-radius: var(--border-radius);">' +
+                '<table class="table table-sm" style="margin: 0;">' +
+                    '<thead style="position: sticky; top: 0; background: var(--fg-color);">' +
+                        '<tr><th>' + __('Nomor Rangka') + '</th><th>' + __('Rute') + '</th></tr>' +
+                    '</thead>' +
+                    '<tbody>' + create_rows + '</tbody>' +
+                '</table>' +
+            '</div>' +
+            skip_section +
+        '</div>'
+    );
+
+    var dialog = new frappe.ui.Dialog({
+        title: __('Regenerate DO yang Hilang'),
+        fields: [{ fieldname: 'preview_html', fieldtype: 'HTML', options: html }],
+        primary_action_label: __('Buat DO'),
+        primary_action: function() {
+            dialog.hide();
+            frappe.call({
+                method: 'imogi_finance.overrides.delivery_order_towing.regenerate_missing_do',
+                args: { sales_order: frm.doc.name },
+                freeze: true,
+                freeze_message: __('Membuat DO...'),
+                callback: function(res) {
+                    var result = res.message || {};
+                    if ((result.created || []).length > 0) {
+                        frappe.show_alert({
+                            message: '✅ ' + result.created.length + ' DO berhasil dibuat: ' + result.created.join(', '),
+                            indicator: 'green'
+                        }, 7);
+                    }
+                    if ((result.errors || []).length > 0) {
+                        frappe.msgprint({
+                            title: __('Sebagian Gagal'),
+                            message: result.errors.join('<br>'),
+                            indicator: 'orange'
+                        });
+                    }
+                    frm.reload_doc();
+                }
+            });
+        }
+    });
+
+    dialog.show();
 }
 
 function _inject_generate_button_on_items_grid(frm) {
