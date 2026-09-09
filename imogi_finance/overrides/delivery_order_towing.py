@@ -2126,75 +2126,21 @@ def _get_dos_billed_by_si(doc) -> list:
     return [n for n in names if frappe.db.exists("Delivery Order Towing", n)]
 
 
-def _get_driver_commission_blockers(do_name: str) -> list:
-    """Driver Commission submitted / Paid yang menahan cancel SI."""
-    blockers = []
-    try:
-        rows = frappe.get_all(
-            "Driver Commission Item",
-            filters={"delivery_order_towing": do_name},
-            fields=["parent"],
-        )
-    except Exception:
-        return blockers
-
-    seen = set()
-    for row in rows:
-        parent = row.get("parent")
-        if not parent or parent in seen:
-            continue
-        seen.add(parent)
-
-        dc = frappe.db.get_value(
-            "Driver Commission", parent, ["docstatus", "status"], as_dict=True
-        )
-        if not dc:
-            continue
-
-        status = (dc.get("status") or "")
-        if dc.get("docstatus") == 1 or status.lower() == "paid":
-            state = status or _docstatus_label(dc.get("docstatus", 0))
-            link = frappe.utils.get_link_to_form("Driver Commission", parent)
-            blockers.append(f"Driver Commission: {link} [{state}]")
-
-    return blockers
-
-
-def _get_si_cancel_blockers(do_name: str) -> list:
-    """Turunan DO yang sudah submitted/dibayar — menahan cancel Sales Invoice."""
-    blockers = []
-
-    # 1. Driver Commission submitted / Paid
-    blockers.extend(_get_driver_commission_blockers(do_name))
-
-    # 2. Uang jalan: PI submitted / Payment Entry aktif di PO milik DO ini
-    if _field_exists("Purchase Order", "custom_delivery_order"):
-        pos = frappe.get_all(
-            "Purchase Order",
-            filters={"custom_delivery_order": do_name, "docstatus": ["<", 2]},
-            fields=["name"],
-        )
-        for po in pos:
-            blockers.extend(
-                _get_active_linked_docs_for_po(po.name, include_pi_draft=False)
-            )
-
-    # 3. Purchase Invoice submitted yang nempel langsung ke DO
-    if _field_exists("Purchase Invoice", "custom_delivery_order"):
-        pis = frappe.get_all(
-            "Purchase Invoice",
-            filters={"custom_delivery_order": do_name, "docstatus": 1},
-            fields=["name", "status"],
-        )
-        for pi in pis:
-            link = frappe.utils.get_link_to_form("Purchase Invoice", pi.name)
-            blockers.append(f"Purchase Invoice: {link} [{pi.get('status') or 'Submitted'}]")
-
-    return list(dict.fromkeys(blockers))
-
-
 def before_cancel_si_towing_cascade(doc, method=None):
-    """Hook: before_cancel pada Sales Invoice towing. Cascade cancel DO ter-link."""
+    """
+    Hook: before_cancel pada Sales Invoice towing.
+
+    Dulu fungsi ini cascade-cancel DO (dan transitif PO uang jalan) yang
+    ditagih SI ini. Sekarang cancel SI CUMA mempengaruhi SI itu sendiri —
+    DO tetap apa adanya (status/docstatus-nya gak berubah sama sekali,
+    karena delivery-nya beneran udah kejadian secara fisik), dan PO uang
+    jalan juga sama sekali gak disentuh (kewajiban bayar driver tetap valid).
+
+    Satu-satunya perubahan: link `sales_invoice` di tiap DO yang ditagih SI
+    ini di-clear, supaya DO-nya langsung bisa ditagih ulang lewat SI baru
+    tanpa kena blokir "DO Towing sudah ditagih di <SI lama>" dari
+    validate_invoice_do_completion().
+    """
     if frappe.flags.get("in_towing_purge"):
         return
     if doc.flags.get("skip_cancel_check"):
@@ -2206,99 +2152,26 @@ def before_cancel_si_towing_cascade(doc, method=None):
     if not do_names:
         return
 
-    # ── 1. PRE-FLIGHT: block kalau ada turunan submitted/dibayar ──────────
-    blocked = []
+    detached = []
     for do_name in do_names:
-        links = _get_si_cancel_blockers(do_name)
-        if links:
-            blocked.append((do_name, links))
-
-    if blocked:
-        msg_lines = [
-            _("❌ Sales Invoice <b>{0}</b> tidak bisa di-cancel karena ada dokumen "
-              "turunan yang sudah diproses/dibayar.").format(doc.name),
-            "",
-            _("Silakan <b>cancel/hapus dokumen berikut terlebih dahulu</b>, "
-              "lalu cancel Sales Invoice ini lagi:"),
-            "",
-        ]
-        for do_name, links in blocked:
-            do_link = frappe.utils.get_link_to_form("Delivery Order Towing", do_name)
-            msg_lines.append(f"<b>📋 DO: {do_link}</b>")
-            for link_desc in links:
-                msg_lines.append(f"&nbsp;&nbsp;&nbsp;&nbsp;• {link_desc}")
-            msg_lines.append("")
-
-        frappe.throw("<br>".join(msg_lines), title=_("Cancel Diblokir: Ada Turunan Diproses"))
-
-    # ── 2. CANCEL TIAP DO (cabang uang jalan draft ikut via hook DO) ──────
-    cancelled_dos = []
-    failed_dos = []
-
-    # Reason yang diisi user di dialog cancel SI (kalau ada) ikut dicatat
-    # di tiap DO yang ke-cascade cancel, supaya jejak alasannya jelas juga
-    # di sisi DO — bukan cuma di SI.
-    si_reason = (doc.get("custom_cancellation_reason") or "").strip()
-    do_reason = (
-        _("Cascade dari cancel Sales Invoice {0}: {1}").format(doc.name, si_reason)
-        if si_reason
-        else None
-    )
-
-    for do_name in do_names:
-        do_status = frappe.db.get_value("Delivery Order Towing", do_name, "docstatus")
-        if do_status == 2:
-            continue
-        try:
-            if do_status == 1:
-                do_doc = frappe.get_doc("Delivery Order Towing", do_name)
-                do_doc.flags.ignore_permissions = True
-                # JANGAN set skip_cancel_check → biar before_cancel_do_towing
-                # tetap handle/validasi cabang PO uang jalan.
-                do_doc.cancel()
-            else:
-                _clear_so_link_to_do(do_name)
-                frappe.db.set_value(
-                    "Delivery Order Towing", do_name,
-                    {"docstatus": 2, "status": "Cancelled"},
-                )
-            cancelled_dos.append(do_name)
-
-            if do_reason:
-                frappe.db.set_value(
-                    "Delivery Order Towing", do_name,
-                    "custom_cancellation_reason", do_reason,
-                    update_modified=False,
-                )
-
-        except Exception as e:
-            failed_dos.append((do_name, str(e)))
-            frappe.log_error(
-                f"Gagal cancel DO Towing {do_name} dari SI {doc.name}: {e}",
-                "SI Towing Cascade Cancel Error",
-            )
-
-    if failed_dos:
-        err_lines = [f"• <b>{name}</b>: {err}" for name, err in failed_dos]
-        frappe.throw(
-            _("⚠️ {0} Delivery Order gagal di-cancel:<br>{1}<br><br>"
-              "Cancel Sales Invoice dibatalkan. Cek Error Log untuk detail.").format(
-                len(failed_dos), "<br>".join(err_lines)
-            ),
-            title=_("DO Cancel Gagal"),
+        frappe.db.set_value(
+            "Delivery Order Towing", do_name, "sales_invoice", None,
+            update_modified=False,
         )
+        detached.append(do_name)
 
-    if cancelled_dos:
+    if detached:
         do_links = "<br>".join(
             f"• {frappe.utils.get_link_to_form('Delivery Order Towing', name)}"
-            for name in cancelled_dos
+            for name in detached
         )
         frappe.msgprint(
-            _("✅ {0} Delivery Order Towing ikut di-cancel:<br>{1}").format(
-                len(cancelled_dos), do_links
+            _("ℹ️ {0} Delivery Order Towing dilepas dari invoice ini "
+              "(status DO & PO uang jalan tidak berubah, DO siap ditagih ulang):<br>{1}").format(
+                len(detached), do_links
             ),
-            title=_("DO Towing Auto-Cancelled"),
-            indicator="orange",
+            title=_("DO Towing Dilepas dari Invoice"),
+            indicator="blue",
         )
 
 
