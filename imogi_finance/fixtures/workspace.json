@@ -23218,7 +23218,7 @@
  },
  {
   "charts": [],
-  "content": "[{\"id\": \"hdr_transaksi\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Transaksi Harian</b></span>\", \"col\": 12}}, {\"id\": \"s_customer\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Customer\", \"col\": 3}}, {\"id\": \"s_item\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Item\", \"col\": 3}}, {\"id\": \"s_so\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Sales Order\", \"col\": 3}}, {\"id\": \"s_dot\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Delivery Order Towing\", \"col\": 3}}, {\"id\": \"s_driver\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Driver\", \"col\": 3}}, {\"id\": \"s_ut\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Unit Towing\", \"col\": 3}}, {\"id\": \"s_si\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Sales Invoice\", \"col\": 3}}, {\"id\": \"spacer_1\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_operasional\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Operasional & Pengadaan</b></span>\", \"col\": 12}}, {\"id\": \"s_supplier\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Supplier\", \"col\": 3}}, {\"id\": \"s_po\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Purchase Order\", \"col\": 3}}, {\"id\": \"s_pi\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Purchase Invoice\", \"col\": 3}}, {\"id\": \"s_ea\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Employee Advance\", \"col\": 3}}, {\"id\": \"spacer_2\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_keuangan\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Keuangan & AR/AP</b></span>\", \"col\": 12}}, {\"id\": \"s_pe\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Payment Entry\", \"col\": 3}}, {\"id\": \"s_pr\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Payment Reconciliation\", \"col\": 3}}, {\"id\": \"s_ar\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Accounts Receivable\", \"col\": 3}}, {\"id\": \"s_ap\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Accounts Payable\", \"col\": 3}}, {\"id\": \"s_dc\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Driver Commission\", \"col\": 3}}, {\"id\": \"s_tcr\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Towing Commission Rate\", \"col\": 3}}, {\"id\": \"s_rkd\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Rekap Komisi Driver\", \"col\": 3}}]",
+  "content": "[{\"id\": \"hdr_dashboard\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Dashboard</b></span>\", \"col\": 12}}, {\"id\": \"s_dashboard_manager\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Dashboard Manager\", \"col\": 3}}, {\"id\": \"spacer_dashboard\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_transaksi\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Transaksi Harian</b></span>\", \"col\": 12}}, {\"id\": \"s_customer\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Customer\", \"col\": 3}}, {\"id\": \"s_item\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Item\", \"col\": 3}}, {\"id\": \"s_so\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Sales Order\", \"col\": 3}}, {\"id\": \"s_dot\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Delivery Order Towing\", \"col\": 3}}, {\"id\": \"s_driver\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Driver\", \"col\": 3}}, {\"id\": \"s_ut\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Unit Towing\", \"col\": 3}}, {\"id\": \"s_si\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Sales Invoice\", \"col\": 3}}, {\"id\": \"spacer_1\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_operasional\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Operasional & Pengadaan</b></span>\", \"col\": 12}}, {\"id\": \"s_supplier\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Supplier\", \"col\": 3}}, {\"id\": \"s_po\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Purchase Order\", \"col\": 3}}, {\"id\": \"s_pi\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Purchase Invoice\", \"col\": 3}}, {\"id\": \"s_ea\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Employee Advance\", \"col\": 3}}, {\"id\": \"spacer_2\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_keuangan\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Keuangan & AR/AP</b></span>\", \"col\": 12}}, {\"id\": \"s_pe\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Payment Entry\", \"col\": 3}}, {\"id\": \"s_pr\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Payment Reconciliation\", \"col\": 3}}, {\"id\": \"s_ar\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Accounts Receivable\", \"col\": 3}}, {\"id\": \"s_ap\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Accounts Payable\", \"col\": 3}}, {\"id\": \"s_dc\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Driver Commission\", \"col\": 3}}, {\"id\": \"s_tcr\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Towing Commission Rate\", \"col\": 3}}, {\"id\": \"s_rkd\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Rekap Komisi Driver\", \"col\": 3}}]",
   "custom_blocks": [],
   "docstatus": 0,
   "doctype": "Workspace",
@@ -23229,7 +23229,7 @@
   "is_hidden": 0,
   "label": "Towing Imogi",
   "links": [],
-  "modified": "2026-05-09 00:00:00.000000",
+  "modified": "2026-09-10 11:38:24.740569",
   "module": "Imogi Finance",
   "name": "Towing Imogi",
   "number_cards": [],
@@ -23238,11 +23238,36 @@
   "quick_lists": [],
   "restrict_to_domain": null,
   "roles": [
-   {"role": "Admin Towing"},
-   {"role": "Sales Manager"},
-   {"role": "Finance Manager"},
-   {"role": "Accounts Manager"},
-   {"role": "System Manager"}
+   {
+    "parent": "Towing Imogi",
+    "parentfield": "roles",
+    "parenttype": "Workspace",
+    "role": "Admin Towing"
+   },
+   {
+    "parent": "Towing Imogi",
+    "parentfield": "roles",
+    "parenttype": "Workspace",
+    "role": "Sales Manager"
+   },
+   {
+    "parent": "Towing Imogi",
+    "parentfield": "roles",
+    "parenttype": "Workspace",
+    "role": "Finance Manager"
+   },
+   {
+    "parent": "Towing Imogi",
+    "parentfield": "roles",
+    "parenttype": "Workspace",
+    "role": "Accounts Manager"
+   },
+   {
+    "parent": "Towing Imogi",
+    "parentfield": "roles",
+    "parenttype": "Workspace",
+    "role": "System Manager"
+   }
   ],
   "sequence_id": -1.0,
   "shortcuts": [
@@ -23478,7 +23503,7 @@
     "parent": "Towing Imogi",
     "parentfield": "shortcuts",
     "parenttype": "Workspace",
-    "report_ref_doctype": null,
+    "report_ref_doctype": "Sales Invoice",
     "restrict_to_domain": null,
     "stats_filter": null,
     "type": "Report",
@@ -23495,7 +23520,7 @@
     "parent": "Towing Imogi",
     "parentfield": "shortcuts",
     "parenttype": "Workspace",
-    "report_ref_doctype": null,
+    "report_ref_doctype": "Purchase Invoice",
     "restrict_to_domain": null,
     "stats_filter": null,
     "type": "Report",
@@ -23546,10 +23571,27 @@
     "parent": "Towing Imogi",
     "parentfield": "shortcuts",
     "parenttype": "Workspace",
-    "report_ref_doctype": null,
+    "report_ref_doctype": "Delivery Order Towing",
     "restrict_to_domain": null,
     "stats_filter": null,
     "type": "Report",
+    "url": null
+   },
+   {
+    "color": "Blue",
+    "doc_view": "",
+    "format": null,
+    "icon": null,
+    "kanban_board": null,
+    "label": "Dashboard Manager",
+    "link_to": "dashboard-manager",
+    "parent": "Towing Imogi",
+    "parentfield": "shortcuts",
+    "parenttype": "Workspace",
+    "report_ref_doctype": null,
+    "restrict_to_domain": null,
+    "stats_filter": null,
+    "type": "Page",
     "url": null
    }
   ],
@@ -23577,7 +23619,9 @@
   "quick_lists": [],
   "restrict_to_domain": null,
   "roles": [
-   {"role": "Towing Driver"}
+   {
+    "role": "Towing Driver"
+   }
   ],
   "sequence_id": -0.9,
   "shortcuts": [
@@ -23600,8 +23644,7 @@
    }
   ],
   "title": "Towing Driver"
- }
-,
+ },
  {
   "charts": [],
   "content": "[{\"id\": \"hdr_access\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Access Studio</b></span>\", \"col\": 12}}, {\"id\": \"s_ws_ui\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Workspace UI Settings\", \"col\": 6}}]",
@@ -23624,8 +23667,12 @@
   "quick_lists": [],
   "restrict_to_domain": null,
   "roles": [
-   {"role": "System Manager"},
-   {"role": "Accounts Manager"}
+   {
+    "role": "System Manager"
+   },
+   {
+    "role": "Accounts Manager"
+   }
   ],
   "sequence_id": -0.85,
   "shortcuts": [
@@ -23648,5 +23695,100 @@
    }
   ],
   "title": "Workspace Access Studio"
+ },
+ {
+  "charts": [],
+  "content": "[{\"id\": \"hdr_fm\", \"type\": \"header\", \"data\": {\"text\": \"<span class='h5'>Klik kartu di bawah untuk chart, KPI, dan tabel piutang</span>\", \"col\": 12}}, {\"id\": \"s_fmd\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Dashboard Manager\", \"col\": 4}}, {\"id\": \"sp_fm\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_fm_links\", \"type\": \"header\", \"data\": {\"text\": \"Lihat Juga\", \"col\": 12}}, {\"id\": \"s_fm_ar\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Accounts Receivable\", \"col\": 3}}, {\"id\": \"s_fm_si\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Sales Invoice\", \"col\": 3}}, {\"id\": \"s_fm_pe\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Payment Entry\", \"col\": 3}}]",
+  "custom_blocks": [],
+  "docstatus": 0,
+  "doctype": "Workspace",
+  "for_user": null,
+  "hide_custom": 0,
+  "icon": "dashboard",
+  "indicator_color": "orange",
+  "is_hidden": 0,
+  "label": "Finance Monitor",
+  "links": [],
+  "modified": "2026-09-10 11:26:33.025676",
+  "module": "Imogi Finance",
+  "name": "Finance Monitor",
+  "number_cards": [],
+  "parent_page": null,
+  "public": 1,
+  "quick_lists": [],
+  "restrict_to_domain": null,
+  "roles": [],
+  "sequence_id": 0.05,
+  "shortcuts": [
+   {
+    "color": "Orange",
+    "doc_view": "",
+    "format": "{} Open",
+    "icon": "dashboard",
+    "kanban_board": null,
+    "label": "Dashboard Manager",
+    "link_to": "dashboard-manager",
+    "parent": "Finance Monitor",
+    "parentfield": "shortcuts",
+    "parenttype": "Workspace",
+    "report_ref_doctype": "Sales Invoice",
+    "restrict_to_domain": null,
+    "stats_filter": "{\"outstanding_amount\": [\">\", 0], \"docstatus\": 1}",
+    "type": "Page",
+    "url": null
+   },
+   {
+    "color": null,
+    "doc_view": "",
+    "format": null,
+    "icon": null,
+    "kanban_board": null,
+    "label": "Accounts Receivable",
+    "link_to": "Accounts Receivable",
+    "parent": "Finance Monitor",
+    "parentfield": "shortcuts",
+    "parenttype": "Workspace",
+    "report_ref_doctype": "Sales Invoice",
+    "restrict_to_domain": null,
+    "stats_filter": null,
+    "type": "Report",
+    "url": null
+   },
+   {
+    "color": null,
+    "doc_view": "",
+    "format": null,
+    "icon": null,
+    "kanban_board": null,
+    "label": "Sales Invoice",
+    "link_to": "Sales Invoice",
+    "parent": "Finance Monitor",
+    "parentfield": "shortcuts",
+    "parenttype": "Workspace",
+    "report_ref_doctype": null,
+    "restrict_to_domain": null,
+    "stats_filter": null,
+    "type": "DocType",
+    "url": null
+   },
+   {
+    "color": null,
+    "doc_view": "",
+    "format": null,
+    "icon": null,
+    "kanban_board": null,
+    "label": "Payment Entry",
+    "link_to": "Payment Entry",
+    "parent": "Finance Monitor",
+    "parentfield": "shortcuts",
+    "parenttype": "Workspace",
+    "report_ref_doctype": null,
+    "restrict_to_domain": null,
+    "stats_filter": null,
+    "type": "DocType",
+    "url": null
+   }
+  ],
+  "title": "Finance Monitor"
  }
 ]
