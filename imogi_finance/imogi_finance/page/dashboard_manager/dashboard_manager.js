@@ -1,3 +1,8 @@
+const MONTHS_ID_LONG = [
+	"Januari", "Februari", "Maret", "April", "Mei", "Juni",
+	"Juli", "Agustus", "September", "Oktober", "November", "Desember",
+];
+
 frappe.pages["dashboard-manager"].on_page_load = function (wrapper) {
 	const page = frappe.ui.make_app_page({
 		parent: wrapper,
@@ -8,16 +13,136 @@ frappe.pages["dashboard-manager"].on_page_load = function (wrapper) {
 	inject_styles();
 
 	const $wrap = $(get_shell()).appendTo(page.main);
-	const state = { $wrap, chart: null };
+	const today = frappe.datetime.str_to_obj(frappe.datetime.get_today());
+	const state = {
+		$wrap, chart: null,
+		period_type: "all",
+		period_date: frappe.datetime.get_today(),
+		period_year: today.getFullYear(),
+		period_month: today.getMonth() + 1,
+		period_week: 1,
+	};
 
-	page.set_primary_action("Refresh", () => load(state), "refresh");
-
-	load(state);
+	frappe.call({ method: "imogi_finance.api.dispatch_dashboard.get_filter_meta" }).then((r) => {
+		const years = (r.message && r.message.years) || [today.getFullYear()];
+		setup_filters(page, state, years);
+		page.set_primary_action("Refresh", () => load(state), "refresh");
+		load(state);
+	});
 };
+
+function setup_filters(page, state, years) {
+	state.type_field = page.add_field({
+		label: "Tipe Periode",
+		fieldtype: "Select",
+		fieldname: "period_type",
+		options: [
+			{ label: "Hari", value: "day" },
+			{ label: "Minggu", value: "week" },
+			{ label: "Bulan", value: "month" },
+			{ label: "Tahun", value: "year" },
+			{ label: "Semua Waktu", value: "all" },
+		],
+		default: "all",
+		change: () => {
+			state.period_type = state.type_field.get_value() || "all";
+			update_filter_visibility(state);
+			load(state);
+		},
+	});
+
+	state.date_field = page.add_field({
+		label: "Tanggal",
+		fieldtype: "Date",
+		fieldname: "period_date",
+		default: state.period_date,
+		change: () => {
+			state.period_date = state.date_field.get_value() || frappe.datetime.get_today();
+			load(state);
+		},
+	});
+
+	state.year_field = page.add_field({
+		label: "Tahun",
+		fieldtype: "Select",
+		fieldname: "period_year",
+		options: years.map((y) => ({ label: String(y), value: y })),
+		default: state.period_year,
+		change: () => {
+			state.period_year = cint(state.year_field.get_value()) || state.period_year;
+			refresh_week_options(state);
+			load(state);
+		},
+	});
+
+	state.month_field = page.add_field({
+		label: "Bulan",
+		fieldtype: "Select",
+		fieldname: "period_month",
+		options: MONTHS_ID_LONG.map((m, i) => ({ label: m, value: i + 1 })),
+		default: state.period_month,
+		change: () => {
+			state.period_month = cint(state.month_field.get_value()) || state.period_month;
+			refresh_week_options(state);
+			load(state);
+		},
+	});
+
+	state.week_field = page.add_field({
+		label: "Minggu ke-",
+		fieldtype: "Select",
+		fieldname: "period_week",
+		options: build_week_options(state.period_year, state.period_month),
+		default: state.period_week,
+		change: () => {
+			state.period_week = cint(state.week_field.get_value()) || 1;
+			load(state);
+		},
+	});
+
+	update_filter_visibility(state);
+}
+
+function update_filter_visibility(state) {
+	const t = state.period_type;
+	state.date_field.$wrapper.toggle(t === "day");
+	state.year_field.$wrapper.toggle(t === "week" || t === "month" || t === "year");
+	state.month_field.$wrapper.toggle(t === "week" || t === "month");
+	state.week_field.$wrapper.toggle(t === "week");
+}
+
+function build_week_options(year, month) {
+	const daysInMonth = new Date(year, month, 0).getDate();
+	const weekCount = daysInMonth >= 29 ? 5 : 4;
+	const options = [];
+	for (let w = 1; w <= weekCount; w++) {
+		const startDay = (w - 1) * 7 + 1;
+		const endDay = Math.min(startDay + 6, daysInMonth);
+		options.push({ label: `Minggu ${w} (${startDay}-${endDay})`, value: w });
+	}
+	return options;
+}
+
+function refresh_week_options(state) {
+	const options = build_week_options(state.period_year, state.period_month);
+	state.week_field.df.options = options;
+	state.week_field.refresh();
+	if (state.period_week > options.length) {
+		state.period_week = options.length;
+		state.week_field.set_value(options.length);
+	}
+}
 
 function load(state) {
 	frappe.call({
 		method: "imogi_finance.api.dispatch_dashboard.get_dashboard_data",
+		args: {
+			period_type: state.period_type || "all",
+			period_date: state.period_date,
+			period_year: state.period_year,
+			period_month: state.period_month,
+			period_week: state.period_week,
+		},
 		freeze: true,
 		freeze_message: "Memuat dashboard...",
 	}).then((r) => {
@@ -49,7 +174,7 @@ function render_kpis(state, data) {
 			value: fmt_rupiah(k.omzet),
 			sub: k.omzet_change_pct === null
 				? `${data.period_label}`
-				: change_badge(k.omzet_change_pct) + " vs bulan lalu",
+				: change_badge(k.omzet_change_pct) + " " + (data.comparison_label || ""),
 		},
 		{
 			icon: "💹",
@@ -135,7 +260,7 @@ function render_trend(state, data) {
 	});
 
 	state.$wrap.find("#sd-partial-note").text(
-		data.is_partial_month ? "*bulan berjalan — data belum lengkap sebulan penuh." : ""
+		data.is_partial_period ? "*periode berjalan — data belum lengkap." : ""
 	);
 }
 
