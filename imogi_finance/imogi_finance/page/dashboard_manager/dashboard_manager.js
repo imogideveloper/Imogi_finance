@@ -3,6 +3,21 @@ const MONTHS_ID_LONG = [
 	"Juli", "Agustus", "September", "Oktober", "November", "Desember",
 ];
 
+// Small Feather-style icon paths. Used instead of emoji, which wkhtmltopdf can't render (no color-emoji font).
+const KPI_ICON_PATHS = {
+	"trending-up": '<polyline points="3 17 9 11 13 15 21 7"></polyline><polyline points="14 7 21 7 21 14"></polyline>',
+	"bar-chart": '<line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line>',
+	"file-text": '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line>',
+	compass: '<circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>',
+	truck: '<rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle>',
+	clipboard: '<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>',
+};
+
+function kpi_icon(name, color) {
+	return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2"
+		stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle">${KPI_ICON_PATHS[name]}</svg>`;
+}
+
 frappe.pages["dashboard-manager"].on_page_load = function (wrapper) {
 	const page = frappe.ui.make_app_page({
 		parent: wrapper,
@@ -27,6 +42,7 @@ frappe.pages["dashboard-manager"].on_page_load = function (wrapper) {
 		const years = (r.message && r.message.years) || [today.getFullYear()];
 		setup_filters(page, state, years);
 		page.set_primary_action("Refresh", () => load(state), "refresh");
+		page.add_inner_button("Download PDF", () => download_pdf(state));
 		load(state);
 	});
 };
@@ -152,6 +168,7 @@ function load(state) {
 }
 
 function render(state, data) {
+	state.last_period_label = data.period_label;
 	render_kpis(state, data);
 	render_trend(state, data);
 	render_pnl(state, data);
@@ -168,7 +185,7 @@ function render_kpis(state, data) {
 	const k = data.kpi;
 	const cards = [
 		{
-			icon: "📈",
+			icon: kpi_icon("trending-up", "#2f6fed"),
 			color: "blue",
 			label: "OMZET TERKUMPUL",
 			value: fmt_rupiah(k.omzet),
@@ -177,35 +194,35 @@ function render_kpis(state, data) {
 				: change_badge(k.omzet_change_pct) + " " + (data.comparison_label || ""),
 		},
 		{
-			icon: "💹",
+			icon: kpi_icon("bar-chart", "#16a34a"),
 			color: "green",
 			label: "LABA KOTOR",
 			value: fmt_rupiah(k.laba_kotor),
 			sub: k.margin_kotor_pct === null ? "Margin kotor –" : `Margin kotor ${k.margin_kotor_pct.toFixed(1)}%`,
 		},
 		{
-			icon: "🧾",
+			icon: kpi_icon("file-text", "#dc2626"),
 			color: "red",
 			label: "PIUTANG BELUM DITAGIH",
 			value: fmt_rupiah(k.piutang_belum_ditagih),
 			sub: `${k.piutang_count} DO belum invoice`,
 		},
 		{
-			icon: "🧭",
+			icon: kpi_icon("compass", "#c98a1f"),
 			color: "amber",
 			label: "UANG JALAN BELUM CAIR",
 			value: fmt_rupiah(k.uang_jalan_belum_cair),
 			sub: `${k.uang_jalan_count} DO menunggu`,
 		},
 		{
-			icon: "🚚",
+			icon: kpi_icon("truck", "#2f6fed"),
 			color: "blue",
 			label: "DO AKTIF",
 			value: k.do_aktif,
 			sub: `${k.do_aktif_jalan} jalan · ${k.do_aktif_tunggu_dokumen} tunggu dokumen`,
 		},
 		{
-			icon: "📋",
+			icon: kpi_icon("clipboard", "#c98a1f"),
 			color: "amber",
 			label: "APPROVAL PENDING",
 			value: fmt_rupiah(k.approval_pending_amount),
@@ -445,73 +462,77 @@ function fmt_rupiah(n) {
 function get_shell() {
 	return `
 		<div class="sd-wrap">
-			<div class="sd-kpi-grid" id="sd-kpis"></div>
+			<div class="sd-section">
+				<div class="sd-kpi-grid" id="sd-kpis"></div>
+			</div>
 
-			<div class="sd-section-title">KINERJA KEUANGAN</div>
-			<div class="sd-grid-2">
-				<div class="sd-card">
-					<div class="sd-card-head">
-						<span>TREN OMZET &amp; LABA KOTOR</span>
-						<span class="sd-legend"><i style="background:#2f6fed"></i>Omzet <i style="background:#16a34a"></i>Laba Kotor</span>
+			<div class="sd-section">
+				<div class="sd-section-title">KINERJA KEUANGAN</div>
+				<div class="sd-grid-2">
+					<div class="sd-card">
+						<div class="sd-card-head">
+							<span>TREN OMZET &amp; LABA KOTOR</span>
+							<span class="sd-legend"><i style="background:#2f6fed"></i>Omzet <i style="background:#16a34a"></i>Laba Kotor</span>
+						</div>
+						<div id="sd-trend-chart"></div>
+						<div class="sd-footnote" id="sd-partial-note"></div>
 					</div>
-					<div id="sd-trend-chart"></div>
-					<div class="sd-footnote" id="sd-partial-note"></div>
-				</div>
-				<div class="sd-card">
-					<div class="sd-card-head">
-						<span>RINGKASAN LABA RUGI (P&amp;L)</span>
-						<span class="sd-muted" id="sd-margin-badge"></span>
+					<div class="sd-card">
+						<div class="sd-card-head">
+							<span>RINGKASAN LABA RUGI (P&amp;L)</span>
+							<span class="sd-muted" id="sd-margin-badge"></span>
+						</div>
+						<div id="sd-pnl-body"></div>
 					</div>
-					<div id="sd-pnl-body"></div>
 				</div>
 			</div>
 
-			<div class="sd-section-title">PERLU PERHATIAN</div>
-			<div class="sd-grid-2">
-				<div class="sd-card">
-					<div class="sd-card-head">
-						<span>PIUTANG BELUM DITAGIH TERBESAR</span>
-						<span class="sd-muted" id="sd-piutang-total"></span>
+			<div class="sd-section">
+				<div class="sd-section-title">PERLU PERHATIAN</div>
+				<div class="sd-grid-2">
+					<div class="sd-card">
+						<div class="sd-card-head">
+							<span>PIUTANG BELUM DITAGIH TERBESAR</span>
+							<span class="sd-muted" id="sd-piutang-total"></span>
+						</div>
+						<div id="sd-piutang-table"></div>
 					</div>
-					<div id="sd-piutang-table"></div>
-				</div>
-				<div class="sd-card">
-					<div class="sd-card-head">
-						<span>AGING PIUTANG BELUM DITAGIH</span>
-						<span class="sd-muted" id="sd-aging-total"></span>
+					<div class="sd-card">
+						<div class="sd-card-head">
+							<span>AGING PIUTANG BELUM DITAGIH</span>
+							<span class="sd-muted" id="sd-aging-total"></span>
+						</div>
+						<div id="sd-aging-body"></div>
 					</div>
-					<div id="sd-aging-body"></div>
 				</div>
 			</div>
 
-			<div class="sd-section-title">OPERASIONAL</div>
-			<div class="sd-grid-2">
-				<div class="sd-card">
-					<div class="sd-card-head">
-						<span>PIPELINE DELIVERY ORDER</span>
-						<span class="sd-muted">DO aktif, di luar Cancelled</span>
+			<div class="sd-section">
+				<div class="sd-section-title">OPERASIONAL</div>
+				<div class="sd-grid-2">
+					<div class="sd-card">
+						<div class="sd-card-head">
+							<span>PIPELINE DELIVERY ORDER</span>
+							<span class="sd-muted">DO aktif, di luar Cancelled</span>
+						</div>
+						<div class="sd-pipe-summary" id="sd-pipeline-summary"></div>
+						<div class="sd-pipe-stages" id="sd-pipeline-stages"></div>
 					</div>
-					<div class="sd-pipe-summary" id="sd-pipeline-summary"></div>
-					<div class="sd-pipe-stages" id="sd-pipeline-stages"></div>
-				</div>
-				<div class="sd-card">
-					<div class="sd-card-head">
-						<span>UANG JALAN BELUM CAIR PER RUTE</span>
-						<span class="sd-muted" id="sd-rute-total"></span>
+					<div class="sd-card">
+						<div class="sd-card-head">
+							<span>UANG JALAN BELUM CAIR PER RUTE</span>
+							<span class="sd-muted" id="sd-rute-total"></span>
+						</div>
+						<div id="sd-rute-body"></div>
+						<div class="sd-footnote" id="sd-rute-footnote"></div>
 					</div>
-					<div id="sd-rute-body"></div>
-					<div class="sd-footnote" id="sd-rute-footnote"></div>
 				</div>
 			</div>
 		</div>
 	`;
 }
 
-function inject_styles() {
-	if (document.getElementById("dashboard-manager-style")) return;
-	const style = document.createElement("style");
-	style.id = "dashboard-manager-style";
-	style.textContent = `
+const DASHBOARD_CSS = `
 		.sd-wrap {
 			background: #faf8f4;
 			padding: 20px;
@@ -625,5 +646,115 @@ function inject_styles() {
 			.sd-grid-2 { grid-template-columns: 1fr; }
 		}
 	`;
+
+// wkhtmltopdf's renderer doesn't support CSS grid/flexbox reliably, so the PDF export
+// uses this separate table-based stylesheet instead of touching the on-screen DASHBOARD_CSS.
+const PDF_CSS = `
+		.sd-wrap { background: #faf8f4; padding: 20px; border-radius: 8px; color: #262321; font-size: 13px; }
+		.sd-kpi-grid { display: table; width: 100%; table-layout: fixed; border-spacing: 14px 0; margin-bottom: 24px; }
+		.sd-kpi { background: #fff; border: 1px solid #ece7de; border-radius: 10px; padding: 14px; display: table-cell; vertical-align: top; box-shadow: 0 1px 2px rgba(0,0,0,.03); }
+		.sd-kpi-icon { width: 30px; display: table-cell; vertical-align: top; }
+		.sd-kpi-icon-box { width: 30px; height: 30px; border-radius: 8px; display: inline-block; text-align: center; line-height: 30px; font-size: 15px; }
+		.sd-kpi-body { display: table-cell; vertical-align: top; padding-left: 10px; }
+		.sd-c-blue { background: #e8eefd; }
+		.sd-c-green { background: #e5f6ea; }
+		.sd-c-red { background: #fbe9e9; }
+		.sd-c-amber { background: #fbf0da; }
+		.sd-kpi-label { font-size: 10px; font-weight: 600; color: #9a9188; letter-spacing: .03em; margin-bottom: 4px; }
+		.sd-kpi-value { font-size: 17px; font-weight: 700; color: #201d1a; line-height: 1.2; }
+		.sd-kpi-sub { font-size: 11px; color: #9a9188; margin-top: 3px; }
+		.sd-change { font-weight: 600; }
+		.sd-up { color: #16a34a; }
+		.sd-down { color: #dc2626; }
+		.sd-section { page-break-inside: avoid; }
+		.sd-section-title { font-size: 11px; font-weight: 700; letter-spacing: .06em; color: #a39a8d; margin: 22px 0 10px; }
+		.sd-grid-2 { display: table; width: 100%; table-layout: fixed; border-spacing: 16px 0; }
+		.sd-card { display: table-cell; vertical-align: top; width: 50%; background: #fff; border: 1px solid #ece7de; border-radius: 10px; padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,.03); page-break-inside: avoid; }
+		.sd-kpi { page-break-inside: avoid; }
+		.sd-card-head { display: table; width: 100%; font-size: 11px; font-weight: 700; color: #6b645b; letter-spacing: .03em; margin-bottom: 12px; }
+		.sd-card-head > span:first-child { display: table-cell; text-align: left; }
+		.sd-card-head > span:last-child { display: table-cell; text-align: right; white-space: nowrap; }
+		.sd-muted { font-weight: 500; color: #a39a8d; font-size: 11px; }
+		.sd-legend { font-weight: 500; color: #6b645b; white-space: nowrap; }
+		.sd-legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; vertical-align: middle; margin-right: 4px; }
+		.sd-footnote { font-size: 10px; color: #b3aa9d; margin-top: 6px; }
+		.sd-pnl-row { margin-bottom: 12px; }
+		.sd-pnl-top { display: table; width: 100%; font-size: 12px; margin-bottom: 4px; }
+		.sd-pnl-top > span:first-child { display: table-cell; text-align: left; }
+		.sd-pnl-top > span:last-child { display: table-cell; text-align: right; white-space: nowrap; }
+		.sd-pnl-bold .sd-pnl-top { font-weight: 700; }
+		.sd-neg { color: #dc2626; }
+		.sd-bar-track { height: 6px; background: #f2ede4; border-radius: 4px; overflow: hidden; }
+		.sd-bar-track-wide { height: 8px; }
+		.sd-bar-fill { height: 100%; border-radius: 4px; }
+		.sd-bar-fill.sd-c-blue { background: #2f6fed; }
+		.sd-bar-fill.sd-c-green { background: #16a34a; }
+		.sd-bar-fill.sd-c-red { background: #dc2626; }
+		.sd-bar-fill.sd-c-amber { background: #d9a441; }
+		.sd-bar-fill.sd-c-gray { background: #beb6a8; }
+		.sd-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+		.sd-table th { text-align: left; font-size: 10px; color: #a39a8d; font-weight: 600; padding: 6px 8px; border-bottom: 1px solid #ece7de; }
+		.sd-table td { padding: 8px; border-bottom: 1px solid #f4f0e9; }
+		.sd-table .sd-right { text-align: right; }
+		.sd-mono { font-family: monospace; font-size: 11px; color: #6b645b; }
+		.sd-pill { padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+		.sd-pill-green { background: #e5f6ea; color: #16a34a; }
+		.sd-pill-amber { background: #fbf0da; color: #b7791f; }
+		.sd-pill-red { background: #fbe9e9; color: #dc2626; }
+		.sd-empty { color: #a39a8d; font-size: 12px; padding: 12px 0; }
+		.sd-aging-row { display: table; width: 100%; table-layout: fixed; margin-bottom: 12px; }
+		.sd-aging-row > div { display: table-cell; vertical-align: middle; }
+		.sd-aging-label { width: 70px; font-size: 11px; color: #6b645b; }
+		.sd-aging-row > .sd-bar-track { padding: 0 10px; }
+		.sd-aging-value { width: 90px; font-size: 12px; text-align: right; font-weight: 600; }
+		.sd-pipe-summary { display: table; margin-bottom: 14px; }
+		.sd-pipe-stat { display: table-cell; padding-right: 28px; }
+		.sd-pipe-num { font-size: 22px; font-weight: 700; }
+		.sd-c-text-blue { color: #2f6fed; }
+		.sd-c-text-green { color: #16a34a; }
+		.sd-pipe-label { font-size: 11px; color: #a39a8d; }
+		.sd-pipe-stages { display: table; width: 100%; }
+		.sd-pipe-box { display: table-cell; vertical-align: middle; background: #f6f3ec; border-radius: 8px; padding: 10px 12px; text-align: center; }
+		.sd-pipe-box-num { font-size: 16px; font-weight: 700; color: #201d1a; }
+		.sd-pipe-box-label { font-size: 9px; color: #9a9188; margin-top: 2px; letter-spacing: .02em; }
+		.sd-pipe-arrow { display: table-cell; vertical-align: middle; padding: 0 4px; color: #c9c1b4; font-size: 14px; white-space: nowrap; }
+		.sd-rute-row { margin-bottom: 12px; }
+		.sd-rute-top { text-align: right; margin-bottom: 4px; }
+		.sd-rute-amount { font-size: 12px; font-weight: 700; }
+		.sd-rute-label { font-size: 11px; color: #9a9188; margin-top: 4px; }
+	`;
+
+function inject_styles() {
+	if (document.getElementById("dashboard-manager-style")) return;
+	const style = document.createElement("style");
+	style.id = "dashboard-manager-style";
+	style.textContent = DASHBOARD_CSS;
 	document.head.appendChild(style);
+}
+
+function download_pdf(state) {
+	if (!state.$wrap || !state.$wrap.length) return;
+	const slug = (state.last_period_label || "dashboard")
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/(^-|-$)/g, "");
+
+	// Clone so the PDF-specific markup tweak (icon badge wrapper) never touches the live page.
+	const $clone = state.$wrap.clone();
+	$clone.find(".sd-kpi-icon").each(function () {
+		const $el = $(this);
+		const colorClass = ($el.attr("class") || "").split(" ").find((c) => c.startsWith("sd-c-")) || "";
+		const inner = $el.html();
+		$el.attr("class", "sd-kpi-icon").html(`<span class="sd-kpi-icon-box ${colorClass}">${inner}</span>`);
+	});
+
+	const html = `<!doctype html><html><head><meta charset="utf-8">
+		<style>body{margin:0;}${PDF_CSS}</style>
+		</head><body>${$clone[0].outerHTML}</body></html>`;
+
+	open_url_post("/api/method/imogi_finance.api.dispatch_dashboard.dashboard_pdf", {
+		html,
+		filename: `dashboard-manager-${slug}.pdf`,
+		orientation: "Landscape",
+	});
 }

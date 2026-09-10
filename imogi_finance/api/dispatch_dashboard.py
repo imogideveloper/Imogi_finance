@@ -1,7 +1,10 @@
 """Aggregated data for the Sirius Dispatch dashboard (imogi_finance/page/sirius_dispatch)."""
 
+from urllib.parse import urlparse
+
 import frappe
 from frappe.utils import add_days, add_months, flt, get_first_day, get_last_day, getdate, nowdate, date_diff, cint
+from frappe.utils.pdf import get_pdf
 
 MONTHS_ID_LONG = [
 	"Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -59,9 +62,9 @@ def get_dashboard_data(period_type="all", period_date=None, period_year=None, pe
 	kpi = _get_kpi(period["start"], period["end"], period["prev_start"], period["prev_end"])
 	pnl = _get_pnl(period["start"], period["end"], kpi)
 	trend = _get_trend(today)
-	piutang = _get_piutang()
-	pipeline = _get_pipeline()
-	uang_jalan = _get_uang_jalan_per_rute()
+	piutang = _get_piutang(period["start"], period["end"])
+	pipeline = _get_pipeline(period["start"], period["end"])
+	uang_jalan = _get_uang_jalan_per_rute(period["start"], period["end"])
 
 	return {
 		"period_label": period["label"],
@@ -184,6 +187,13 @@ def _omzet_hpp_for_period(start, end):
 	return omzet, hpp
 
 
+def _period_date_filter(period_start, period_end, fieldname="tanggal_do"):
+	"""Empty dict for "all time" (period_start is None); a between-filter otherwise."""
+	if not period_start:
+		return {}
+	return {fieldname: ["between", [period_start, period_end]]}
+
+
 def _get_kpi(period_start, period_end, prev_start, prev_end):
 	omzet, hpp = _omzet_hpp_for_period(period_start, period_end)
 	laba_kotor = omzet - hpp
@@ -194,12 +204,15 @@ def _get_kpi(period_start, period_end, prev_start, prev_end):
 		prev_omzet, _ = _omzet_hpp_for_period(prev_start, prev_end)
 		omzet_change_pct = ((omzet - prev_omzet) / prev_omzet * 100) if prev_omzet else None
 
+	date_filter = _period_date_filter(period_start, period_end)
+
 	piutang_rows = frappe.get_all(
 		"Delivery Order Towing",
 		filters={
 			"docstatus": 1,
 			"status": ["in", ["Delivered", "Done", "Awaiting Dokument"]],
 			"sales_invoice": ["is", "not set"],
+			**date_filter,
 		},
 		fields=["harga_jasa"],
 	)
@@ -211,6 +224,7 @@ def _get_kpi(period_start, period_end, prev_start, prev_end):
 			"docstatus": 1,
 			"status": ["!=", "Cancelled"],
 			"uang_jalan_status": ["!=", "Dibayar"],
+			**date_filter,
 		},
 		fields=["uang_jalan_amount"],
 	)
@@ -218,13 +232,13 @@ def _get_kpi(period_start, period_end, prev_start, prev_end):
 
 	do_aktif_rows = frappe.get_all(
 		"Delivery Order Towing",
-		filters={"docstatus": 1, "status": ["not in", ["Done", "Cancelled"]]},
+		filters={"docstatus": 1, "status": ["not in", ["Done", "Cancelled"]], **date_filter},
 		fields=["status"],
 	)
 	dalam_perjalanan = sum(1 for r in do_aktif_rows if r.status == "Pick Up")
 	tunggu_dokumen = sum(1 for r in do_aktif_rows if r.status in ("Delivered", "Awaiting Dokument"))
 
-	approval_amount, approval_count = _get_approval_pending()
+	approval_amount, approval_count = _get_approval_pending(period_start, period_end)
 
 	return {
 		"omzet": omzet,
@@ -243,17 +257,16 @@ def _get_kpi(period_start, period_end, prev_start, prev_end):
 	}
 
 
-def _get_approval_pending():
+def _get_approval_pending(period_start=None, period_end=None):
 	total_amount = 0
 	total_count = 0
 	for cfg in APPROVAL_DOCTYPES:
 		if not frappe.db.exists("DocType", cfg["doctype"]):
 			continue
-		rows = frappe.get_all(
-			cfg["doctype"],
-			filters={"docstatus": 1, "workflow_state": ["in", cfg["pending_states"]]},
-			fields=[cfg["amount_field"]],
-		)
+		filters = {"docstatus": 1, "workflow_state": ["in", cfg["pending_states"]]}
+		if period_start:
+			filters["creation"] = ["between", [period_start, f"{period_end} 23:59:59"]]
+		rows = frappe.get_all(cfg["doctype"], filters=filters, fields=[cfg["amount_field"]])
 		total_count += len(rows)
 		total_amount += sum(flt(r.get(cfg["amount_field"])) for r in rows)
 	return total_amount, total_count
@@ -308,13 +321,14 @@ def _get_trend(today):
 	return {"months": months, "omzet": omzet_series, "laba_kotor": laba_series}
 
 
-def _get_piutang():
+def _get_piutang(period_start=None, period_end=None):
 	rows = frappe.get_all(
 		"Delivery Order Towing",
 		filters={
 			"docstatus": 1,
 			"status": ["in", ["Delivered", "Done", "Awaiting Dokument"]],
 			"sales_invoice": ["is", "not set"],
+			**_period_date_filter(period_start, period_end),
 		},
 		fields=[
 			"name", "customer_name", "harga_jasa",
@@ -353,10 +367,10 @@ def _get_piutang():
 	return {"list": enriched[:10], "aging": aging, "total": total}
 
 
-def _get_pipeline():
+def _get_pipeline(period_start=None, period_end=None):
 	rows = frappe.get_all(
 		"Delivery Order Towing",
-		filters={"docstatus": 1, "status": ["!=", "Cancelled"]},
+		filters={"docstatus": 1, "status": ["!=", "Cancelled"], **_period_date_filter(period_start, period_end)},
 		fields=["status"],
 	)
 	antrian = sum(1 for r in rows if r.status in ("Draft", "Assigned"))
@@ -372,13 +386,14 @@ def _get_pipeline():
 	}
 
 
-def _get_uang_jalan_per_rute():
+def _get_uang_jalan_per_rute(period_start=None, period_end=None):
 	rows = frappe.get_all(
 		"Delivery Order Towing",
 		filters={
 			"docstatus": 1,
 			"status": ["!=", "Cancelled"],
 			"uang_jalan_status": ["!=", "Dibayar"],
+			**_period_date_filter(period_start, period_end),
 		},
 		fields=["kota_pickup", "kota_tujuan", "lokasi_pickup", "lokasi_tujuan", "uang_jalan_amount"],
 	)
@@ -396,3 +411,29 @@ def _get_uang_jalan_per_rute():
 	rows_sorted = sorted(by_route.values(), key=lambda x: x["amount"], reverse=True)
 	total = sum(r["amount"] for r in rows_sorted)
 	return {"rows": rows_sorted[:5], "total": total, "route_count": len(rows_sorted)}
+
+
+@frappe.whitelist()
+def dashboard_pdf(html, filename="dashboard-manager.pdf", orientation="Landscape"):
+	"""Render a client-captured snapshot of the Dashboard Manager page to PDF for download."""
+	frappe.only_for(["System Manager", "Sales Manager", "Accounts Manager"])
+
+	pdf_content = get_pdf(
+		html,
+		{
+			"orientation": orientation,
+			"proxy": "http://0.0.0.0:0",
+			"bypass-proxy-for": urlparse(frappe.utils.get_url(allow_header_override=False)).hostname,
+			"load-error-handling": "ignore",
+			# Without this wkhtmltopdf renders at a narrow default viewport, which trips our own
+			# max-width:900px "mobile" CSS and collapses every card to a single stacked column.
+			"viewport-size": "1600x1000",
+			"margin-top": "8mm",
+			"margin-bottom": "8mm",
+			"margin-left": "8mm",
+			"margin-right": "8mm",
+		},
+	)
+	frappe.local.response.filename = filename
+	frappe.local.response.filecontent = pdf_content
+	frappe.local.response.type = "pdf"
