@@ -288,6 +288,17 @@ def _get_pnl(period_start, period_end, kpi):
 			where gl.is_cancelled = 0
 				and gl.company = %(company)s
 				and acc.root_type = 'Expense'
+				-- uang jalan already counted in HPP via uang_jalan_amount; the PO/PI created on
+				-- DO submit (create_po_uang_jalan) would otherwise post it again here.
+				and not (
+					gl.voucher_type = 'Purchase Invoice'
+					and exists (
+						select 1 from `tabPurchase Invoice` pi
+						where pi.name = gl.voucher_no
+							and pi.custom_delivery_order is not null
+							and pi.custom_delivery_order != ''
+					)
+				)
 				{date_condition}
 			""",
 			{"company": company, "start": period_start, "end": period_end},
