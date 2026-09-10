@@ -61,7 +61,7 @@ def get_dashboard_data(period_type="all", period_date=None, period_year=None, pe
 
 	kpi = _get_kpi(period["start"], period["end"], period["prev_start"], period["prev_end"])
 	pnl = _get_pnl(period["start"], period["end"], kpi)
-	trend = _get_trend(today)
+	trend = _get_trend(period_type, period["end"])
 	piutang = _get_piutang(period["start"], period["end"])
 	pipeline = _get_pipeline(period["start"], period["end"])
 	uang_jalan = _get_uang_jalan_per_rute(period["start"], period["end"])
@@ -308,17 +308,66 @@ def _get_pnl(period_start, period_end, kpi):
 	}
 
 
-def _get_trend(today):
-	months, omzet_series, laba_series = [], [], []
-	for i in range(5, -1, -1):
-		ref = add_months(today, -i)
-		start = get_first_day(ref)
-		end = today if i == 0 else get_last_day(ref)
-		omzet, hpp = _omzet_hpp_for_period(start, end)
-		months.append(f"{MONTHS_ID[ref.month - 1]} {str(ref.year)[2:]}")
+def _get_trend(period_type, end_date):
+	"""Trend granularity follows the selected filter: days for "day", weeks for "week",
+	years for "year", and months (the original behaviour) for "month"/"all"."""
+	if period_type == "day":
+		return _trend_days(end_date, 14)
+	if period_type == "week":
+		return _trend_weeks(end_date, 8)
+	if period_type == "year":
+		return _trend_years(end_date, 5)
+	return _trend_months(end_date, 6)
+
+
+def _trend_days(end_date, n):
+	labels, omzet_series, laba_series = [], [], []
+	for i in range(n - 1, -1, -1):
+		d = add_days(end_date, -i)
+		omzet, hpp = _omzet_hpp_for_period(d, d)
+		labels.append(f"{d.day} {MONTHS_ID[d.month - 1]}")
 		omzet_series.append(omzet)
 		laba_series.append(omzet - hpp)
-	return {"months": months, "omzet": omzet_series, "laba_kotor": laba_series}
+	return {"months": labels, "omzet": omzet_series, "laba_kotor": laba_series}
+
+
+def _trend_weeks(end_date, n):
+	monday = add_days(end_date, -end_date.weekday())
+	labels, omzet_series, laba_series = [], [], []
+	for i in range(n - 1, -1, -1):
+		start = add_days(monday, -7 * i)
+		end = min(add_days(start, 6), end_date)
+		omzet, hpp = _omzet_hpp_for_period(start, end)
+		labels.append(f"{start.day}/{start.month}")
+		omzet_series.append(omzet)
+		laba_series.append(omzet - hpp)
+	return {"months": labels, "omzet": omzet_series, "laba_kotor": laba_series}
+
+
+def _trend_months(end_date, n):
+	labels, omzet_series, laba_series = [], [], []
+	for i in range(n - 1, -1, -1):
+		ref = add_months(end_date, -i)
+		start = get_first_day(ref)
+		end = min(get_last_day(ref), end_date)
+		omzet, hpp = _omzet_hpp_for_period(start, end)
+		labels.append(f"{MONTHS_ID[ref.month - 1]} {str(ref.year)[2:]}")
+		omzet_series.append(omzet)
+		laba_series.append(omzet - hpp)
+	return {"months": labels, "omzet": omzet_series, "laba_kotor": laba_series}
+
+
+def _trend_years(end_date, n):
+	labels, omzet_series, laba_series = [], [], []
+	for i in range(n - 1, -1, -1):
+		y = end_date.year - i
+		start = getdate(f"{y}-01-01")
+		end = min(getdate(f"{y}-12-31"), end_date)
+		omzet, hpp = _omzet_hpp_for_period(start, end)
+		labels.append(str(y))
+		omzet_series.append(omzet)
+		laba_series.append(omzet - hpp)
+	return {"months": labels, "omzet": omzet_series, "laba_kotor": laba_series}
 
 
 def _get_piutang(period_start=None, period_end=None):
