@@ -59,12 +59,13 @@ def get_dashboard_data(period_type="all", period_date=None, period_year=None, pe
 	today = getdate(nowdate())
 	period = _resolve_period(period_type, period_date, cint(period_year), cint(period_month), cint(period_week), today)
 
-	kpi = _get_kpi(period["start"], period["end"], period["prev_start"], period["prev_end"])
+	piutang = _get_piutang(period["start"], period["end"])
+	uang_jalan = _get_uang_jalan_per_rute(period["start"], period["end"])
+	approval = _get_approval_pending(period["start"], period["end"])
+	kpi = _get_kpi(period["start"], period["end"], period["prev_start"], period["prev_end"], piutang, uang_jalan, approval)
 	pnl = _get_pnl(period["start"], period["end"], kpi)
 	trend = _get_trend(period_type, period["end"])
-	piutang = _get_piutang(period["start"], period["end"])
-	pipeline = _get_pipeline(period["start"], period["end"])
-	uang_jalan = _get_uang_jalan_per_rute(period["start"], period["end"])
+	pipeline = _get_pipeline(period["start"], period["end"], approval)
 
 	return {
 		"period_label": period["label"],
@@ -194,7 +195,7 @@ def _period_date_filter(period_start, period_end, fieldname="tanggal_do"):
 	return {fieldname: ["between", [period_start, period_end]]}
 
 
-def _get_kpi(period_start, period_end, prev_start, prev_end):
+def _get_kpi(period_start, period_end, prev_start, prev_end, piutang, uang_jalan, approval):
 	omzet, hpp = _omzet_hpp_for_period(period_start, period_end)
 	laba_kotor = omzet - hpp
 	margin_kotor_pct = (laba_kotor / omzet * 100) if omzet else None
@@ -206,30 +207,6 @@ def _get_kpi(period_start, period_end, prev_start, prev_end):
 
 	date_filter = _period_date_filter(period_start, period_end)
 
-	piutang_rows = frappe.get_all(
-		"Delivery Order Towing",
-		filters={
-			"docstatus": 1,
-			"status": ["in", ["Delivered", "Done", "Awaiting Dokument"]],
-			"sales_invoice": ["is", "not set"],
-			**date_filter,
-		},
-		fields=["harga_jasa"],
-	)
-	piutang_total = sum(flt(r.harga_jasa) for r in piutang_rows)
-
-	uj_rows = frappe.get_all(
-		"Delivery Order Towing",
-		filters={
-			"docstatus": 1,
-			"status": ["!=", "Cancelled"],
-			"uang_jalan_status": ["!=", "Dibayar"],
-			**date_filter,
-		},
-		fields=["uang_jalan_amount"],
-	)
-	uang_jalan_total = sum(flt(r.uang_jalan_amount) for r in uj_rows)
-
 	do_aktif_rows = frappe.get_all(
 		"Delivery Order Towing",
 		filters={"docstatus": 1, "status": ["not in", ["Done", "Cancelled"]], **date_filter},
@@ -238,28 +215,27 @@ def _get_kpi(period_start, period_end, prev_start, prev_end):
 	dalam_perjalanan = sum(1 for r in do_aktif_rows if r.status == "Pick Up")
 	tunggu_dokumen = sum(1 for r in do_aktif_rows if r.status in ("Delivered", "Awaiting Dokument"))
 
-	approval_amount, approval_count = _get_approval_pending(period_start, period_end)
-
 	return {
 		"omzet": omzet,
 		"omzet_change_pct": omzet_change_pct,
 		"laba_kotor": laba_kotor,
 		"margin_kotor_pct": margin_kotor_pct,
-		"piutang_belum_ditagih": piutang_total,
-		"piutang_count": len(piutang_rows),
-		"uang_jalan_belum_cair": uang_jalan_total,
-		"uang_jalan_count": len(uj_rows),
+		"piutang_belum_ditagih": piutang["total"],
+		"piutang_count": piutang["count"],
+		"uang_jalan_belum_cair": uang_jalan["total"],
+		"uang_jalan_count": uang_jalan["count"],
 		"do_aktif": len(do_aktif_rows),
 		"do_aktif_jalan": dalam_perjalanan,
 		"do_aktif_tunggu_dokumen": tunggu_dokumen,
-		"approval_pending_amount": approval_amount,
-		"approval_pending_count": approval_count,
+		"approval_pending_amount": approval["amount"],
+		"approval_pending_count": approval["count"],
 	}
 
 
 def _get_approval_pending(period_start=None, period_end=None):
 	total_amount = 0
 	total_count = 0
+	breakdown = []
 	for cfg in APPROVAL_DOCTYPES:
 		if not frappe.db.exists("DocType", cfg["doctype"]):
 			continue
@@ -267,9 +243,12 @@ def _get_approval_pending(period_start=None, period_end=None):
 		if period_start:
 			filters["creation"] = ["between", [period_start, f"{period_end} 23:59:59"]]
 		rows = frappe.get_all(cfg["doctype"], filters=filters, fields=[cfg["amount_field"]])
-		total_count += len(rows)
-		total_amount += sum(flt(r.get(cfg["amount_field"])) for r in rows)
-	return total_amount, total_count
+		count = len(rows)
+		amount = sum(flt(r.get(cfg["amount_field"])) for r in rows)
+		total_count += count
+		total_amount += amount
+		breakdown.append({"doctype": cfg["doctype"], "count": count, "amount": amount})
+	return {"amount": total_amount, "count": total_count, "breakdown": breakdown}
 
 
 def _get_pnl(period_start, period_end, kpi):
@@ -355,28 +334,26 @@ def _trend_years(end_date, n):
 
 
 def _get_piutang(period_start=None, period_end=None):
+	"""Real Accounts Receivable: submitted Sales Invoices still carrying an outstanding balance
+	(invoiced, not yet paid) - not "DO done but not invoiced yet" (that's a separate, earlier
+	stage of the pipeline, already visible via the Pipeline/DO Aktif cards)."""
 	rows = frappe.get_all(
-		"Delivery Order Towing",
+		"Sales Invoice",
 		filters={
 			"docstatus": 1,
-			"status": ["in", ["Delivered", "Done", "Awaiting Dokument"]],
-			"sales_invoice": ["is", "not set"],
-			**_period_date_filter(period_start, period_end),
+			"outstanding_amount": [">", 0],
+			**_period_date_filter(period_start, period_end, fieldname="posting_date"),
 		},
-		fields=[
-			"name", "customer_name", "harga_jasa",
-			"waktu_done", "waktu_delivered", "tanggal_do",
-		],
+		fields=["name", "customer_name", "outstanding_amount", "posting_date"],
 	)
 
 	today = getdate(nowdate())
 	aging = {"0-30": 0, "30-60": 0, "60-90": 0, ">90": 0}
 	enriched = []
 	for r in rows:
-		selesai = r.waktu_done or r.waktu_delivered or r.tanggal_do
-		selesai_date = getdate(selesai)
-		umur = date_diff(today, selesai_date)
-		amount = flt(r.harga_jasa)
+		posting_date = getdate(r.posting_date)
+		umur = date_diff(today, posting_date)
+		amount = flt(r.outstanding_amount)
 
 		if umur <= 30:
 			aging["0-30"] += amount
@@ -390,17 +367,17 @@ def _get_piutang(period_start=None, period_end=None):
 		enriched.append({
 			"do": r.name,
 			"customer": r.customer_name or "-",
-			"selesai": str(selesai_date),
+			"selesai": str(posting_date),
 			"umur": umur,
 			"nilai": amount,
 		})
 
 	enriched.sort(key=lambda x: x["nilai"], reverse=True)
 	total = sum(e["nilai"] for e in enriched)
-	return {"list": enriched[:10], "aging": aging, "total": total}
+	return {"list": enriched[:10], "aging": aging, "total": total, "count": len(enriched)}
 
 
-def _get_pipeline(period_start=None, period_end=None):
+def _get_pipeline(period_start, period_end, approval):
 	rows = frappe.get_all(
 		"Delivery Order Towing",
 		filters={"docstatus": 1, "status": ["!=", "Cancelled"], **_period_date_filter(period_start, period_end)},
@@ -416,34 +393,48 @@ def _get_pipeline(period_start=None, period_end=None):
 		"delivered_tunggu_dokumen": tunggu_dokumen,
 		"selesai_invoiced": selesai,
 		"masih_diproses": antrian + dalam_perjalanan + tunggu_dokumen,
+		"approval_breakdown": approval["breakdown"],
 	}
 
 
 def _get_uang_jalan_per_rute(period_start=None, period_end=None):
-	rows = frappe.get_all(
-		"Delivery Order Towing",
+	"""Uang jalan still owed to drivers: the Purchase Order DO-submit creates for uang jalan
+	(custom_delivery_order set), where custom_payment_status hasn't reached "Paid" yet."""
+	po_rows = frappe.get_all(
+		"Purchase Order",
 		filters={
 			"docstatus": 1,
-			"status": ["!=", "Cancelled"],
-			"uang_jalan_status": ["!=", "Dibayar"],
-			**_period_date_filter(period_start, period_end),
+			"custom_delivery_order": ["is", "set"],
+			"custom_payment_status": ["!=", "Paid"],
+			**_period_date_filter(period_start, period_end, fieldname="transaction_date"),
 		},
-		fields=["kota_pickup", "kota_tujuan", "lokasi_pickup", "lokasi_tujuan", "uang_jalan_amount"],
+		fields=["name", "custom_delivery_order", "grand_total"],
 	)
 
+	do_routes = {}
+	do_names = [r.custom_delivery_order for r in po_rows if r.custom_delivery_order]
+	if do_names:
+		do_rows = frappe.get_all(
+			"Delivery Order Towing",
+			filters={"name": ["in", do_names]},
+			fields=["name", "kota_pickup", "kota_tujuan", "lokasi_pickup", "lokasi_tujuan"],
+		)
+		do_routes = {d.name: d for d in do_rows}
+
 	by_route = {}
-	for r in rows:
-		origin = r.kota_pickup or r.lokasi_pickup or "Asal belum diisi"
-		dest = r.kota_tujuan or r.lokasi_tujuan or "Tujuan belum diisi"
+	for r in po_rows:
+		do = do_routes.get(r.custom_delivery_order)
+		origin = (do.kota_pickup or do.lokasi_pickup if do else None) or "Asal belum diisi"
+		dest = (do.kota_tujuan or do.lokasi_tujuan if do else None) or "Tujuan belum diisi"
 		key = f"{origin} → {dest}"
 		if key not in by_route:
 			by_route[key] = {"rute": key, "count": 0, "amount": 0}
 		by_route[key]["count"] += 1
-		by_route[key]["amount"] += flt(r.uang_jalan_amount)
+		by_route[key]["amount"] += flt(r.grand_total)
 
 	rows_sorted = sorted(by_route.values(), key=lambda x: x["amount"], reverse=True)
 	total = sum(r["amount"] for r in rows_sorted)
-	return {"rows": rows_sorted[:5], "total": total, "route_count": len(rows_sorted)}
+	return {"rows": rows_sorted[:5], "total": total, "route_count": len(rows_sorted), "count": len(po_rows)}
 
 
 @frappe.whitelist()

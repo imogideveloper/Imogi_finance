@@ -203,16 +203,16 @@ function render_kpis(state, data) {
 		{
 			icon: kpi_icon("file-text", "#dc2626"),
 			color: "red",
-			label: "PIUTANG BELUM DITAGIH",
+			label: "PIUTANG BELUM LUNAS",
 			value: fmt_rupiah(k.piutang_belum_ditagih),
-			sub: `${k.piutang_count} DO belum invoice`,
+			sub: `${k.piutang_count} invoice belum lunas`,
 		},
 		{
 			icon: kpi_icon("compass", "#c98a1f"),
 			color: "amber",
 			label: "UANG JALAN BELUM CAIR",
 			value: fmt_rupiah(k.uang_jalan_belum_cair),
-			sub: `${k.uang_jalan_count} DO menunggu`,
+			sub: `${k.uang_jalan_count} PO menunggu`,
 		},
 		{
 			icon: kpi_icon("truck", "#2f6fed"),
@@ -343,7 +343,7 @@ function render_piutang(state, data) {
 
 	state.$wrap.find("#sd-piutang-table").html(`
 		<table class="sd-table">
-			<thead><tr><th>NO. DO</th><th>CUSTOMER</th><th>SELESAI</th><th>UMUR</th><th class="sd-right">NILAI</th></tr></thead>
+			<thead><tr><th>NO. INVOICE</th><th>CUSTOMER</th><th>TANGGAL</th><th>UMUR</th><th class="sd-right">NILAI</th></tr></thead>
 			<tbody>${rows}</tbody>
 		</table>
 	`);
@@ -414,6 +414,15 @@ function render_pipeline(state, data) {
 	`).join("");
 
 	state.$wrap.find("#sd-pipeline-stages").html(html);
+
+	const breakdown = data.pipeline.approval_breakdown || [];
+	const approvalHtml = breakdown.map((b) => `
+		<div class="sd-approval-row">
+			<span class="sd-approval-name">${b.doctype}</span>
+			<span class="sd-approval-count">${b.count} pending${b.amount ? " · " + fmt_rupiah(b.amount) : ""}</span>
+		</div>
+	`).join("");
+	state.$wrap.find("#sd-approval-breakdown").html(approvalHtml);
 }
 
 // ---------------------------------------------------------------------
@@ -492,14 +501,14 @@ function get_shell() {
 				<div class="sd-grid-2">
 					<div class="sd-card">
 						<div class="sd-card-head">
-							<span>PIUTANG BELUM DITAGIH TERBESAR</span>
+							<span>PIUTANG BELUM LUNAS TERBESAR</span>
 							<span class="sd-muted" id="sd-piutang-total"></span>
 						</div>
 						<div id="sd-piutang-table"></div>
 					</div>
 					<div class="sd-card">
 						<div class="sd-card-head">
-							<span>AGING PIUTANG BELUM DITAGIH</span>
+							<span>AGING PIUTANG BELUM LUNAS</span>
 							<span class="sd-muted" id="sd-aging-total"></span>
 						</div>
 						<div id="sd-aging-body"></div>
@@ -517,6 +526,8 @@ function get_shell() {
 						</div>
 						<div class="sd-pipe-summary" id="sd-pipeline-summary"></div>
 						<div class="sd-pipe-stages" id="sd-pipeline-stages"></div>
+						<div class="sd-approval-title">Approval Pending — per Jenis Permintaan</div>
+						<div id="sd-approval-breakdown"></div>
 					</div>
 					<div class="sd-card">
 						<div class="sd-card-head">
@@ -635,6 +646,11 @@ const DASHBOARD_CSS = `
 		.sd-pipe-box-num { font-size: 16px; font-weight: 700; color: #201d1a; }
 		.sd-pipe-box-label { font-size: 9px; color: #9a9188; margin-top: 2px; letter-spacing: .02em; }
 		.sd-pipe-arrow { color: #c9c1b4; font-size: 14px; }
+		.sd-approval-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #a39a8d; margin: 16px 0 8px; }
+		.sd-approval-row { display: flex; justify-content: space-between; font-size: 11.5px; padding: 5px 0; border-top: 1px solid #f4f0e9; }
+		.sd-approval-row:first-child { border-top: none; }
+		.sd-approval-name { color: #262321; }
+		.sd-approval-count { color: #9a9188; }
 
 		.sd-rute-row { margin-bottom: 12px; }
 		.sd-rute-top { display: flex; justify-content: flex-end; margin-bottom: 4px; }
@@ -718,6 +734,11 @@ const PDF_CSS = `
 		.sd-pipe-box-num { font-size: 16px; font-weight: 700; color: #201d1a; }
 		.sd-pipe-box-label { font-size: 9px; color: #9a9188; margin-top: 2px; letter-spacing: .02em; }
 		.sd-pipe-arrow { display: table-cell; vertical-align: middle; padding: 0 4px; color: #c9c1b4; font-size: 14px; white-space: nowrap; }
+		.sd-approval-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #a39a8d; margin: 16px 0 8px; }
+		.sd-approval-row { display: table; width: 100%; font-size: 11.5px; padding: 5px 0; border-top: 1px solid #f4f0e9; }
+		.sd-approval-row:first-child { border-top: none; }
+		.sd-approval-name { display: table-cell; text-align: left; color: #262321; }
+		.sd-approval-count { display: table-cell; text-align: right; color: #9a9188; white-space: nowrap; }
 		.sd-rute-row { margin-bottom: 12px; }
 		.sd-rute-top { text-align: right; margin-bottom: 4px; }
 		.sd-rute-amount { font-size: 12px; font-weight: 700; }
