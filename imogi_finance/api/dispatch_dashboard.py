@@ -159,6 +159,11 @@ def _gl_root_type_amount(period_start, period_end, root_type, extra_where=""):
 	if not company:
 		return 0
 
+	# Secondary finance books (e.g. a parallel depreciation book) post their own GL Entry rows
+	# for the same transactions. The P&L report only counts the company's default book (or blank/
+	# null finance_book) - without this filter, any non-default book gets summed a second time.
+	default_finance_book = frappe.get_cached_value("Company", company, "default_finance_book") or ""
+
 	date_condition = "and gl.posting_date between %(start)s and %(end)s" if period_start else "and gl.posting_date <= %(end)s"
 	sign = "gl.credit - gl.debit" if root_type == "Income" else "gl.debit - gl.credit"
 	rows = frappe.db.sql(
@@ -169,10 +174,14 @@ def _gl_root_type_amount(period_start, period_end, root_type, extra_where=""):
 		where gl.is_cancelled = 0
 			and gl.company = %(company)s
 			and acc.root_type = %(root_type)s
+			and (gl.finance_book is null or gl.finance_book in ('', %(default_finance_book)s))
 			{extra_where}
 			{date_condition}
 		""",
-		{"company": company, "root_type": root_type, "start": period_start, "end": period_end},
+		{
+			"company": company, "root_type": root_type, "start": period_start, "end": period_end,
+			"default_finance_book": default_finance_book,
+		},
 		as_dict=1,
 	)
 	return flt(rows[0].amt) if rows and rows[0].amt else 0
