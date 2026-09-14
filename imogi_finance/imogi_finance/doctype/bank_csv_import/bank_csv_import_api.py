@@ -11,6 +11,21 @@ from frappe import _
 
 
 @frappe.whitelist()
+def preview_import(docname, delimiter=None):
+    """Parse CSV tanpa membuat Bank Transaction — dipakai untuk pratinjau sebelum import."""
+    doc = frappe.get_doc("Bank CSV Import", docname)
+
+    if not doc.import_file:
+        frappe.throw(_("Upload file CSV terlebih dahulu."))
+    if not doc.bank:
+        frappe.throw(_("Pilih Bank terlebih dahulu."))
+    if not doc.bank_account:
+        frappe.throw(_("Pilih Bank Account terlebih dahulu."))
+
+    return _process_import(doc, dry_run=True, delimiter_override=delimiter)
+
+
+@frappe.whitelist()
 def run_import(docname):
     """Jalankan import CSV dan buat Bank Transactions."""
     doc = frappe.get_doc("Bank CSV Import", docname)
@@ -53,6 +68,30 @@ def run_import(docname):
         frappe.throw(str(e))
 
 
+@frappe.whitelist()
+def download_template(bank):
+    """Buat CSV kosong berisi header yang dikenali untuk Bank yang dipilih."""
+    from frappe.utils.csvutils import build_csv_response
+
+    config = frappe.get_doc("Bank Statement Bank List", bank)
+
+    header_map = {}
+    for alias_row in (config.header_aliases or []):
+        aliases = [a.strip() for a in (alias_row.aliases or "").split(",") if a.strip()]
+        if aliases:
+            header_map[alias_row.fieldname] = aliases[0]
+
+    ordered_fields = [
+        "posting_date", "description", "reference_number",
+        "debit", "credit", "amount", "balance",
+    ]
+    headers = [header_map[f] for f in ordered_fields if f in header_map]
+    if not headers:
+        frappe.throw(_("Bank {0} belum punya Field Aliases yang dikonfigurasi.").format(bank))
+
+    build_csv_response([headers], frappe.scrub(bank) + "_template")
+
+
 def _get_previous_closing_balance(bank_account, current_docname):
     """
     Ambil closing_balance dari BCI sebelumnya untuk bank account yang sama.
@@ -75,8 +114,13 @@ def _get_previous_closing_balance(bank_account, current_docname):
     return None
 
 
-def _process_import(doc):
-    """Parse CSV dan buat Bank Transactions."""
+def _process_import(doc, dry_run=False, delimiter_override=None):
+    """Parse CSV dan buat Bank Transactions.
+
+    Dengan dry_run=True, semua validasi/parsing/deteksi duplikat tetap
+    dijalankan (read-only), tapi tidak ada Bank Transaction yang dibuat —
+    dipakai untuk pratinjau (preview_import) sebelum user menekan Import CSV.
+    """
     # Load konfigurasi bank
     config = frappe.get_doc("Bank Statement Bank List", doc.bank)
 
@@ -129,14 +173,10 @@ def _process_import(doc):
         if decoded is None:
             frappe.throw(_("Tidak dapat membaca file. Encoding tidak dikenali."))
 
-        dialect_map = {
-            "excel": ",",
-            "excel-tab": "\t",
-            "unix": ",",
-        }
-        delimiter = dialect_map.get(config.csv_dialect, ",")
-        if config.csv_dialect == "semicolon":
-            delimiter = ";"
+        if delimiter_override:
+            delimiter = delimiter_override
+        else:
+            delimiter = {"comma": ",", "semicolon": ";", "tab": "\t"}.get(config.csv_dialect, ",")
 
         reader = csv.reader(io.StringIO(decoded), delimiter=delimiter)
         rows = list(reader)
@@ -294,29 +334,32 @@ def _process_import(doc):
                 continue
             doc._import_session_counts[current_session_key] = session_count + 1
 
-            # Buat Bank Transaction
-            bt = frappe.get_doc({
-                "doctype": "Bank Transaction",
-                "date": posting_date,
-                "bank_account": doc.bank_account,
-                "company": doc.company,
-                "description": description,
-                "reference_number": reference_number,
-                "deposit": credit,
-                "withdrawal": debit,
-                "currency": (
-                    frappe.db.get_value("Account",
-                        frappe.db.get_value("Bank Account", doc.bank_account, "account"),
-                        "account_currency"
-                    ) or "IDR"
-                ),
-            })
-            bt.insert(ignore_permissions=True)
-            bt.submit()
+            bt_name = None
+            if not dry_run:
+                # Buat Bank Transaction
+                bt = frappe.get_doc({
+                    "doctype": "Bank Transaction",
+                    "date": posting_date,
+                    "bank_account": doc.bank_account,
+                    "company": doc.company,
+                    "description": description,
+                    "reference_number": reference_number,
+                    "deposit": credit,
+                    "withdrawal": debit,
+                    "currency": (
+                        frappe.db.get_value("Account",
+                            frappe.db.get_value("Bank Account", doc.bank_account, "account"),
+                            "account_currency"
+                        ) or "IDR"
+                    ),
+                })
+                bt.insert(ignore_permissions=True)
+                bt.submit()
+                bt_name = bt.name
 
             created += 1
             log_lines.append(f"Row {row_idx}: OK - {posting_date} | {description[:40]} | D:{debit} C:{credit}")
-            _add_detail(row_idx, posting_date, description, credit, debit, balance_val, "OK", bank_transaction=bt.name)
+            _add_detail(row_idx, posting_date, description, credit, debit, balance_val, "OK", bank_transaction=bt_name)
 
         except Exception as e:
             errors += 1

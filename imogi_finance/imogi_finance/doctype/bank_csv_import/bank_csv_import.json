@@ -6,11 +6,18 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "bank",
-  "bank_account",
-  "column_break_1",
   "company",
+  "bank_account",
+  "bank",
+  "column_break_1",
+  "custom_delimiters",
+  "delimiter",
   "import_file",
+  "download_template",
+  "section_break_warnings",
+  "import_warnings_html",
+  "section_break_preview",
+  "preview_html",
   "section_break_status",
   "status",
   "import_log",
@@ -27,12 +34,11 @@
  ],
  "fields": [
   {
-   "fieldname": "bank",
+   "fieldname": "company",
    "fieldtype": "Link",
-   "label": "Bank",
-   "options": "Bank Statement Bank List",
-   "reqd": 1,
-   "in_list_view": 1
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
   },
   {
    "fieldname": "bank_account",
@@ -43,21 +49,59 @@
    "in_list_view": 1
   },
   {
+   "fieldname": "bank",
+   "fieldtype": "Link",
+   "label": "Bank",
+   "options": "Bank Statement Bank List",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
    "fieldname": "column_break_1",
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "company",
-   "fieldtype": "Link",
-   "label": "Company",
-   "options": "Company",
-   "reqd": 1
+   "fieldname": "custom_delimiters",
+   "fieldtype": "Check",
+   "label": "Custom delimiters"
+  },
+  {
+   "fieldname": "delimiter",
+   "fieldtype": "Select",
+   "label": "Delimiter",
+   "options": "Comma (,)\nSemicolon (;)\nTab",
+   "default": "Comma (,)",
+   "depends_on": "eval:doc.custom_delimiters"
   },
   {
    "fieldname": "import_file",
    "fieldtype": "Attach",
    "label": "CSV File",
    "reqd": 1
+  },
+  {
+   "fieldname": "download_template",
+   "fieldtype": "Button",
+   "label": "Download Template",
+   "depends_on": "eval:doc.bank"
+  },
+  {
+   "fieldname": "section_break_warnings",
+   "fieldtype": "Section Break",
+   "label": "Import File Errors and Warnings"
+  },
+  {
+   "fieldname": "import_warnings_html",
+   "fieldtype": "HTML"
+  },
+  {
+   "fieldname": "section_break_preview",
+   "fieldtype": "Section Break",
+   "label": "Preview"
+  },
+  {
+   "fieldname": "preview_html",
+   "fieldtype": "HTML"
   },
   {
    "fieldname": "section_break_status",

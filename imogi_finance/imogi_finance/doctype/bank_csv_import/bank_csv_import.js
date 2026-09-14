@@ -127,6 +127,10 @@ frappe.ui.form.on('Bank CSV Import', {
         if (has_results && frm.doc.import_rows && frm.doc.import_rows.length) {
             setTimeout(() => color_import_rows(frm), 300);
         }
+
+        frm.toggle_display('section_break_warnings', frm.doc.status === 'Draft' && !!frm.doc.import_file);
+        frm.toggle_display('section_break_preview', frm.doc.status === 'Draft' && !!frm.doc.import_file);
+        refresh_preview(frm);
     },
 
     bank(frm) {
@@ -139,8 +143,161 @@ frappe.ui.form.on('Bank CSV Import', {
                 }
             });
         }
+        refresh_preview(frm);
+    },
+
+    bank_account(frm) { refresh_preview(frm); },
+    import_file(frm) { refresh_preview(frm); },
+    custom_delimiters(frm) { refresh_preview(frm); },
+    delimiter(frm) { refresh_preview(frm); },
+
+    download_template(frm) {
+        if (!frm.doc.bank) {
+            frappe.msgprint(__('Pilih Bank terlebih dahulu.'));
+            return;
+        }
+        window.open(
+            '/api/method/imogi_finance.imogi_finance.doctype.bank_csv_import.bank_csv_import_api.download_template?bank='
+            + encodeURIComponent(frm.doc.bank)
+        );
     }
 });
+
+const DELIMITER_MAP = {
+    'Comma (,)': ',',
+    'Semicolon (;)': ';',
+    'Tab': '\t',
+};
+const PREVIEW_PAGE_SIZE = 10;
+
+function refresh_preview(frm) {
+    if (frm.doc.status !== 'Draft' || frm.is_new()) return;
+    if (!frm.doc.bank || !frm.doc.bank_account || !frm.doc.import_file) {
+        set_warnings_html(frm, '');
+        set_preview_html(frm, '');
+        return;
+    }
+
+    clearTimeout(frm._preview_timer);
+    frm._preview_timer = setTimeout(() => {
+        const delimiter = frm.doc.custom_delimiters ? DELIMITER_MAP[frm.doc.delimiter] : null;
+
+        set_warnings_html(frm, `<div class="text-muted">${__('Memeriksa file...')}</div>`);
+
+        frappe.call({
+            method: 'imogi_finance.imogi_finance.doctype.bank_csv_import.bank_csv_import_api.preview_import',
+            args: { docname: frm.doc.name, delimiter },
+            // frappe.call already pops up a msgprint dialog with the real
+            // server error on failure, so we just need a short pointer here.
+            error: function() {
+                render_warnings(frm, null, __('Gagal membaca file CSV. Lihat pesan error di atas.'));
+                set_preview_html(frm, '');
+            },
+            callback: function(r) {
+                if (r.message) {
+                    render_warnings(frm, r.message, null);
+                    render_preview_table(frm, r.message.rows || []);
+                }
+            }
+        });
+    }, 400);
+}
+
+function set_warnings_html(frm, html) {
+    frm.get_field('import_warnings_html') && frm.get_field('import_warnings_html').$wrapper.html(html);
+}
+
+function set_preview_html(frm, html) {
+    frm.get_field('preview_html') && frm.get_field('preview_html').$wrapper.html(html);
+}
+
+function render_warnings(frm, result, error_message) {
+    if (error_message) {
+        set_warnings_html(frm, `
+            <div class="alert alert-danger" style="margin-bottom: 0;">
+                ${frappe.utils.escape_html(error_message)}
+            </div>
+        `);
+        return;
+    }
+
+    if (result.errors > 0) {
+        set_warnings_html(frm, `
+            <div class="alert alert-warning" style="margin-bottom: 0;">
+                ${__('{0} baris tidak bisa dibaca dengan benar. Cek kolom Status di Preview di bawah.', [result.errors])}
+            </div>
+        `);
+    } else {
+        set_warnings_html(frm, `
+            <div class="alert alert-success" style="margin-bottom: 0;">
+                ${__('Semua kolom berhasil dipetakan otomatis - tidak ada yang perlu diperbaiki.')}
+            </div>
+        `);
+    }
+}
+
+function render_preview_table(frm, rows, page) {
+    page = page || 1;
+    frm._preview_rows = rows;
+
+    const total_pages = Math.max(1, Math.ceil(rows.length / PREVIEW_PAGE_SIZE));
+    page = Math.min(Math.max(page, 1), total_pages);
+    const start = (page - 1) * PREVIEW_PAGE_SIZE;
+    const page_rows = rows.slice(start, start + PREVIEW_PAGE_SIZE);
+
+    const row_style = {
+        'OK': '#e6f4ea',
+        'Duplikat': '#fff4e5',
+        'Error': '#fdecea',
+        'Dilewati': '#f1f3f4',
+    };
+
+    const body_html = page_rows.map((row, i) => `
+        <tr style="background-color: ${row_style[row.status] || ''}">
+            <td>${start + i + 1}</td>
+            <td>${row.date ? frappe.datetime.str_to_user(row.date) : '-'}</td>
+            <td>${frappe.utils.escape_html(row.description || '')}</td>
+            <td class="text-right">${row.deposit ? format_currency(row.deposit) : ''}</td>
+            <td class="text-right">${row.withdrawal ? format_currency(row.withdrawal) : ''}</td>
+            <td>${frm.doc.bank_account || ''}</td>
+            <td class="text-right">${row.balance ? format_currency(row.balance) : ''}</td>
+            <td>${row.status}</td>
+        </tr>
+    `).join('');
+
+    set_preview_html(frm, `
+        <div class="table-responsive">
+            <table class="table table-bordered" style="margin-bottom: 8px;">
+                <thead>
+                    <tr>
+                        <th>${__('SR')}</th>
+                        <th>${__('Tanggal Transaksi')}</th>
+                        <th>${__('Keterangan')}</th>
+                        <th>${__('Deposit')}</th>
+                        <th>${__('Withdrawal')}</th>
+                        <th>${__('Bank Account')}</th>
+                        <th>${__('Balance')}</th>
+                        <th>${__('Status')}</th>
+                    </tr>
+                </thead>
+                <tbody>${body_html || `<tr><td colspan="8" class="text-muted text-center">${__('Tidak ada baris untuk ditampilkan')}</td></tr>`}</tbody>
+            </table>
+        </div>
+        <div class="flex justify-content-between align-center">
+            <button class="btn btn-xs btn-default" data-action="prev" ${page <= 1 ? 'disabled' : ''}>${__('Previous')}</button>
+            <span class="text-muted small">${__('Page {0} of {1} ({2} rows)', [page, total_pages, rows.length])}</span>
+            <button class="btn btn-xs btn-default" data-action="next" ${page >= total_pages ? 'disabled' : ''}>${__('Next')}</button>
+        </div>
+    `);
+
+    const $wrapper = frm.get_field('preview_html').$wrapper;
+    $wrapper.find('[data-action="prev"]').on('click', () => render_preview_table(frm, frm._preview_rows, page - 1));
+    $wrapper.find('[data-action="next"]').on('click', () => render_preview_table(frm, frm._preview_rows, page + 1));
+}
+
+function format_currency(value) {
+    return (value || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 });
+}
 
 function color_import_rows(frm) {
     const grid = frm.fields_dict.import_rows && frm.fields_dict.import_rows.grid;

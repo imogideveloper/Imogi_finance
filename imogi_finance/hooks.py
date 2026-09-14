@@ -73,6 +73,8 @@ app_include_js = [
     "/assets/imogi_finance/js/form_field_visibility.js",
     "/assets/imogi_finance/js/export_template.js",
     "/assets/imogi_finance/js/trial_balance_automatic_entries.js",
+    "/assets/imogi_finance/js/trial_balance_filter_visibility.js",
+    "/assets/imogi_finance/js/sidebar_default_collapsed.js",
 ]
 
 boot_session = "imogi_finance.workspace_visibility.update_boot_session"
