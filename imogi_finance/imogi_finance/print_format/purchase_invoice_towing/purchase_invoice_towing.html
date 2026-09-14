@@ -553,6 +553,9 @@
           {% else %}
           <div class="pay-intro">Tagihan ini sudah lunas.</div>
           {% endif %}
+          {%- if doc.custom_print_note %}
+          <div class="pay-note" style="margin-top:6px;">{{ doc.custom_print_note }}</div>
+          {%- endif %}
         </div>
       </div>
     </div>

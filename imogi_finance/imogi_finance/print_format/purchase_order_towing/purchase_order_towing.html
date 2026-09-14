@@ -535,11 +535,13 @@
 
   <div class="inv-footer">
     <div class="inv-payment-info">
-      <div class="pay-label">Catatan</div>
+      <div class="pay-label">Note</div>
       <div class="pay-detail">
+        {%- if doc.custom_print_note %}
         <div class="pay-block">
-          <div class="pay-note">{{ doc.tc_name or "Mohon konfirmasi ketersediaan dan kirimkan sesuai jadwal di atas." }}</div>
+          <div class="pay-note">{{ doc.custom_print_note }}</div>
         </div>
+        {%- endif %}
       </div>
     </div>
     <div class="inv-signature">

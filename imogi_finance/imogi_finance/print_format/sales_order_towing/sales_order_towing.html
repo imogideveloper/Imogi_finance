@@ -544,11 +544,13 @@
 
   <div class="inv-footer">
     <div class="inv-payment-info">
-      <div class="pay-label">Catatan</div>
+      <div class="pay-label">Note</div>
       <div class="pay-detail">
+        {%- if doc.custom_print_note %}
         <div class="pay-block">
-          <div class="pay-note">{{ doc.tc_name or "Sales Order ini berlaku sebagai konfirmasi pesanan. Faktur akan diterbitkan terpisah setelah layanan selesai." }}</div>
+          <div class="pay-note">{{ doc.custom_print_note }}</div>
         </div>
+        {%- endif %}
       </div>
     </div>
     <div class="inv-signature">
