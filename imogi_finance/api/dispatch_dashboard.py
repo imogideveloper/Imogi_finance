@@ -143,27 +143,11 @@ def _resolve_period(period_type, period_date, period_year, period_month, period_
 	}
 
 
-# A GL Entry counts as towing HPP (uang jalan or driver commission) when it comes from a
-# Purchase Invoice created either by DO-submit (custom_delivery_order set) or by the driver
-# commission payout flow (bill_no matches a submitted Driver Commission's name). Shared between
+# HPP = GL Expense entries against Cost of Goods Sold accounts, same as the "COGS" grouping the
+# standard Profit and Loss Statement report shows (e.g. "51 - COGS Bisnis"). Shared between
 # _omzet_hpp_for_period (to include it in HPP) and _get_pnl (to exclude it from Beban
 # Operasional) so the two can never drift out of sync with each other.
-_HPP_PURCHASE_INVOICE_CONDITION = """
-	gl.voucher_type = 'Purchase Invoice'
-	and (
-		exists (
-			select 1 from `tabPurchase Invoice` pi
-			where pi.name = gl.voucher_no
-				and pi.custom_delivery_order is not null
-				and pi.custom_delivery_order != ''
-		)
-		or exists (
-			select 1 from `tabPurchase Invoice` pi2
-			inner join `tabDriver Commission` dc on dc.name = pi2.bill_no
-			where pi2.name = gl.voucher_no and dc.docstatus = 1
-		)
-	)
-"""
+_HPP_ACCOUNT_CONDITION = "coalesce(acc.account_type, '') = 'Cost of Goods Sold'"
 
 
 def _gl_root_type_amount(period_start, period_end, root_type, extra_where=""):
@@ -199,7 +183,7 @@ def _omzet_hpp_for_period(start, end):
 	report. This means a DO only counts once its Sales Invoice/uang-jalan PI is actually
 	submitted - not as soon as the operational record is filled in."""
 	omzet = _gl_root_type_amount(start, end, "Income")
-	hpp = _gl_root_type_amount(start, end, "Expense", extra_where=f"and ({_HPP_PURCHASE_INVOICE_CONDITION})")
+	hpp = _gl_root_type_amount(start, end, "Expense", extra_where=f"and {_HPP_ACCOUNT_CONDITION}")
 	return omzet, hpp
 
 
@@ -289,10 +273,10 @@ def _get_approval_pending(period_start=None, period_end=None):
 
 
 def _get_pnl(period_start, period_end, kpi):
-	# Beban Operasional is every other Expense GL entry - HPP's Purchase Invoices are excluded
-	# here since they're already counted in kpi["laba_kotor"] via _omzet_hpp_for_period.
+	# Beban Operasional is every non-COGS Expense GL entry - COGS is already counted in
+	# kpi["laba_kotor"] via _omzet_hpp_for_period.
 	beban_operasional = _gl_root_type_amount(
-		period_start, period_end, "Expense", extra_where=f"and not ({_HPP_PURCHASE_INVOICE_CONDITION})"
+		period_start, period_end, "Expense", extra_where=f"and not ({_HPP_ACCOUNT_CONDITION})"
 	)
 
 	laba_bersih = kpi["laba_kotor"] - beban_operasional
