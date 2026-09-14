@@ -150,6 +150,10 @@ function refresh_week_options(state) {
 }
 
 function load(state) {
+	// Guard against overlapping requests (e.g. Refresh clicked while a previous load is still
+	// in flight, or a filter control firing change twice) - an older response arriving after a
+	// newer one must never overwrite the DOM with stale data.
+	const requestId = (state._loadSeq = (state._loadSeq || 0) + 1);
 	frappe.call({
 		method: "imogi_finance.api.dispatch_dashboard.get_dashboard_data",
 		args: {
@@ -163,6 +167,7 @@ function load(state) {
 		freeze_message: "Memuat dashboard...",
 	}).then((r) => {
 		if (!r.message) return;
+		if (requestId !== state._loadSeq) return; // a newer request has since started/finished
 		render(state, r.message);
 	});
 }
