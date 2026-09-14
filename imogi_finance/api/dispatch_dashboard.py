@@ -143,47 +143,63 @@ def _resolve_period(period_type, period_date, period_year, period_month, period_
 	}
 
 
-def _invoiced_do_filters(start, end):
-	filters = {"docstatus": 1, "sales_invoice": ["is", "set"]}
-	if start:
-		filters["tanggal_invoice"] = ["between", [start, end]]
-	else:
-		filters["tanggal_invoice"] = ["<=", end]
-	return filters
+# A GL Entry counts as towing HPP (uang jalan or driver commission) when it comes from a
+# Purchase Invoice created either by DO-submit (custom_delivery_order set) or by the driver
+# commission payout flow (bill_no matches a submitted Driver Commission's name). Shared between
+# _omzet_hpp_for_period (to include it in HPP) and _get_pnl (to exclude it from Beban
+# Operasional) so the two can never drift out of sync with each other.
+_HPP_PURCHASE_INVOICE_CONDITION = """
+	gl.voucher_type = 'Purchase Invoice'
+	and (
+		exists (
+			select 1 from `tabPurchase Invoice` pi
+			where pi.name = gl.voucher_no
+				and pi.custom_delivery_order is not null
+				and pi.custom_delivery_order != ''
+		)
+		or exists (
+			select 1 from `tabPurchase Invoice` pi2
+			inner join `tabDriver Commission` dc on dc.name = pi2.bill_no
+			where pi2.name = gl.voucher_no and dc.docstatus = 1
+		)
+	)
+"""
+
+
+def _gl_root_type_amount(period_start, period_end, root_type, extra_where=""):
+	"""Sum of GL Entry (credit-debit for Income, debit-credit for Expense) for the default
+	company's accounts of the given root_type. Mirrors how the standard Profit and Loss
+	Statement report totals each side, so dashboard figures reconcile with it."""
+	company = frappe.db.get_single_value("Global Defaults", "default_company")
+	if not company:
+		return 0
+
+	date_condition = "and gl.posting_date between %(start)s and %(end)s" if period_start else "and gl.posting_date <= %(end)s"
+	sign = "gl.credit - gl.debit" if root_type == "Income" else "gl.debit - gl.credit"
+	rows = frappe.db.sql(
+		f"""
+		select sum({sign}) amt
+		from `tabGL Entry` gl
+		inner join `tabAccount` acc on acc.name = gl.account
+		where gl.is_cancelled = 0
+			and gl.company = %(company)s
+			and acc.root_type = %(root_type)s
+			{extra_where}
+			{date_condition}
+		""",
+		{"company": company, "root_type": root_type, "start": period_start, "end": period_end},
+		as_dict=1,
+	)
+	return flt(rows[0].amt) if rows and rows[0].amt else 0
 
 
 def _omzet_hpp_for_period(start, end):
-	dos = frappe.get_all(
-		"Delivery Order Towing",
-		filters=_invoiced_do_filters(start, end),
-		fields=["name", "harga_jasa", "uang_jalan_amount"],
-	)
-	omzet = sum(flt(d.harga_jasa) for d in dos)
-	uang_jalan_cost = sum(flt(d.uang_jalan_amount) for d in dos)
-
-	komisi_cost = 0
-	if dos:
-		do_names = [d.name for d in dos]
-		komisi_rows = frappe.get_all(
-			"Driver Commission Item",
-			filters={
-				"delivery_order_towing": ["in", do_names],
-				"parenttype": "Driver Commission",
-			},
-			fields=["komisi_amount", "parent"],
-		)
-		if komisi_rows:
-			parents = list({r.parent for r in komisi_rows})
-			valid_parents = set(
-				frappe.get_all(
-					"Driver Commission",
-					filters={"name": ["in", parents], "docstatus": 1, "status": ["in", ["Approved", "Paid"]]},
-					pluck="name",
-				)
-			)
-			komisi_cost = sum(flt(r.komisi_amount) for r in komisi_rows if r.parent in valid_parents)
-
-	hpp = uang_jalan_cost + komisi_cost
+	"""Omzet and HPP sourced from GL Entry (submitted, posted transactions only) instead of the
+	Delivery Order Towing's own fields, so they reconcile 1:1 with the Profit and Loss Statement
+	report. This means a DO only counts once its Sales Invoice/uang-jalan PI is actually
+	submitted - not as soon as the operational record is filled in."""
+	omzet = _gl_root_type_amount(start, end, "Income")
+	hpp = _gl_root_type_amount(start, end, "Expense", extra_where=f"and ({_HPP_PURCHASE_INVOICE_CONDITION})")
 	return omzet, hpp
 
 
@@ -273,38 +289,11 @@ def _get_approval_pending(period_start=None, period_end=None):
 
 
 def _get_pnl(period_start, period_end, kpi):
-	company = frappe.db.get_single_value("Global Defaults", "default_company")
-	beban_operasional = 0
-	if company:
-		if period_start:
-			date_condition = "and gl.posting_date between %(start)s and %(end)s"
-		else:
-			date_condition = "and gl.posting_date <= %(end)s"
-		rows = frappe.db.sql(
-			f"""
-			select sum(gl.debit - gl.credit) amt
-			from `tabGL Entry` gl
-			inner join `tabAccount` acc on acc.name = gl.account
-			where gl.is_cancelled = 0
-				and gl.company = %(company)s
-				and acc.root_type = 'Expense'
-				-- uang jalan already counted in HPP via uang_jalan_amount; the PO/PI created on
-				-- DO submit (create_po_uang_jalan) would otherwise post it again here.
-				and not (
-					gl.voucher_type = 'Purchase Invoice'
-					and exists (
-						select 1 from `tabPurchase Invoice` pi
-						where pi.name = gl.voucher_no
-							and pi.custom_delivery_order is not null
-							and pi.custom_delivery_order != ''
-					)
-				)
-				{date_condition}
-			""",
-			{"company": company, "start": period_start, "end": period_end},
-			as_dict=1,
-		)
-		beban_operasional = flt(rows[0].amt) if rows and rows[0].amt else 0
+	# Beban Operasional is every other Expense GL entry - HPP's Purchase Invoices are excluded
+	# here since they're already counted in kpi["laba_kotor"] via _omzet_hpp_for_period.
+	beban_operasional = _gl_root_type_amount(
+		period_start, period_end, "Expense", extra_where=f"and not ({_HPP_PURCHASE_INVOICE_CONDITION})"
+	)
 
 	laba_bersih = kpi["laba_kotor"] - beban_operasional
 	margin_bersih_pct = (laba_bersih / kpi["omzet"] * 100) if kpi["omzet"] else None
