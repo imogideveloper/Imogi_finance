@@ -91,6 +91,23 @@ def update_sales_order_payment_status(sales_order_name: str):
 	if not sales_order_name:
 		return
 
+	# custom_payment_status / outstanding_amount are Custom Fields (fixtures).
+	# On a site where `bench migrate` hasn't run yet the columns don't exist;
+	# this is an auxiliary status sync and must never block saving the
+	# Sales Order itself (see imogi_finance issue: new SO save failing with
+	# "Unknown column 'custom_payment_status' in 'SET'").
+	if not frappe.db.has_column("Sales Order", "custom_payment_status") or not frappe.db.has_column(
+		"Sales Order", "outstanding_amount"
+	):
+		frappe.log_error(
+			title="imogi_finance: Sales Order custom fields not migrated",
+			message=(
+				"custom_payment_status / outstanding_amount column missing on tabSales Order. "
+				"Run `bench migrate` to sync imogi_finance/fixtures/custom_field.json."
+			),
+		)
+		return
+
 	so = frappe.db.get_value(
 		"Sales Order",
 		sales_order_name,
