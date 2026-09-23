@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import inspect
 import json
 import re
 
@@ -68,8 +69,17 @@ def make_sales_invoice_with_payment_terms(
 
 	from erpnext.selling.doctype.sales_order.sales_order import make_sales_invoice
 
-	# ERPNext make_sales_invoice reads frappe.flags.args for optional row filters
-	si = make_sales_invoice(source_name, target_doc, ignore_permissions)
+	# ERPNext make_sales_invoice reads frappe.flags.args for optional row filters.
+	# Some ERPNext releases don't have an `ignore_permissions` parameter here
+	# (just source_name, target_doc, args) — passing it positionally on those
+	# sites lands the bool in the `args` slot and crashes pydantic validation
+	# ("Argument 'args' ... but got 'bool' instead"). Only pass it, by
+	# keyword, when the installed erpnext actually supports it.
+	make_si_kwargs = {}
+	if "ignore_permissions" in inspect.signature(make_sales_invoice).parameters:
+		make_si_kwargs["ignore_permissions"] = ignore_permissions
+
+	si = make_sales_invoice(source_name, target_doc, **make_si_kwargs)
 	_sync_invoice_lines_with_so_pending_amount(si)
 
 	if invoice_mode != "regular":
