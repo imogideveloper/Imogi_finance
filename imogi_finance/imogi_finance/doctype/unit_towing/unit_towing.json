@@ -10,7 +10,12 @@
   "jenis_kendaraan",
   "nomor_polisi",
   "column_break_1",
-  "is_active"
+  "is_active",
+  "sb_detail",
+  "merk",
+  "model",
+  "column_break_detail",
+  "nomor_rangka"
  ],
  "fields": [
   {
@@ -41,6 +46,32 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Aktif"
+  },
+  {
+   "fieldname": "sb_detail",
+   "fieldtype": "Section Break",
+   "label": "Detail Kendaraan"
+  },
+  {
+   "fieldname": "merk",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Merk / Brand"
+  },
+  {
+   "fieldname": "model",
+   "fieldtype": "Data",
+   "label": "Model"
+  },
+  {
+   "fieldname": "column_break_detail",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "nomor_rangka",
+   "fieldtype": "Data",
+   "label": "Nomor Rangka",
+   "unique": 1
   }
  ],
  "index_web_pages_for_search": 1,

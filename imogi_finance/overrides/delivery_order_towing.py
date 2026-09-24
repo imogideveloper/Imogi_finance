@@ -1265,13 +1265,6 @@ def cancel_do_from_sales_order(doc, method=None):
 
             cancelled_dos.append(do_name)
 
-            if reason:
-                frappe.db.set_value(
-                    "Delivery Order Towing", do_name,
-                    "custom_cancellation_reason", reason,
-                    update_modified=False,
-                )
-
         except Exception as e:
             failed_dos.append((do_name, str(e)))
             frappe.log_error(
