@@ -509,15 +509,16 @@
           {% if desc_lines | length > 1 %}
             <div class="item-sub">{{ desc_lines[1] }}</div>
           {% endif %}
-          {# Tiap baris item dipasangin satu kendaraan aja (urut), bukan semua
-             kendaraan dengan item_code yang sama ditumpuk di satu baris #}
+          {# Tiap baris item nyomot kendaraan sejumlah qty-nya (urut), supaya
+             baris qty>1 nampilin semua kendaraannya, dan beberapa baris
+             dengan item_code sama tetap nggak saling tumpuk kendaraannya #}
           {% set matched_kendaraan = (doc.custom_towing_kendaraan or []) | selectattr("so_item_code", "equalto", item.item_code) | list %}
           {% set used_so_far = kendaraan_used.get(item.item_code, 0) %}
-          {% if used_so_far < matched_kendaraan | length %}
-            {% set k = matched_kendaraan[used_so_far] %}
+          {% set take = item.qty | int %}
+          {% for k in matched_kendaraan[used_so_far:used_so_far + take] %}
             <div class="item-sub">{{ k.tipe_model or "-" }} | {{ k.nomor_rangka or "-" }} | {{ k.nomor_polisi or "-" }}</div>
-          {% endif %}
-          {% set _ = kendaraan_used.update({item.item_code: used_so_far + 1}) %}
+          {% endfor %}
+          {% set _ = kendaraan_used.update({item.item_code: used_so_far + take}) %}
         </td>
         <td class="right">{{ item.qty | int }} unit</td>
         <td class="right">Rp {{ "{:,.0f}".format(item.rate) }}</td>
