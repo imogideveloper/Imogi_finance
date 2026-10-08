@@ -509,30 +509,52 @@
     </thead>
     <tbody>
       {% set kendaraan_used = {} %}
+      {% set row_no = namespace(n=0) %}
       {% for item in doc.items %}
-      <tr>
-        <td>{{ loop.index }}</td>
-        <td>
-          {% set desc_lines = (item.description or item.item_name or "").split("\n") %}
-          <div class="item-main">{{ desc_lines[0] if desc_lines | length > 0 else "-" }}</div>
-          {% if desc_lines | length > 1 %}
-            <div class="item-sub">{{ desc_lines[1] }}</div>
-          {% endif %}
-          {# Tiap baris item nyomot kendaraan sejumlah qty-nya (urut), supaya
-             baris qty>1 nampilin semua kendaraannya, dan beberapa baris
-             dengan item_code sama tetap nggak saling tumpuk kendaraannya #}
-          {% set matched_kendaraan = (doc.custom_towing_kendaraan or []) | selectattr("so_item_code", "equalto", item.item_code) | list %}
-          {% set used_so_far = kendaraan_used.get(item.item_code, 0) %}
-          {% set take = item.qty | int %}
-          {% for k in matched_kendaraan[used_so_far:used_so_far + take] %}
-            <div class="item-sub">{{ k.tipe_model or "-" }} | {{ k.nomor_rangka or "-" }} | {{ k.nomor_polisi or "-" }}</div>
+        {% set desc_lines = (item.description or item.item_name or "").split("\n") %}
+        {% set matched_kendaraan = (doc.custom_towing_kendaraan or []) | selectattr("so_item_code", "equalto", item.item_code) | list %}
+        {% set used_so_far = kendaraan_used.get(item.item_code, 0) %}
+        {% set remaining_kendaraan = matched_kendaraan[used_so_far:] %}
+        {% if remaining_kendaraan | length > 0 %}
+          {# Ada data kendaraan buat item ini — pecah 1 baris per unit qty,
+             tiap unit dipasangin 1 kendaraan (urut) #}
+          {% for i in range(item.qty | int) %}
+            {% set row_no.n = row_no.n + 1 %}
+            <tr>
+              <td>{{ row_no.n }}</td>
+              <td>
+                <div class="item-main">{{ desc_lines[0] if desc_lines | length > 0 else "-" }}</div>
+                {% if desc_lines | length > 1 %}
+                  <div class="item-sub">{{ desc_lines[1] }}</div>
+                {% endif %}
+                {% set vehicle_idx = used_so_far + i %}
+                {% if vehicle_idx < matched_kendaraan | length %}
+                  {% set k = matched_kendaraan[vehicle_idx] %}
+                  <div class="item-sub">{{ k.nomor_rangka or "-" }} | {{ k.tipe_model or "-" }}{% if k.nomor_polisi %} | {{ k.nomor_polisi }}{% endif %}</div>
+                {% endif %}
+              </td>
+              <td class="right">1 unit</td>
+              <td class="right">Rp {{ "{:,.0f}".format(item.rate) }}</td>
+              <td class="right">Rp {{ "{:,.0f}".format(item.rate) }}</td>
+            </tr>
           {% endfor %}
-          {% set _ = kendaraan_used.update({item.item_code: used_so_far + take}) %}
-        </td>
-        <td class="right">{{ item.qty | int }} unit</td>
-        <td class="right">Rp {{ "{:,.0f}".format(item.rate) }}</td>
-        <td class="right">Rp {{ "{:,.0f}".format(item.amount) }}</td>
-      </tr>
+          {% set _ = kendaraan_used.update({item.item_code: used_so_far + (item.qty | int)}) %}
+        {% else %}
+          {# Nggak ada data kendaraan buat item ini — tampilin apa adanya, 1 baris #}
+          {% set row_no.n = row_no.n + 1 %}
+          <tr>
+            <td>{{ row_no.n }}</td>
+            <td>
+              <div class="item-main">{{ desc_lines[0] if desc_lines | length > 0 else "-" }}</div>
+              {% if desc_lines | length > 1 %}
+                <div class="item-sub">{{ desc_lines[1] }}</div>
+              {% endif %}
+            </td>
+            <td class="right">{{ item.qty | int }} unit</td>
+            <td class="right">Rp {{ "{:,.0f}".format(item.rate) }}</td>
+            <td class="right">Rp {{ "{:,.0f}".format(item.amount) }}</td>
+          </tr>
+        {% endif %}
       {% endfor %}
     </tbody>
   </table>
