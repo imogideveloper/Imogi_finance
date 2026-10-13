@@ -193,8 +193,12 @@ class DeliveryOrderTowing(Document):
                 "Customer", self.customer, "customer_name"
             )
 
-    # ── AFTER SAVE ───────────────────────────────────────────
-    def after_save(self):
+    # ── ON UPDATE ────────────────────────────────────────────
+    # "after_save" used to live here, but that is not a real Frappe
+    # document event — nothing ever calls it, so waktu_assigned never got
+    # set (the very first Draft -> Assigned transition happens via
+    # .submit(), which fires on_update, not on_update_after_submit).
+    def on_update(self):
         self._record_status_timestamps()
 
     def _record_status_timestamps(self):
@@ -210,8 +214,14 @@ class DeliveryOrderTowing(Document):
             )
 
     # ── ON UPDATE AFTER SUBMIT ───────────────────────────────
+    # The driver app's workflow actions (Konfirmasi Pick Up / Delivered)
+    # go through apply_workflow() on an already-submitted doc, which saves
+    # via the "update_after_submit" action — that fires THIS hook, not
+    # on_update above. Same reason waktu_pickup/waktu_delivered never got
+    # set even though waktu_assigned (set during the initial .submit())
+    # would have worked once on_update was wired up.
     def on_update_after_submit(self):
-        pass
+        self._record_status_timestamps()
         # if self.status == "Done" and not self.sales_invoice:
         #     self.create_sales_invoice_via_imogi()
 
@@ -1264,13 +1274,6 @@ def cancel_do_from_sales_order(doc, method=None):
                 do_doc.cancel()
 
             cancelled_dos.append(do_name)
-
-            if reason:
-                frappe.db.set_value(
-                    "Delivery Order Towing", do_name,
-                    "custom_cancellation_reason", reason,
-                    update_modified=False,
-                )
 
         except Exception as e:
             failed_dos.append((do_name, str(e)))
