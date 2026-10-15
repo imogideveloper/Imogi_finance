@@ -2,7 +2,7 @@ import frappe
 from json import loads
 
 from frappe.desk.desktop import Workspace
-from frappe.desk.desktop import get_workspace_sidebar_items as frappe_get_workspace_sidebar_items
+from frappe.desk.desktop import get_workspaces as frappe_get_workspaces
 from frappe.exceptions import DoesNotExistError
 
 from imogi_finance.workspace_visibility import (
@@ -15,13 +15,22 @@ from imogi_finance.workspace_visibility import (
 @frappe.whitelist()
 def get_workspace_sidebar_items():
 	"""Filter workspace layout JSON when sidebar/boot pages are refreshed."""
-	result = frappe_get_workspace_sidebar_items()
+	result = frappe_get_workspaces()
 	result["pages"] = filter_allowed_workspace_pages(result.get("pages") or [])
 	for page in result.get("pages") or []:
 		workspace_name = page.get("name") or page.get("title")
 		if page.get("content"):
 			page["content"] = filter_workspace_content_json(page["content"], workspace_name)
 	return result
+
+
+@frappe.whitelist()
+def get_workspaces():
+	"""Override: frappe.desk.desktop.get_workspaces renamed from
+	get_workspace_sidebar_items in Frappe v16 - same return shape
+	({"pages": [...], "has_access": bool, "has_create_access": bool}),
+	so the same filtering logic applies unchanged."""
+	return get_workspace_sidebar_items()
 
 
 @frappe.whitelist()

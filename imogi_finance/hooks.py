@@ -543,6 +543,8 @@ override_whitelisted_methods = {
         "imogi_finance.overrides.listview.get_list_settings",
     "frappe.desk.desktop.get_desktop_page":
         "imogi_finance.overrides.desktop.get_desktop_page",
+    "frappe.desk.desktop.get_workspaces":
+        "imogi_finance.overrides.desktop.get_workspaces",
     "frappe.desk.desktop.get_workspace_sidebar_items":
         "imogi_finance.overrides.desktop.get_workspace_sidebar_items",
     "erpnext.accounts.doctype.bank_reconciliation_tool.bank_reconciliation_tool.create_journal_entry_bts":

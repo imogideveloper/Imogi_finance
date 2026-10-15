@@ -109,7 +109,8 @@
     "url": null
    }
   ],
-  "title": "Company List"
+  "title": "Company List",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -1593,7 +1594,8 @@
     "url": null
    }
   ],
-  "title": "HRIS Imogi"
+  "title": "HRIS Imogi",
+  "type": "Workspace"
  },
  {
   "charts": [
@@ -2292,7 +2294,7 @@
   "quick_lists": [],
   "restrict_to_domain": "",
   "roles": [],
-  "sequence_id": 8.0,
+  "sequence_id": 8,
   "shortcuts": [
    {
     "color": null,
@@ -2414,7 +2416,8 @@
     "url": null
    }
   ],
-  "title": "HR"
+  "title": "HR",
+  "type": "Workspace"
  },
  {
   "charts": [
@@ -2537,7 +2540,7 @@
   "quick_lists": [],
   "restrict_to_domain": "",
   "roles": [],
-  "sequence_id": 15.0,
+  "sequence_id": 15,
   "shortcuts": [
    {
     "color": null,
@@ -2574,7 +2577,8 @@
     "url": null
    }
   ],
-  "title": "Payroll"
+  "title": "Payroll",
+  "type": "Workspace"
  },
  {
   "charts": [
@@ -2922,7 +2926,7 @@
   ],
   "restrict_to_domain": null,
   "roles": [],
-  "sequence_id": 3.0,
+  "sequence_id": 3,
   "shortcuts": [
    {
     "color": "Grey",
@@ -2993,7 +2997,8 @@
     "url": null
    }
   ],
-  "title": "Recruitment"
+  "title": "Recruitment",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -3565,7 +3570,7 @@
   ],
   "restrict_to_domain": null,
   "roles": [],
-  "sequence_id": 6.0,
+  "sequence_id": 6,
   "shortcuts": [
    {
     "color": "Grey",
@@ -3636,7 +3641,8 @@
     "url": null
    }
   ],
-  "title": "Employee Lifecycle"
+  "title": "Employee Lifecycle",
+  "type": "Workspace"
  },
  {
   "charts": [
@@ -4065,7 +4071,7 @@
   "quick_lists": [],
   "restrict_to_domain": null,
   "roles": [],
-  "sequence_id": 7.0,
+  "sequence_id": 7,
   "shortcuts": [
    {
     "color": "Grey",
@@ -4153,7 +4159,8 @@
     "url": null
    }
   ],
-  "title": "Shift & Attendance"
+  "title": "Shift & Attendance",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -4502,7 +4509,7 @@
   "quick_lists": [],
   "restrict_to_domain": null,
   "roles": [],
-  "sequence_id": 12.0,
+  "sequence_id": 12,
   "shortcuts": [
    {
     "color": "Orange",
@@ -4539,7 +4546,8 @@
     "url": null
    }
   ],
-  "title": "Leaves"
+  "title": "Leaves",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -4870,7 +4878,7 @@
   "quick_lists": [],
   "restrict_to_domain": null,
   "roles": [],
-  "sequence_id": 7.0,
+  "sequence_id": 7,
   "shortcuts": [
    {
     "color": "Orange",
@@ -4924,7 +4932,8 @@
     "url": null
    }
   ],
-  "title": "Performance"
+  "title": "Performance",
+  "type": "Workspace"
  },
  {
   "charts": [
@@ -5407,7 +5416,7 @@
   "quick_lists": [],
   "restrict_to_domain": null,
   "roles": [],
-  "sequence_id": 8.0,
+  "sequence_id": 8,
   "shortcuts": [
    {
     "color": "Grey",
@@ -5461,7 +5470,8 @@
     "url": null
    }
   ],
-  "title": "Expense Claims"
+  "title": "Expense Claims",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -6152,7 +6162,7 @@
   "quick_lists": [],
   "restrict_to_domain": null,
   "roles": [],
-  "sequence_id": 10.0,
+  "sequence_id": 10,
   "shortcuts": [
    {
     "color": "Red",
@@ -6206,7 +6216,8 @@
     "url": null
    }
   ],
-  "title": "Salary Payout"
+  "title": "Salary Payout",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -6465,7 +6476,7 @@
   "quick_lists": [],
   "restrict_to_domain": null,
   "roles": [],
-  "sequence_id": 38.0,
+  "sequence_id": 38,
   "shortcuts": [
    {
     "color": "Red",
@@ -6519,7 +6530,8 @@
     "url": null
    }
   ],
-  "title": "Tax & Benefits"
+  "title": "Tax & Benefits",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -6922,7 +6934,7 @@
   "quick_lists": [],
   "restrict_to_domain": "",
   "roles": [],
-  "sequence_id": 1.0,
+  "sequence_id": 1,
   "shortcuts": [
    {
     "color": null,
@@ -7010,7 +7022,8 @@
     "url": null
    }
   ],
-  "title": "Home"
+  "title": "Home",
+  "type": "Workspace"
  },
  {
   "charts": [
@@ -7745,7 +7758,7 @@
   "quick_lists": [],
   "restrict_to_domain": "",
   "roles": [],
-  "sequence_id": 17.0,
+  "sequence_id": 17,
   "shortcuts": [
    {
     "color": "Blue",
@@ -7833,7 +7846,8 @@
     "url": null
    }
   ],
-  "title": "CRM"
+  "title": "CRM",
+  "type": "Workspace"
  },
  {
   "charts": [
@@ -8892,7 +8906,7 @@
   "quick_lists": [],
   "restrict_to_domain": "",
   "roles": [],
-  "sequence_id": 6.0,
+  "sequence_id": 6,
   "shortcuts": [
    {
     "color": "Grey",
@@ -8997,7 +9011,8 @@
     "url": null
    }
   ],
-  "title": "Selling"
+  "title": "Selling",
+  "type": "Workspace"
  },
  {
   "charts": [
@@ -9876,7 +9891,7 @@
   "quick_lists": [],
   "restrict_to_domain": "",
   "roles": [],
-  "sequence_id": 5.0,
+  "sequence_id": 5,
   "shortcuts": [
    {
     "color": "Green",
@@ -9998,7 +10013,8 @@
     "url": null
    }
   ],
-  "title": "Buying"
+  "title": "Buying",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -10401,7 +10417,7 @@
   "quick_lists": [],
   "restrict_to_domain": "",
   "roles": [],
-  "sequence_id": 14.0,
+  "sequence_id": 14,
   "shortcuts": [
    {
     "color": "Green",
@@ -10489,7 +10505,8 @@
     "url": null
    }
   ],
-  "title": "Website"
+  "title": "Website",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -11072,7 +11089,7 @@
   "quick_lists": [],
   "restrict_to_domain": "",
   "roles": [],
-  "sequence_id": 17.0,
+  "sequence_id": 17,
   "shortcuts": [
    {
     "color": "Grey",
@@ -11143,7 +11160,8 @@
     "url": null
    }
   ],
-  "title": "Tools"
+  "title": "Tools",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -11420,7 +11438,7 @@
   "quick_lists": [],
   "restrict_to_domain": "",
   "roles": [],
-  "sequence_id": 13.0,
+  "sequence_id": 13,
   "shortcuts": [
    {
     "color": null,
@@ -11508,7 +11526,8 @@
     "url": null
    }
   ],
-  "title": "Users"
+  "title": "Users",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -11893,9 +11912,10 @@
   "quick_lists": [],
   "restrict_to_domain": "",
   "roles": [],
-  "sequence_id": 20.0,
+  "sequence_id": 20,
   "shortcuts": [],
-  "title": "Integrations"
+  "title": "Integrations",
+  "type": "Workspace"
  },
  {
   "charts": [
@@ -12929,7 +12949,7 @@
   "quick_lists": [],
   "restrict_to_domain": "",
   "roles": [],
-  "sequence_id": 2.0,
+  "sequence_id": 2,
   "shortcuts": [
    {
     "color": "Grey",
@@ -13102,7 +13122,8 @@
     "url": null
    }
   ],
-  "title": "Accounting"
+  "title": "Accounting",
+  "type": "Workspace"
  },
  {
   "charts": [
@@ -14417,7 +14438,7 @@
   "quick_lists": [],
   "restrict_to_domain": "",
   "roles": [],
-  "sequence_id": 7.0,
+  "sequence_id": 7,
   "shortcuts": [
    {
     "color": "Green",
@@ -14573,7 +14594,8 @@
     "url": null
    }
   ],
-  "title": "Stock"
+  "title": "Stock",
+  "type": "Workspace"
  },
  {
   "charts": [
@@ -14912,7 +14934,7 @@
   "quick_lists": [],
   "restrict_to_domain": "",
   "roles": [],
-  "sequence_id": 7.0,
+  "sequence_id": 7,
   "shortcuts": [
    {
     "color": null,
@@ -14983,7 +15005,8 @@
     "url": null
    }
   ],
-  "title": "Assets"
+  "title": "Assets",
+  "type": "Workspace"
  },
  {
   "charts": [
@@ -15322,7 +15345,7 @@
   "quick_lists": [],
   "restrict_to_domain": "",
   "roles": [],
-  "sequence_id": 11.0,
+  "sequence_id": 11,
   "shortcuts": [
    {
     "color": "Grey",
@@ -15427,7 +15450,8 @@
     "url": null
    }
   ],
-  "title": "Projects"
+  "title": "Projects",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -15812,7 +15836,7 @@
   "quick_lists": [],
   "restrict_to_domain": "",
   "roles": [],
-  "sequence_id": 21.0,
+  "sequence_id": 21,
   "shortcuts": [
    {
     "color": "Grey",
@@ -15832,7 +15856,8 @@
     "url": "https://frappecloud.com/marketplace"
    }
   ],
-  "title": "ERPNext Integrations"
+  "title": "ERPNext Integrations",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -16145,7 +16170,7 @@
   "quick_lists": [],
   "restrict_to_domain": "",
   "roles": [],
-  "sequence_id": 12.0,
+  "sequence_id": 12,
   "shortcuts": [
    {
     "color": "Yellow",
@@ -16199,7 +16224,8 @@
     "url": null
    }
   ],
-  "title": "Support"
+  "title": "Support",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -16458,7 +16484,7 @@
   "quick_lists": [],
   "restrict_to_domain": "",
   "roles": [],
-  "sequence_id": 9.0,
+  "sequence_id": 9,
   "shortcuts": [
    {
     "color": "Grey",
@@ -16563,7 +16589,8 @@
     "url": null
    }
   ],
-  "title": "Quality"
+  "title": "Quality",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -17326,7 +17353,7 @@
   "quick_lists": [],
   "restrict_to_domain": "",
   "roles": [],
-  "sequence_id": 19.0,
+  "sequence_id": 19,
   "shortcuts": [
    {
     "color": "Grey",
@@ -17448,7 +17475,8 @@
     "url": null
    }
   ],
-  "title": "ERPNext Settings"
+  "title": "ERPNext Settings",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -17995,7 +18023,7 @@
   "quick_lists": [],
   "restrict_to_domain": "",
   "roles": [],
-  "sequence_id": 8.0,
+  "sequence_id": 8,
   "shortcuts": [
    {
     "color": "Grey",
@@ -18168,7 +18196,8 @@
     "url": null
    }
   ],
-  "title": "Manufacturing"
+  "title": "Manufacturing",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -18463,7 +18492,7 @@
   "quick_lists": [],
   "restrict_to_domain": "",
   "roles": [],
-  "sequence_id": 3.0,
+  "sequence_id": 3,
   "shortcuts": [
    {
     "color": null,
@@ -18534,7 +18563,8 @@
     "url": null
    }
   ],
-  "title": "Payables"
+  "title": "Payables",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -18883,7 +18913,7 @@
   "quick_lists": [],
   "restrict_to_domain": "",
   "roles": [],
-  "sequence_id": 4.0,
+  "sequence_id": 4,
   "shortcuts": [
    {
     "color": "Grey",
@@ -18988,7 +19018,8 @@
     "url": null
    }
   ],
-  "title": "Receivables"
+  "title": "Receivables",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -19427,886 +19458,10 @@
   "quick_lists": [],
   "restrict_to_domain": "",
   "roles": [],
-  "sequence_id": 5.0,
+  "sequence_id": 5,
   "shortcuts": [],
-  "title": "Financial Reports"
- },
- {
-  "charts": [],
-  "content": "[{\"id\": \"hdr1\", \"type\": \"header\", \"data\": {\"text\": \"Expense & Approval\", \"col\": 12}}, {\"id\": \"s1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Expense Request\", \"col\": 3}}, {\"id\": \"s1a\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Advanced Expense Request\", \"col\": 3}}, {\"id\": \"s1b\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Purchase Invoice\", \"col\": 3}}, {\"id\": \"s1c\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Payment Entry\", \"col\": 3}}, {\"id\": \"s1d\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Administrative Payment Voucher\", \"col\": 3}}, {\"id\": \"s1e\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Expense Claim\", \"col\": 3}}, {\"id\": \"s2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Expense Approval Setting\", \"col\": 3}}, {\"id\": \"spacer_advance\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_advance\", \"type\": \"header\", \"data\": {\"text\": \"Advance Payment\", \"col\": 12}}, {\"id\": \"adv1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Advance Payment Dashboard\", \"col\": 3}}, {\"id\": \"spacer_approval_mgmt\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_approval_mgmt\", \"type\": \"header\", \"data\": {\"text\": \"Approval Management\", \"col\": 12}}, {\"id\": \"approval1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Outstanding Approvals Dashboard\", \"col\": 3}}, {\"id\": \"spacer_deferred\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_deferred\", \"type\": \"header\", \"data\": {\"text\": \"Deferred Expense\", \"col\": 12}}, {\"id\": \"def1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Expense Deferred Settings\", \"col\": 3}}, {\"id\": \"def3\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Deferred Expense Tracker\", \"col\": 3}}, {\"id\": \"spacer_budget\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_budget\", \"type\": \"header\", \"data\": {\"text\": \"Budget Control\", \"col\": 12}}, {\"id\": \"budget0\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Budget\", \"col\": 3}}, {\"id\": \"budget1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Budget Control Entry\", \"col\": 3}}, {\"id\": \"budget2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Budget Reclass Request\", \"col\": 3}}, {\"id\": \"budget3\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Additional Budget Request\", \"col\": 3}}, {\"id\": \"budget4\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Budget Control Settings\", \"col\": 3}}, {\"id\": \"budget4a\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Budget Approval Setting\", \"col\": 3}}, {\"id\": \"budget5\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Budget Control Dashboard\", \"col\": 3}}, {\"id\": \"spacer_internal\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_internal\", \"type\": \"header\", \"data\": {\"text\": \"Internal Charges\", \"col\": 12}}, {\"id\": \"ic1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Internal Charge Request\", \"col\": 3}}, {\"id\": \"spacer_cashbank\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_cashbank\", \"type\": \"header\", \"data\": {\"text\": \"Cash/Bank Reporting\", \"col\": 12}}, {\"id\": \"cb1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Cash Bank Daily Report\", \"col\": 3}}, {\"id\": \"cb_bank_transaction\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Bank Transaction\", \"col\": 3}}, {\"id\": \"cb_bank_csv_import\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Bank CSV Import\", \"col\": 3}}, {\"id\": \"cb_bank_account\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Bank Account\", \"col\": 3}}, {\"id\": \"spacer1\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr2\", \"type\": \"header\", \"data\": {\"text\": \"Tax Management\", \"col\": 12}}, {\"id\": \"tax1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tax Period Closing\", \"col\": 3}}, {\"id\": \"tax2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tax Payment Batch\", \"col\": 3}}, {\"id\": \"tax3\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tax Profile\", \"col\": 3}}, {\"id\": \"tax4\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tax Invoice OCR Settings\", \"col\": 3}}, {\"id\": \"tax5\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tax Invoice Type\", \"col\": 3}}, {\"id\": \"tax5a\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tax Invoice OCR Monitoring\", \"col\": 3}}, {\"id\": \"tax5b\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tax Invoice OCR Upload\", \"col\": 3}}, {\"id\": \"tax5c\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tax Invoice Upload\", \"col\": 3}}, {\"id\": \"tax5d\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"VAT OUT Batch\", \"col\": 3}}, {\"id\": \"tax6\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"CoreTax Export Settings\", \"col\": 3}}, {\"id\": \"spacer_reg\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_reg\", \"type\": \"header\", \"data\": {\"text\": \"Tax Registers\", \"col\": 12}}, {\"id\": \"reg1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"VAT Input Register Verified\", \"col\": 3}}, {\"id\": \"reg2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"VAT Output Register Verified\", \"col\": 3}}, {\"id\": \"reg3\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Withholding Register\", \"col\": 3}}, {\"id\": \"reg4\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"PB1 Register\", \"col\": 3}}, {\"id\": \"reg5\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"BPJS Contribution Summary\", \"col\": 3}}, {\"id\": \"reg6\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"VAT OUT Batch Register\", \"col\": 3}}, {\"id\": \"spacer2\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr3\", \"type\": \"header\", \"data\": {\"text\": \"Settings & Tools\", \"col\": 12}}, {\"id\": \"d1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Finance Control Settings\", \"col\": 3}}, {\"id\": \"d2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Bank Statement Bank List\", \"col\": 3}}, {\"id\": \"d5\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Receipt Design\", \"col\": 3}}, {\"id\": \"d5a\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Letter Template Settings\", \"col\": 3}}, {\"id\": \"d5b\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Letter Template\", \"col\": 3}}, {\"id\": \"d12\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Digital Stamp Template\", \"col\": 3}}, {\"id\": \"d13\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Digital Stamp Expense Report\", \"col\": 3}}, {\"id\": \"spacer_receipt\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_receipt\", \"type\": \"header\", \"data\": {\"text\": \"Customer Receipt\", \"col\": 12}}, {\"id\": \"d8\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Customer Receipt\", \"col\": 3}}, {\"id\": \"d8a\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Customer Receipt Control Report\", \"col\": 3}}, {\"id\": \"transfer_hdr\", \"type\": \"header\", \"data\": {\"text\": \"Transfer Applications\", \"col\": 12}}, {\"id\": \"transfer_s1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Transfer Application\", \"col\": 3}}, {\"id\": \"transfer_s2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Transfer Application Settings\", \"col\": 3}}]",
-  "custom_blocks": [],
-  "docstatus": 0,
-  "doctype": "Workspace",
-  "for_user": null,
-  "hide_custom": 0,
-  "icon": "briefcase",
-  "indicator_color": null,
-  "is_hidden": 0,
-  "label": "FINANCE IMOGI",
-  "links": [],
-  "modified": "2026-03-10 11:30:56.441033",
-  "module": "Imogi Finance",
-  "name": "FINANCE IMOGI",
-  "number_cards": [],
-  "parent_page": null,
-  "public": 1,
-  "quick_lists": [],
-  "restrict_to_domain": null,
-  "roles": [],
-  "sequence_id": 0.1,
-  "shortcuts": [
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Expense Request",
-    "link_to": "Expense Request",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Advanced Expense Request",
-    "link_to": "Advanced Expense Request",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Purchase Invoice",
-    "link_to": "Purchase Invoice",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Payment Entry",
-    "link_to": "Payment Entry",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Administrative Payment Voucher",
-    "link_to": "Administrative Payment Voucher",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Expense Claim",
-    "link_to": "Expense Claim",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Expense Approval Setting",
-    "link_to": "Expense Approval Setting",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Advance Payment Dashboard",
-    "link_to": "Advance Payment Dashboard",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": "Payment Ledger Entry",
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "Report",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Outstanding Approvals Dashboard",
-    "link_to": "Outstanding Approvals Dashboard",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": "Expense Request",
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "Report",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Budget",
-    "link_to": "Budget",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Budget Control Entry",
-    "link_to": "Budget Control Entry",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Budget Reclass Request",
-    "link_to": "Budget Reclass Request",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Additional Budget Request",
-    "link_to": "Additional Budget Request",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Budget Control Settings",
-    "link_to": "Budget Control Settings",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Budget Approval Setting",
-    "link_to": "Budget Approval Setting",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Budget Control Dashboard",
-    "link_to": "Budget Control Dashboard",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": "Budget",
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "Report",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Deferred Expense Tracker",
-    "link_to": "Deferred Expense Tracker",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": "Expense Request",
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "Report",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Internal Charge Request",
-    "link_to": "Internal Charge Request",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Cash Bank Daily Report",
-    "link_to": "Cash Bank Daily Report",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Tax Period Closing",
-    "link_to": "Tax Period Closing",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Tax Payment Batch",
-    "link_to": "Tax Payment Batch",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Tax Profile",
-    "link_to": "Tax Profile",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Tax Invoice OCR Settings",
-    "link_to": "Tax Invoice OCR Settings",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Tax Invoice Type",
-    "link_to": "Tax Invoice Type",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Tax Invoice OCR Monitoring",
-    "link_to": "Tax Invoice OCR Monitoring",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Tax Invoice OCR Upload",
-    "link_to": "Tax Invoice OCR Upload",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Tax Invoice Upload",
-    "link_to": "Tax Invoice Upload",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "VAT OUT Batch",
-    "link_to": "VAT OUT Batch",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "CoreTax Export Settings",
-    "link_to": "CoreTax Export Settings",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "VAT Input Register Verified",
-    "link_to": "VAT Input Register Verified",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": "Purchase Invoice",
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "Report",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "VAT Output Register Verified",
-    "link_to": "VAT Output Register Verified",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": "Sales Invoice",
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "Report",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Withholding Register",
-    "link_to": "Withholding Register",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": "GL Entry",
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "Report",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "PB1 Register",
-    "link_to": "PB1 Register",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": "GL Entry",
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "Report",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "BPJS Contribution Summary",
-    "link_to": "BPJS Contribution Summary",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": "Salary Slip",
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "Report",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "VAT OUT Batch Register",
-    "link_to": "VAT OUT Batch Register",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": "VAT OUT Batch",
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "Report",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Finance Control Settings",
-    "link_to": "Finance Control Settings",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Bank Statement Bank List",
-    "link_to": "Bank Statement Bank List",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Receipt Design",
-    "link_to": "Receipt Design",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Letter Template Settings",
-    "link_to": "Letter Template Settings",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Letter Template",
-    "link_to": "Letter Template",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Digital Stamp Template",
-    "link_to": "Digital Stamp Template",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Digital Stamp Expense Report",
-    "link_to": "Digital Stamp Expense Report",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": "Customer Receipt",
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "Report",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Expense Deferred Settings",
-    "link_to": "Expense Deferred Settings",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Customer Receipt",
-    "link_to": "Customer Receipt",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Customer Receipt Control Report",
-    "link_to": "Customer Receipt Control Report",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": "Customer Receipt",
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "Report",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Transfer Application",
-    "link_to": "Transfer Application",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Transfer Application Settings",
-    "link_to": "Transfer Application Settings",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": "Grey",
-    "doc_view": "List",
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Bank Account",
-    "link_to": "Bank Account",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": "[]",
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": "Grey",
-    "doc_view": "List",
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Bank CSV Import",
-    "link_to": "Bank CSV Import",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": "[]",
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": "Grey",
-    "doc_view": "List",
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Bank Transaction",
-    "link_to": "Bank Transaction",
-    "parent": "FINANCE IMOGI",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": "[]",
-    "type": "DocType",
-    "url": null
-   }
-  ],
-  "title": "FINANCE IMOGI"
+  "title": "Financial Reports",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -20871,7 +20026,7 @@
   "quick_lists": [],
   "restrict_to_domain": "",
   "roles": [],
-  "sequence_id": 27.0,
+  "sequence_id": 27,
   "shortcuts": [
    {
     "color": "Grey",
@@ -20993,7 +20148,8 @@
     "url": null
    }
   ],
-  "title": "Build"
+  "title": "Build",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -21017,9 +20173,10 @@
   "quick_lists": [],
   "restrict_to_domain": null,
   "roles": [],
-  "sequence_id": 22.0,
+  "sequence_id": 22,
   "shortcuts": [],
-  "title": "Welcome Workspace"
+  "title": "Welcome Workspace",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -21437,7 +20594,8 @@
     "url": null
    }
   ],
-  "title": "Accounting & Reporting"
+  "title": "Accounting & Reporting",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -21600,7 +20758,8 @@
     "url": null
    }
   ],
-  "title": "Asset Management"
+  "title": "Asset Management",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -21831,7 +20990,8 @@
     "url": null
    }
   ],
-  "title": "Budget Control"
+  "title": "Budget Control",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -22198,7 +21358,8 @@
     "url": null
    }
   ],
-  "title": "Finance Operations"
+  "title": "Finance Operations",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -22582,7 +21743,8 @@
     "url": null
    }
   ],
-  "title": "Tax & Compliance"
+  "title": "Tax & Compliance",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -23000,221 +22162,8 @@
     "url": null
    }
   ],
-  "title": "Treasury & Payments"
- },
- {
-  "charts": [],
-  "content": "[{\"id\":\"hdr1\",\"type\":\"header\",\"data\":{\"text\":\"Payroll Indonesia\",\"col\":12}},{\"id\":\"s1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Employee\",\"col\":3}},{\"id\":\"s2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Salary Structure\",\"col\":3}},{\"id\":\"s3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Salary Structure Assignment\",\"col\":3}},{\"id\":\"s4\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Salary Component\",\"col\":3}},{\"id\":\"s5\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Salary Slip\",\"col\":3}},{\"id\":\"s6\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Payroll Entry\",\"col\":3}},{\"id\":\"s7\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Salary Register\",\"col\":3}},{\"id\":\"s8\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Annual Payroll History\",\"col\":3}},{\"id\":\"s9\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Employee Check-in\",\"col\":3}},{\"id\":\"s10\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Attendance\",\"col\":3}},{\"id\":\"s11\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Payroll Period\",\"col\":3}},{\"id\":\"spacer1\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"dev1\",\"type\":\"text\",\"data\":{\"text\":\"Developed By IMOGI - PT. Inovasi Terbaik Bangsa\",\"col\":12}}]",
-  "custom_blocks": [],
-  "docstatus": 0,
-  "doctype": "Workspace",
-  "for_user": "",
-  "hide_custom": 0,
-  "icon": "income",
-  "indicator_color": null,
-  "is_hidden": 0,
-  "label": "Payroll Indonesia",
-  "links": [],
-  "modified": "2026-04-24 08:20:16.749490",
-  "module": "Payroll Indonesia",
-  "name": "Payroll Indonesia",
-  "number_cards": [],
-  "parent_page": null,
-  "public": 1,
-  "quick_lists": [],
-  "restrict_to_domain": null,
-  "roles": [],
-  "sequence_id": 10.0,
-  "shortcuts": [
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Employee",
-    "link_to": "Employee",
-    "parent": "Payroll Indonesia",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Salary Structure",
-    "link_to": "Salary Structure",
-    "parent": "Payroll Indonesia",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Salary Structure Assignment",
-    "link_to": "Salary Structure Assignment",
-    "parent": "Payroll Indonesia",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Salary Component",
-    "link_to": "Salary Component",
-    "parent": "Payroll Indonesia",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Salary Slip",
-    "link_to": "Salary Slip",
-    "parent": "Payroll Indonesia",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Payroll Entry",
-    "link_to": "Payroll Entry",
-    "parent": "Payroll Indonesia",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Salary Register",
-    "link_to": "Salary Register",
-    "parent": "Payroll Indonesia",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": "Salary Slip",
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "Report",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Annual Payroll History",
-    "link_to": "Annual Payroll History",
-    "parent": "Payroll Indonesia",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Employee Check-in",
-    "link_to": "Employee Checkin",
-    "parent": "Payroll Indonesia",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Attendance",
-    "link_to": "Attendance",
-    "parent": "Payroll Indonesia",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": null,
-    "doc_view": null,
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Payroll Period",
-    "link_to": "Payroll Period",
-    "parent": "Payroll Indonesia",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
-   }
-  ],
-  "title": "Payroll Indonesia"
+  "title": "Treasury & Payments",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -23238,13 +22187,23 @@
   "quick_lists": [],
   "restrict_to_domain": null,
   "roles": [
-   {"role": "Admin Towing"},
-   {"role": "Sales Manager"},
-   {"role": "Finance Manager"},
-   {"role": "Accounts Manager"},
-   {"role": "System Manager"}
+   {
+    "role": "Admin Towing"
+   },
+   {
+    "role": "Sales Manager"
+   },
+   {
+    "role": "Finance Manager"
+   },
+   {
+    "role": "Accounts Manager"
+   },
+   {
+    "role": "System Manager"
+   }
   ],
-  "sequence_id": -1.0,
+  "sequence_id": -1,
   "shortcuts": [
    {
     "color": null,
@@ -23536,7 +22495,8 @@
     "url": null
    }
   ],
-  "title": "Towing Imogi"
+  "title": "Towing Imogi",
+  "type": "Workspace"
  },
  {
   "charts": [],
@@ -23560,7 +22520,9 @@
   "quick_lists": [],
   "restrict_to_domain": null,
   "roles": [
-   {"role": "Towing Driver"}
+   {
+    "role": "Towing Driver"
+   }
   ],
   "sequence_id": -0.9,
   "shortcuts": [
@@ -23582,9 +22544,9 @@
     "url": null
    }
   ],
-  "title": "Towing Driver"
- }
-,
+  "title": "Towing Driver",
+  "type": "Workspace"
+ },
  {
   "charts": [],
   "content": "[{\"id\": \"hdr_access\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Access Studio</b></span>\", \"col\": 12}}, {\"id\": \"s_ws_ui\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Workspace UI Settings\", \"col\": 6}}]",
@@ -23607,8 +22569,12 @@
   "quick_lists": [],
   "restrict_to_domain": null,
   "roles": [
-   {"role": "System Manager"},
-   {"role": "Accounts Manager"}
+   {
+    "role": "System Manager"
+   },
+   {
+    "role": "Accounts Manager"
+   }
   ],
   "sequence_id": -0.85,
   "shortcuts": [
@@ -23630,6 +22596,7 @@
     "url": null
    }
   ],
-  "title": "Workspace Access Studio"
+  "title": "Workspace Access Studio",
+  "type": "Workspace"
  }
 ]
