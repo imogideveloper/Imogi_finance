@@ -195,9 +195,14 @@ class DeliveryOrderTowing(Document):
 
     # ── ON UPDATE ────────────────────────────────────────────
     # "after_save" used to live here, but that is not a real Frappe
-    # document event — nothing ever calls it, so waktu_assigned never got
-    # set (the very first Draft -> Assigned transition happens via
-    # .submit(), which fires on_update, not on_update_after_submit).
+    # document event — nothing ever calls it. This method is the correct
+    # Frappe hook name and is kept for whenever a plain save actually goes
+    # through this class, but on THIS doctype that is not guaranteed: the
+    # very first Draft -> Assigned transition happens via .submit(), and
+    # the status only actually becomes "Assigned" afterward, inside
+    # restore_towing_status_after_submit() below (a raw db.set_value that
+    # bypasses this hook entirely) — that function now records the
+    # timestamp itself rather than relying on this ever firing for it.
     def on_update(self):
         self._record_status_timestamps()
 
@@ -539,6 +544,22 @@ def restore_towing_status_after_submit(doc, method=None):
 			update_modified=False,
 		)
 		doc.status = preserve
+		# The db.set_value() above is a raw write - it does not run any
+		# document hooks, so waktu_assigned never got recorded for a
+		# freshly submitted DO (this IS the only place status actually
+		# becomes "Assigned" for a new DO - on_update, which runs moments
+		# earlier in the same submit, still sees whatever Frappe's
+		# workflow machinery reset status to, not "Assigned" yet).
+		#
+		# `doc` here is frappe's own passed-in controller instance, NOT
+		# necessarily imogi_finance's DeliveryOrderTowing override (this
+		# bench's get_doc() was verified returning a plain
+		# frappe.model.document.Document for this doctype despite the
+		# override_doctype_class entry in hooks.py - same reason
+		# on_update_after_submit below builds its own fresh instance
+		# instead of calling a method on `doc` directly). Match that
+		# pattern rather than assume `doc` has this method.
+		DeliveryOrderTowing(doc.doctype, doc.name)._record_status_timestamps()
 
 
 def on_submit(doc, method=None):
