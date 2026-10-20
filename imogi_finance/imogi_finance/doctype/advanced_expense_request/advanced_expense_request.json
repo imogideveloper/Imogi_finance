@@ -787,6 +787,7 @@
       "report": 1,
       "role": "Accounts User",
       "share": 1,
+      "submit": 1,
       "write": 1
     },
     {
