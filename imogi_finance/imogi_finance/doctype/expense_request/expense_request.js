@@ -113,7 +113,14 @@ function formatApprovalTimestamps(frm) {
 }
 
 function setExpenseAccountQuery(frm) {
-  const filters = { root_type: 'Expense', is_group: 0 };
+  // root_type alone isn't precise enough - accounts outside the "6xxx"
+  // numbering convention (e.g. "5112004 - KITCHEN SUPPLIES", a COGS-style
+  // code) were still showing up as pickable "Expense" accounts since
+  // ERPNext's own root_type classification doesn't line up 1:1 with this
+  // company's own account-number convention (6xxx = Expense). Account.name
+  // here is stored as "<account_number> - <account_name> - <company
+  // abbr>", so a plain "starts with 6" filter on name does the job.
+  const filters = { root_type: 'Expense', is_group: 0, name: ['like', '6%'] };
   frm.set_query('expense_account', () => ({ filters }));
   frm.set_query('expense_account', 'items', () => ({ filters }));
 }
