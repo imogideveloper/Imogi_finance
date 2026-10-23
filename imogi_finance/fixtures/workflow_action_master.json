@@ -12,5 +12,19 @@
   "modified": "2026-08-13 13:32:36.533677",
   "name": "Reject",
   "workflow_action_name": "Reject"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow Action Master",
+  "modified": "2026-08-13 13:32:36.530846",
+  "name": "Reopen",
+  "workflow_action_name": "Reopen"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow Action Master",
+  "modified": "2026-08-13 13:32:36.530846",
+  "name": "Submit for Approval",
+  "workflow_action_name": "Submit for Approval"
  }
 ]

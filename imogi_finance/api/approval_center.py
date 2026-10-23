@@ -86,6 +86,15 @@ APPROVAL_TYPES = [
 		"detail_field": None,
 	},
 	{
+		"doctype": "Purchase Order",
+		"label": "Purchase Order",
+		"pending_states": ["Pending Approval"],
+		"amount_field": "grand_total",
+		"date_field": "transaction_date",
+		"subtitle_fields": ["supplier", "company"],
+		"detail_field": None,
+	},
+	{
 		"doctype": "Advanced Expense Request",
 		"label": "Advanced Expense Request",
 		"pending_states": ["Pending Review"],

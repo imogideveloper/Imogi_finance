@@ -176,7 +176,7 @@ fixtures = [
     # and "Reject" both exist AND are used here; that's all there is to
     # export.
     {"doctype": "Workflow Action Master", "filters": [["workflow_action_name", "in",
-        ["Approve", "Reject"]]]},
+        ["Approve", "Reject", "Reopen", "Submit for Approval"]]]},
     {"doctype": "Workflow", "filters": [["name", "in", [
         "Additional Budget Request Workflow",
         "Administrative Payment Voucher Workflow",
@@ -186,6 +186,7 @@ fixtures = [
         "Customer Receipt Workflow",
         "Expense Request Workflow",
         "Internal Charge Request Workflow",
+        "Purchase Order Workflow",
         "Transfer Application Workflow",
     ]]]},
     
