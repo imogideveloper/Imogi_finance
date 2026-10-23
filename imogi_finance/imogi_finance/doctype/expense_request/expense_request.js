@@ -1118,47 +1118,8 @@ frappe.ui.form.on('Expense Request Item', {
   },
 });
 
-frappe.listview_settings['Expense Request'] = {
-
-    add_fields: ['status'],
-
-    get_indicator: function(doc) {
-        const status_map = {
-            'Draft':      ['Draft',      'grey'],
-            'Pending':    ['Pending',    'orange'],
-            'Submitted':  ['Submitted',  'blue'],
-            'Approved':   ['Approved',   'green'],
-            'Rejected':   ['Rejected',   'red'],
-            'PI Created': ['PI Created', 'blue'],
-            'Paid':       ['Paid',       'green'],
-            'Cancelled':  ['Cancelled',  'red'],
-        };
-        // Gunakan field status custom, bukan docstatus
-        const status = doc.status || (doc.docstatus == 2 ? 'Cancelled' : doc.docstatus == 1 ? 'Submitted' : 'Draft');
-        return status_map[status] || [status, 'grey'];
-    },
-
-    formatters: {
-        custom_expense_account_display(value) {
-            if (!value) return '';
-            return `<span style="color:#2563eb;font-weight:600">${value}</span>`;
-        },
-        status(value, df, doc) {
-            // Override tampilan kolom status dengan nilai dari field status custom
-            const color_map = {
-                'Draft':      'grey',
-                'Pending':    'orange',
-                'Submitted':  'blue',
-                'Approved':   'green',
-                'Rejected':   'red',
-                'PI Created': 'blue',
-                'Paid':       'green',
-                'Cancelled':  'red',
-            };
-            // Pakai doc.status (custom field) bukan value default dari docstatus
-            const real_status = doc.status || value;
-            const color = color_map[real_status] || 'grey';
-            return `<span class="indicator-pill ${color}">${real_status || ''}</span>`;
-        }
-    }
-};
+// Definisi frappe.listview_settings untuk doctype ini ada di expense_request_list.js.
+// Sebelumnya ada salinan kedua di sini yang menimpa seluruh objeknya; karena salinan itu
+// tidak punya onload, ia ikut menghapus onload milik file list dan milik Client Script
+// "Filter Date Expense Req" - widget Group By jadi tidak pernah jalan. Formatter-nya
+// sudah dipindahkan ke expense_request_list.js.
