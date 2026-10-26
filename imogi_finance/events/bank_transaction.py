@@ -75,6 +75,87 @@ def _find_linked_payment_entries(bank_transaction):
     return [pe.name for pe in payment_entries]
 
 
+def _recompute_linked_purchase_invoice_status(payment_entry_name: str) -> list[str]:
+    """Re-run ERPNext's own set_status() on every PI this Payment Entry pays.
+
+    events/payment_entry.py::_revert_pi_status_for_bank_payment forces a paid PI
+    back to "Unpaid" when the payment goes out via bank, on the promise that it
+    flips to "Paid" once the bank side is reconciled. Nothing used to keep that
+    promise - this is the other half.
+
+    set_status() is used rather than writing "Paid" directly so that debit notes,
+    returns and partial payments still resolve to the status ERPNext would pick.
+    """
+    pe = frappe.get_doc("Payment Entry", payment_entry_name)
+    updated = []
+
+    for ref in pe.get("references") or []:
+        if ref.reference_doctype != "Purchase Invoice":
+            continue
+
+        pi = frappe.get_doc("Purchase Invoice", ref.reference_name)
+        if pi.docstatus != 1:
+            continue
+
+        before = pi.status
+        pi.set_status(update=True)
+        if pi.status != before:
+            updated.append(pi.name)
+            frappe.logger().info(
+                f"[Bank Reconciliation] PI {pi.name}: {before} -> {pi.status} "
+                f"(via PE {payment_entry_name})"
+            )
+
+    return updated
+
+
+def sync_reconciled_purchase_invoice_status():
+    """Sweeper: settle any Payment Entry still flagged as awaiting reconciliation
+    whose bank side has in fact been cleared.
+
+    Needed because the Bank Clearance tool writes clearance_date with a raw
+    frappe.db.set_value (erpnext/accounts/doctype/bank_clearance/bank_clearance.py),
+    which fires no doc event at all - so on_update_after_submit above never runs
+    for payments reconciled that way, and their invoices stay stuck on "Unpaid".
+    Mirrors services/sales_invoice_list_status.sync_all_submitted_sales_invoices.
+    """
+    stale = frappe.get_all(
+        "Payment Entry",
+        filters={
+            "docstatus": 1,
+            "awaiting_bank_reconciliation": 1,
+            "clearance_date": ["is", "set"],
+        },
+        pluck="name",
+    )
+
+    if not stale:
+        return
+
+    frappe.logger().info(
+        f"[PI status sweeper] {len(stale)} Payment Entries cleared at the bank "
+        f"but still flagged awaiting reconciliation"
+    )
+
+    for pe_name in stale:
+        try:
+            _recompute_linked_purchase_invoice_status(pe_name)
+            frappe.db.set_value(
+                "Payment Entry",
+                pe_name,
+                "awaiting_bank_reconciliation",
+                0,
+                update_modified=False,
+            )
+            frappe.db.commit()
+        except Exception:
+            frappe.db.rollback()
+            frappe.log_error(
+                title="PI status sweeper failed",
+                message=f"Payment Entry: {pe_name}\n\n{frappe.get_traceback()}",
+            )
+
+
 def _update_invoice_status_after_bank_reconciliation(payment_entry_name: str, bank_transaction_name: str):
     """Update Purchase Invoice and Expense Request status after bank reconciliation.
 
@@ -82,6 +163,11 @@ def _update_invoice_status_after_bank_reconciliation(payment_entry_name: str, ba
     """
     # Get Payment Entry details
     pe = frappe.get_doc("Payment Entry", payment_entry_name)
+
+    # The invoice status is the whole point of this routine, so settle it before
+    # anything below can return early - an invoice with no Expense Request still
+    # has to come off "Unpaid" once the money has cleared the bank.
+    _recompute_linked_purchase_invoice_status(payment_entry_name)
 
     # Get linked Expense Request
     expense_request = pe.get("imogi_expense_request")

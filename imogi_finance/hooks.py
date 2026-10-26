@@ -574,7 +574,13 @@ scheduler_events = {
     ],
     "cron": {
         "*/15 * * * *": [
-            "imogi_finance.tax_invoice_ocr.recover_stale_ocr_jobs"
+            "imogi_finance.tax_invoice_ocr.recover_stale_ocr_jobs",
+            # Bank Clearance writes clearance_date with a raw db.set_value and
+            # fires no doc event, so nothing tells a bank-paid Purchase Invoice
+            # it may come off "Unpaid". Sweeps on the existing 15-minute tick
+            # rather than daily - a stale "Unpaid" on a settled invoice is read
+            # as money still owed. Returns immediately when nothing is pending.
+            "imogi_finance.events.bank_transaction.sync_reconciled_purchase_invoice_status",
         ]
     },
 }
