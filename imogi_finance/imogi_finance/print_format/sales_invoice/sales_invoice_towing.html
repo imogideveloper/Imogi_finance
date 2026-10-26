@@ -528,6 +528,11 @@
   </table>
 
   <table class="inv-totals-table">
+    <tr class="tax-row">
+      <td class="spacer"></td>
+      <td>Untax Amount</td>
+      <td class="value">Rp {{ "{:,.0f}".format(doc.net_total) }}</td>
+    </tr>
     {% for tax in doc.taxes %}
     <tr class="tax-row">
       <td class="spacer"></td>
