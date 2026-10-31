@@ -68,8 +68,13 @@ def make_sales_invoice_with_payment_terms(
 
 	from erpnext.selling.doctype.sales_order.sales_order import make_sales_invoice
 
-	# ERPNext make_sales_invoice reads frappe.flags.args for optional row filters
-	si = make_sales_invoice(source_name, target_doc, ignore_permissions)
+	# Keyword args here, not positional: ERPNext's make_sales_invoice signature
+	# has shifted its param order across versions (args before/after
+	# ignore_permissions), and a positional call silently misrouted this
+	# function's own `ignore_permissions` bool into the newer `args` slot -
+	# which only accepts str/dict/None, raising a FrappeTypeError the dialog
+	# swallowed with no visible message ("gak kebentuk" - no SI, no error).
+	si = make_sales_invoice(source_name, target_doc=target_doc, ignore_permissions=ignore_permissions)
 	_sync_invoice_lines_with_so_pending_amount(si)
 
 	if invoice_mode != "regular":
