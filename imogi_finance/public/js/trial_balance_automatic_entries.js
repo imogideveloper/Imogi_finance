@@ -35,6 +35,55 @@
 		}
 	}
 
+	// garage_desk.css's own stylesheet fix (trial_balance_automatic_entries.
+	// css, scoped under .ier-automatic-entries-dialog) still lost to garage
+	// even after being made more specific - some garage script (not
+	// identified, not worth chasing further) evidently forces these same
+	// properties via inline style.setProperty(..., 'important'), and an
+	// inline !important declaration always wins over a stylesheet rule's
+	// !important regardless of selector specificity, full stop. Forcing
+	// the SAME properties the same way here, after garage's own code has
+	// had its turn, is the only way to reliably win that fight - this is
+	// the exact technique garage's own files (bank_reconciliation_tool.js,
+	// bca_bank_statement_import.js, purchase_invoice_list.js, ...) already
+	// rely on everywhere else in this app for the identical reason.
+	function force_dialog_layout(dialog) {
+		const root = dialog.$wrapper && dialog.$wrapper[0];
+		if (!root) return;
+
+		root.querySelectorAll(".frappe-control").forEach((control) => {
+			const form_group = control.querySelector(":scope > .form-group");
+			if (!form_group) return;
+
+			form_group.style.setProperty("display", "block", "important");
+			form_group.style.setProperty("margin-bottom", "10px", "important");
+
+			const clearfix = form_group.querySelector(":scope > .clearfix");
+			if (clearfix) {
+				clearfix.style.setProperty("flex", "none", "important");
+				clearfix.style.setProperty("min-width", "0", "important");
+				clearfix.style.setProperty("width", "100%", "important");
+				clearfix.style.setProperty("margin-bottom", "4px", "important");
+			}
+
+			const label = form_group.querySelector(":scope > .clearfix > .control-label");
+			if (label) {
+				label.style.setProperty("white-space", "normal", "important");
+			}
+
+			const input_wrapper = form_group.querySelector(":scope > .control-input-wrapper");
+			if (input_wrapper) {
+				input_wrapper.style.setProperty("width", "100%", "important");
+				input_wrapper.style.setProperty("flex", "none", "important");
+			}
+
+			control.querySelectorAll('input:not([type="checkbox"]), select, textarea').forEach((el) => {
+				el.style.setProperty("width", "100%", "important");
+				el.style.setProperty("box-sizing", "border-box", "important");
+			});
+		});
+	}
+
 	function open_automatic_entries_dialog(report) {
 		const company = get_filter_value(report, "company") || frappe.defaults.get_default("company");
 		const from_date = get_filter_value(report, "from_date") || frappe.datetime.year_start();
@@ -194,12 +243,6 @@
 			},
 		});
 
-		// Scopes trial_balance_automatic_entries.css's layout reset to just
-		// this dialog - see that file's own header comment for why it's
-		// needed at all (garage's app-wide label-left/input-right rules,
-		// not a problem on every site this app runs on).
-		dialog.$wrapper.addClass('ier-automatic-entries-dialog');
-
 		dialog.fields_dict.from_account.df.onchange = on_from_account_change;
 		dialog.fields_dict.to_account.df.onchange = on_to_account_change;
 		dialog.fields_dict.from_date.df.onchange = fetch_balance;
@@ -272,6 +315,24 @@
 				},
 			});
 		}
+
+		dialog.$wrapper.addClass("ier-automatic-entries-dialog");
+		force_dialog_layout(dialog);
+
+		// Re-applies whenever the dialog's own DOM changes (e.g. set_value()
+		// inside fetch_balance()/on_from_account_change() above can touch a
+		// field's rendered value) - same MutationObserver + re-apply idiom
+		// already used throughout this app's other dialogs/tables for the
+		// identical "garage keeps re-asserting its own style" problem.
+		// childList/subtree only, deliberately NOT attributes - this
+		// function's own style.setProperty() calls are themselves attribute
+		// mutations, and watching attributes too would make every call
+		// retrigger the observer synchronously (a MutationObserver fires
+		// for every attribute write regardless of whether the value
+		// actually changed), spinning forever instead of settling.
+		const observer = new MutationObserver(() => force_dialog_layout(dialog));
+		observer.observe(dialog.$wrapper[0], { childList: true, subtree: true });
+		dialog.$wrapper.on("hidden.bs.modal", () => observer.disconnect());
 
 		dialog.show();
 	}

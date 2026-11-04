@@ -79,7 +79,14 @@ app_include_js = [
     "/assets/imogi_finance/js/imogi_service_item_qty.js",
     "/assets/imogi_finance/js/sales_invoice_item_tax.js",
     "/assets/imogi_finance/js/ssa_contract_reminder_toast.js",
-    "/assets/imogi_finance/js/trial_balance_automatic_entries.js",
+    # Bump this query string whenever trial_balance_automatic_entries.js
+    # changes - app_include_js entries have no build hash of their own, so
+    # a browser that already fetched this exact URL once keeps serving
+    # that cached copy on every later edit otherwise. Confirmed this was
+    # masking real fixes here: the dialog's scoping class/layout-fix call
+    # only existed in a LATER edit than whatever the browser had already
+    # cached, so none of several follow-up fixes ever actually ran.
+    "/assets/imogi_finance/js/trial_balance_automatic_entries.js?v=2",
 ]
 
 boot_session = "imogi_finance.workspace_visibility.update_boot_session"
