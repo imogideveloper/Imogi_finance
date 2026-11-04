@@ -17,24 +17,34 @@
    the Export Data dialog. Lives in imogi_finance rather than garage
    since this dialog is imogi_finance's own feature; garage may not even
    be installed on every site that uses it.
-   ============================================================ */
 
-.ier-automatic-entries-dialog .modal-dialog {
+   The scoping class is doubled (.ier-automatic-entries-dialog.ier-
+   automatic-entries-dialog) everywhere below - a plain single-class
+   scope ties garage_desk.css's own selectors on specificity (e.g.
+   `.frappe-control[data-fieldtype="Link"] .form-group` is also 3
+   selectors), and since garage loads AFTER imogi_finance in apps.txt,
+   garage's later, equal-specificity !important rule would win that tie
+   and this file would have no visible effect at all - exactly what was
+   observed before this fix. Repeating the class is a standard way to
+   out-specificity an !important rule without resorting to #ids or
+   piling on more !important of our own. */
+
+.ier-automatic-entries-dialog.ier-automatic-entries-dialog .modal-dialog {
 	max-width: min(760px, calc(100vw - 24px));
 }
 
-.ier-automatic-entries-dialog .frappe-control .form-group {
+.ier-automatic-entries-dialog.ier-automatic-entries-dialog .frappe-control .form-group {
 	display: block !important;
 	margin-bottom: 10px !important;
 }
 
-.ier-automatic-entries-dialog .frappe-control .form-group > .clearfix {
+.ier-automatic-entries-dialog.ier-automatic-entries-dialog .frappe-control .form-group > .clearfix {
 	flex: none !important;
 	min-width: 0 !important;
 	margin-bottom: 4px !important;
 }
 
-.ier-automatic-entries-dialog .frappe-control .control-label {
+.ier-automatic-entries-dialog.ier-automatic-entries-dialog .frappe-control .control-label {
 	font-size: 11px !important;
 	font-weight: 600 !important;
 	white-space: normal !important;
@@ -42,18 +52,18 @@
 
 /* Every control fills its own column instead of sizing to browser
    defaults/whatever garage's fixed-width rules left it at. */
-.ier-automatic-entries-dialog .form-group,
-.ier-automatic-entries-dialog .control-input-wrapper,
-.ier-automatic-entries-dialog .control-input,
-.ier-automatic-entries-dialog input:not([type="checkbox"]),
-.ier-automatic-entries-dialog select,
-.ier-automatic-entries-dialog textarea {
+.ier-automatic-entries-dialog.ier-automatic-entries-dialog .form-group,
+.ier-automatic-entries-dialog.ier-automatic-entries-dialog .control-input-wrapper,
+.ier-automatic-entries-dialog.ier-automatic-entries-dialog .control-input,
+.ier-automatic-entries-dialog.ier-automatic-entries-dialog input:not([type="checkbox"]),
+.ier-automatic-entries-dialog.ier-automatic-entries-dialog select,
+.ier-automatic-entries-dialog.ier-automatic-entries-dialog textarea {
 	width: 100% !important;
 	box-sizing: border-box !important;
 }
 
 /* Section headings ("Period to Reclass", "Reclass") */
-.ier-automatic-entries-dialog .section-head {
+.ier-automatic-entries-dialog.ier-automatic-entries-dialog .section-head {
 	font-size: 11px !important;
 	font-weight: 700 !important;
 	letter-spacing: 0.04em !important;
