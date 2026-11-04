@@ -622,10 +622,6 @@ override_whitelisted_methods = {
         "imogi_finance.overrides.desktop.get_desktop_page",
     "frappe.desk.desktop.get_workspace_sidebar_items":
         "imogi_finance.overrides.desktop.get_workspace_sidebar_items",
-    "erpnext.accounts.doctype.bank_reconciliation_tool.bank_reconciliation_tool.create_journal_entry_bts":
-        "imogi_finance.overrides.bank_reconciliation_tool.create_journal_entry_bts",
-    "erpnext.accounts.doctype.bank_reconciliation_tool.bank_reconciliation_tool.create_journal_entry_bts":
-        "imogi_finance.overrides.bank_reconciliation_tool.create_journal_entry_bts",
     "erpnext.accounts.doctype.bank_statement_import.bank_statement_import.start_import":
         "imogi_finance.overrides.bank_statement_import.start_import",
 }
