@@ -9,9 +9,14 @@ app_color = "#2490EF"
 from imogi_finance.api.payroll_sync import is_payroll_installed
 
 # Includes in <head>
+# Bump the trial_balance_automatic_entries.css query string whenever that
+# file changes - it has no build hash of its own (app_include_css, not
+# doctype_js), so a browser that already cached an earlier version keeps
+# serving it forever otherwise. Same trap garage_desk.css's own cache-
+# buster history already hit.
 app_include_css = [
     "/assets/imogi_finance/css/custom.css",
-    "/assets/imogi_finance/css/trial_balance_automatic_entries.css",
+    "/assets/imogi_finance/css/trial_balance_automatic_entries.css?v=2",
 ]
 
 # include js in doctype views
