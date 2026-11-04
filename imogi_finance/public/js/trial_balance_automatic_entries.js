@@ -118,6 +118,21 @@
 					default: frappe.datetime.get_today(),
 					reqd: 1,
 				},
+				// Hidden tracker, not shown to the user - toggled in
+				// on_from_account_change()/on_to_account_change() below
+				// whenever either side turns out to be a Receivable/Payable
+				// account, and used only to show/hide section_party further
+				// down. Kept at the top level (outside every section) so it
+				// never counts toward any section's own column-balancing -
+				// a hidden:1 field placed INSIDE "Reclass" below previously
+				// shifted how Frappe paired that section's real fields into
+				// rows, moving Amount up next to From/To Account instead of
+				// staying paired with Cost Center as it originally was.
+				{
+					fieldname: "party_required",
+					fieldtype: "Check",
+					hidden: 1,
+				},
 				{
 					fieldname: "section_period",
 					fieldtype: "Section Break",
@@ -174,52 +189,6 @@
 					fieldname: "effect_html",
 					fieldtype: "HTML",
 				},
-				// Hidden tracker, not shown to the user - toggled in
-				// on_from_account_change()/on_to_account_change() below
-				// whenever either side turns out to be a Receivable/Payable
-				// account. Core ERPNext requires a Party on any accounting
-				// entry row that uses one of those - ported from a site
-				// where the accounts picked for reclassing apparently never
-				// happened to be party accounts, so this was missing
-				// outright until it hit "Party Type and Party is required"
-				// on an actual Payable account here.
-				{
-					fieldname: "party_required",
-					fieldtype: "Check",
-					hidden: 1,
-				},
-				{
-					fieldname: "party_type",
-					label: __("Party Type"),
-					fieldtype: "Link",
-					options: "DocType",
-					depends_on: "eval:doc.party_required",
-					mandatory_depends_on: "eval:doc.party_required",
-					get_query: () => ({
-						filters: { name: ["in", Object.keys(frappe.boot.party_account_types || {})] },
-					}),
-				},
-				{
-					fieldname: "col_break_party",
-					fieldtype: "Column Break",
-					depends_on: "eval:doc.party_required",
-				},
-				{
-					fieldname: "party",
-					label: __("Party"),
-					fieldtype: "Dynamic Link",
-					options: "party_type",
-					depends_on: "eval:doc.party_required",
-					mandatory_depends_on: "eval:doc.party_required",
-				},
-				{
-					fieldname: "party_note_html",
-					fieldtype: "HTML",
-					depends_on: "eval:doc.party_required",
-					options: `<div class="text-muted small" style="margin-bottom: 10px;">${__(
-						"Required: one of the accounts above is a Receivable/Payable account, which ERPNext always ties to a specific Party."
-					)}</div>`,
-				},
 				{
 					fieldname: "cost_center",
 					label: __("Cost Center"),
@@ -242,6 +211,49 @@
 					description: __(
 						"Auto-filled from the source account's balance for the period above — edit if needed."
 					),
+				},
+				// Own section, not folded into "Reclass" above - core
+				// ERPNext requires a Party on any Journal Entry accounting
+				// row that uses a Receivable/Payable account, and this
+				// dialog never collected one at all until it hit "Party
+				// Type and Party is required" on an actual Payable account.
+				// Hidden via the whole section's own depends_on (not just
+				// hiding the fields inside it) so it takes no space at all
+				// - not even an empty header - when neither account needs
+				// one.
+				{
+					fieldname: "section_party",
+					fieldtype: "Section Break",
+					label: __("Party"),
+					depends_on: "eval:doc.party_required",
+				},
+				{
+					fieldname: "party_type",
+					label: __("Party Type"),
+					fieldtype: "Link",
+					options: "DocType",
+					mandatory_depends_on: "eval:doc.party_required",
+					get_query: () => ({
+						filters: { name: ["in", Object.keys(frappe.boot.party_account_types || {})] },
+					}),
+				},
+				{
+					fieldname: "col_break_party",
+					fieldtype: "Column Break",
+				},
+				{
+					fieldname: "party",
+					label: __("Party"),
+					fieldtype: "Dynamic Link",
+					options: "party_type",
+					mandatory_depends_on: "eval:doc.party_required",
+				},
+				{
+					fieldname: "party_note_html",
+					fieldtype: "HTML",
+					options: `<div class="text-muted small">${__(
+						"Required: one of the accounts above is a Receivable/Payable account, which ERPNext always ties to a specific Party."
+					)}</div>`,
 				},
 				{
 					fieldname: "section_remark",
