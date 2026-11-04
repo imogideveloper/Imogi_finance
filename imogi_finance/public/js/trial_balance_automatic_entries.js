@@ -90,10 +90,15 @@
 		const to_date = get_filter_value(report, "to_date") || frappe.datetime.get_today();
 		const cost_center = get_filter_value(report, "cost_center");
 
-		// Tracked purely to render the live effect preview below — no longer
-		// used to restrict which accounts can be picked.
+		// root_type is tracked purely to render the live effect preview
+		// below. account_type additionally decides whether Party Type/Party
+		// need to show at all (PARTY_ACCOUNT_TYPES) - neither restricts
+		// which accounts can be picked.
 		let from_account_root_type = null;
 		let to_account_root_type = null;
+		let from_account_type = null;
+		let to_account_type = null;
+		const PARTY_ACCOUNT_TYPES = new Set(["Receivable", "Payable"]);
 
 		const dialog = new frappe.ui.Dialog({
 			title: __("Automatic Entries — Account Reclass"),
@@ -169,6 +174,52 @@
 					fieldname: "effect_html",
 					fieldtype: "HTML",
 				},
+				// Hidden tracker, not shown to the user - toggled in
+				// on_from_account_change()/on_to_account_change() below
+				// whenever either side turns out to be a Receivable/Payable
+				// account. Core ERPNext requires a Party on any accounting
+				// entry row that uses one of those - ported from a site
+				// where the accounts picked for reclassing apparently never
+				// happened to be party accounts, so this was missing
+				// outright until it hit "Party Type and Party is required"
+				// on an actual Payable account here.
+				{
+					fieldname: "party_required",
+					fieldtype: "Check",
+					hidden: 1,
+				},
+				{
+					fieldname: "party_type",
+					label: __("Party Type"),
+					fieldtype: "Link",
+					options: "DocType",
+					depends_on: "eval:doc.party_required",
+					mandatory_depends_on: "eval:doc.party_required",
+					get_query: () => ({
+						filters: { name: ["in", Object.keys(frappe.boot.party_account_types || {})] },
+					}),
+				},
+				{
+					fieldname: "col_break_party",
+					fieldtype: "Column Break",
+					depends_on: "eval:doc.party_required",
+				},
+				{
+					fieldname: "party",
+					label: __("Party"),
+					fieldtype: "Dynamic Link",
+					options: "party_type",
+					depends_on: "eval:doc.party_required",
+					mandatory_depends_on: "eval:doc.party_required",
+				},
+				{
+					fieldname: "party_note_html",
+					fieldtype: "HTML",
+					depends_on: "eval:doc.party_required",
+					options: `<div class="text-muted small" style="margin-bottom: 10px;">${__(
+						"Required: one of the accounts above is a Receivable/Payable account, which ERPNext always ties to a specific Party."
+					)}</div>`,
+				},
 				{
 					fieldname: "cost_center",
 					label: __("Cost Center"),
@@ -221,6 +272,8 @@
 						posting_date: values.posting_date,
 						cost_center: values.cost_center,
 						remark: values.remark,
+						party_type: values.party_type,
+						party: values.party,
 					},
 					freeze: true,
 					freeze_message: __("Creating Journal Entry..."),
@@ -250,10 +303,15 @@
 		dialog.fields_dict.cost_center.df.onchange = fetch_balance;
 		dialog.refresh();
 
-		async function get_root_type(account) {
-			if (!account) return null;
-			const r = await frappe.db.get_value("Account", account, "root_type");
-			return (r && r.message && r.message.root_type) || null;
+		async function get_account_meta(account) {
+			if (!account) return { root_type: null, account_type: null };
+			const r = await frappe.db.get_value("Account", account, ["root_type", "account_type"]);
+			return (r && r.message) || { root_type: null, account_type: null };
+		}
+
+		function update_party_required() {
+			const required = PARTY_ACCOUNT_TYPES.has(from_account_type) || PARTY_ACCOUNT_TYPES.has(to_account_type);
+			dialog.set_value("party_required", required ? 1 : 0);
 		}
 
 		function render_effect_preview() {
@@ -285,14 +343,20 @@
 		}
 
 		async function on_from_account_change() {
-			from_account_root_type = await get_root_type(dialog.get_value("from_account"));
+			const meta = await get_account_meta(dialog.get_value("from_account"));
+			from_account_root_type = meta.root_type;
+			from_account_type = meta.account_type;
 			render_effect_preview();
+			update_party_required();
 			fetch_balance();
 		}
 
 		async function on_to_account_change() {
-			to_account_root_type = await get_root_type(dialog.get_value("to_account"));
+			const meta = await get_account_meta(dialog.get_value("to_account"));
+			to_account_root_type = meta.root_type;
+			to_account_type = meta.account_type;
 			render_effect_preview();
+			update_party_required();
 		}
 
 		function fetch_balance() {

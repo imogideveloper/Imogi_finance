@@ -60,6 +60,9 @@ def get_account_balance(
     return debit_total - credit_total
 
 
+PARTY_ACCOUNT_TYPES = ("Receivable", "Payable")
+
+
 @frappe.whitelist()
 def create_reclass_entry(
     company: str,
@@ -69,11 +72,18 @@ def create_reclass_entry(
     posting_date: str | None = None,
     cost_center: str | None = None,
     remark: str | None = None,
+    party_type: str | None = None,
+    party: str | None = None,
 ) -> str:
     """Create and submit a reclass Journal Entry.
 
     Debits `to_account` and credits `from_account` for `amount`, moving the
-    balance from the source account to the correct one.
+    balance from the source account to the correct one. A Receivable/Payable
+    account's own accounting entry row always needs a Party on it (core
+    ERPNext's own rule, not optional) - `party_type`/`party` get attached
+    to whichever of the two lines actually needs one, which may be either
+    side, both (same party on both, e.g. reclassing one customer's own
+    balance between two of their own party-linked accounts), or neither.
     """
     frappe.only_for(RECLASS_ROLES)
 
@@ -86,6 +96,19 @@ def create_reclass_entry(
     amount = flt(amount)
     if amount <= 0:
         frappe.throw(_("Amount must be greater than zero."))
+
+    from_account_type = frappe.db.get_value("Account", from_account, "account_type")
+    to_account_type = frappe.db.get_value("Account", to_account, "account_type")
+    from_needs_party = from_account_type in PARTY_ACCOUNT_TYPES
+    to_needs_party = to_account_type in PARTY_ACCOUNT_TYPES
+
+    if (from_needs_party or to_needs_party) and not (party_type and party):
+        frappe.throw(
+            _("Party Type and Party are required: {0} is a {1} account.").format(
+                from_account if from_needs_party else to_account,
+                from_account_type if from_needs_party else to_account_type,
+            )
+        )
 
     je = frappe.new_doc("Journal Entry")
     je.voucher_type = "Journal Entry"
@@ -106,6 +129,12 @@ def create_reclass_entry(
     if cost_center:
         debit_line["cost_center"] = cost_center
         credit_line["cost_center"] = cost_center
+    if to_needs_party:
+        debit_line["party_type"] = party_type
+        debit_line["party"] = party
+    if from_needs_party:
+        credit_line["party_type"] = party_type
+        credit_line["party"] = party
 
     je.append("accounts", debit_line)
     je.append("accounts", credit_line)

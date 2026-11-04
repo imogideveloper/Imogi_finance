@@ -86,7 +86,7 @@ app_include_js = [
     # masking real fixes here: the dialog's scoping class/layout-fix call
     # only existed in a LATER edit than whatever the browser had already
     # cached, so none of several follow-up fixes ever actually ran.
-    "/assets/imogi_finance/js/trial_balance_automatic_entries.js?v=2",
+    "/assets/imogi_finance/js/trial_balance_automatic_entries.js?v=3",
 ]
 
 boot_session = "imogi_finance.workspace_visibility.update_boot_session"
