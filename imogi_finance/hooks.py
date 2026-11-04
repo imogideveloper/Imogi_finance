@@ -9,7 +9,10 @@ app_color = "#2490EF"
 from imogi_finance.api.payroll_sync import is_payroll_installed
 
 # Includes in <head>
-app_include_css = "/assets/imogi_finance/css/custom.css"
+app_include_css = [
+    "/assets/imogi_finance/css/custom.css",
+    "/assets/imogi_finance/css/trial_balance_automatic_entries.css",
+]
 
 # include js in doctype views
 doctype_js = {

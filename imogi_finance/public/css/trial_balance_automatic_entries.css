@@ -1,0 +1,61 @@
+/* ============================================================
+   "Automatic Entries" account reclass dialog (Trial Balance report,
+   public/js/trial_balance_automatic_entries.js)
+   ------------------------------------------------------------
+   This dialog is a straight port from another site's own deployment of
+   this app, where it renders fine unmodified. Here it doesn't, because
+   garage (installed alongside imogi_finance on this site) styles every
+   .frappe-control APP-WIDE with !important: a fixed 160px label on the
+   left, the input on the right. That reads fine on a full-width desk
+   form page; crammed into a ~350px dialog column next to a label like
+   "From Account (source)", it leaves the input squeezed to a sliver.
+
+   Reverted to label-above-input for this dialog only, scoped under
+   .ier-automatic-entries-dialog (set on the dialog's own wrapper in
+   trial_balance_automatic_entries.js) - the exact same fix, for the
+   exact same reason, garage's own export_dialog.css already applies to
+   the Export Data dialog. Lives in imogi_finance rather than garage
+   since this dialog is imogi_finance's own feature; garage may not even
+   be installed on every site that uses it.
+   ============================================================ */
+
+.ier-automatic-entries-dialog .modal-dialog {
+	max-width: min(760px, calc(100vw - 24px));
+}
+
+.ier-automatic-entries-dialog .frappe-control .form-group {
+	display: block !important;
+	margin-bottom: 10px !important;
+}
+
+.ier-automatic-entries-dialog .frappe-control .form-group > .clearfix {
+	flex: none !important;
+	min-width: 0 !important;
+	margin-bottom: 4px !important;
+}
+
+.ier-automatic-entries-dialog .frappe-control .control-label {
+	font-size: 11px !important;
+	font-weight: 600 !important;
+	white-space: normal !important;
+}
+
+/* Every control fills its own column instead of sizing to browser
+   defaults/whatever garage's fixed-width rules left it at. */
+.ier-automatic-entries-dialog .form-group,
+.ier-automatic-entries-dialog .control-input-wrapper,
+.ier-automatic-entries-dialog .control-input,
+.ier-automatic-entries-dialog input:not([type="checkbox"]),
+.ier-automatic-entries-dialog select,
+.ier-automatic-entries-dialog textarea {
+	width: 100% !important;
+	box-sizing: border-box !important;
+}
+
+/* Section headings ("Period to Reclass", "Reclass") */
+.ier-automatic-entries-dialog .section-head {
+	font-size: 11px !important;
+	font-weight: 700 !important;
+	letter-spacing: 0.04em !important;
+	text-transform: uppercase !important;
+}

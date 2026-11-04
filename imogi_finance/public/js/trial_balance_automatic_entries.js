@@ -194,6 +194,12 @@
 			},
 		});
 
+		// Scopes trial_balance_automatic_entries.css's layout reset to just
+		// this dialog - see that file's own header comment for why it's
+		// needed at all (garage's app-wide label-left/input-right rules,
+		// not a problem on every site this app runs on).
+		dialog.$wrapper.addClass('ier-automatic-entries-dialog');
+
 		dialog.fields_dict.from_account.df.onchange = on_from_account_change;
 		dialog.fields_dict.to_account.df.onchange = on_to_account_change;
 		dialog.fields_dict.from_date.df.onchange = fetch_balance;
