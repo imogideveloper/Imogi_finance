@@ -750,7 +750,23 @@ frappe.ui.form.on('Expense Request', {
     maybeRenderInternalChargeButton(frm);
 
     const isSubmitted = frm.doc.docstatus === 1;
-    if (frm.doc.status === 'Approved') {
+
+    // linked_purchase_invoice is not kept in sync by the server (the real
+    // link is Purchase Invoice.imogi_expense_request - see
+    // imogi_finance.accounting._update_request_purchase_invoice_links), so
+    // always resolve the active (non-cancelled) PI live instead of trusting
+    // that stale field - otherwise the "Create Purchase Invoice" button
+    // keeps showing (and the headline keeps saying "Approved") even after a
+    // PI already exists for this request.
+    const activePI = isSubmitted ? await findActivePurchaseInvoice(frm) : null;
+
+    if (frm.doc.status === 'Approved' && activePI) {
+      frm.dashboard.set_headline(
+        '<span class="indicator blue">' +
+        __('Purchase Invoice {0} already created (Draft). Please submit it before continuing.', [activePI.name]) +
+        '</span>'
+      );
+    } else if (frm.doc.status === 'Approved') {
       frm.dashboard.set_headline(
         '<span class="indicator orange">' +
         __('Expense Request is Approved. Ready to create Purchase Invoice.') +
@@ -759,7 +775,7 @@ frappe.ui.form.on('Expense Request', {
     } else if (frm.doc.status === 'PI Created') {
       frm.dashboard.set_headline(
         '<span class="indicator blue">' +
-        __('Purchase Invoice {0} created. Awaiting payment.', [frm.doc.linked_purchase_invoice]) +
+        __('Purchase Invoice {0} created. Awaiting payment.', [activePI?.name || frm.doc.linked_purchase_invoice]) +
         '</span>'
       );
     } else if (frm.doc.status === 'Paid') {
@@ -770,7 +786,7 @@ frappe.ui.form.on('Expense Request', {
       );
     }
 
-    if (isSubmitted && frm.doc.status === 'Approved' && !frm.doc.linked_purchase_invoice) {
+    if (isSubmitted && frm.doc.status === 'Approved' && !activePI) {
       await maybeRenderPurchaseInvoiceButton(frm);
     }
 
@@ -911,26 +927,23 @@ function maybeRenderInternalChargeButton(frm) {
   }, __('Actions'));
 }
 
-async function maybeRenderPurchaseInvoiceButton(frm) {
-  // Don't show button if active PI exists (not cancelled)
-  if (frm.doc.linked_purchase_invoice) {
-    // Check if the linked PI is cancelled
-    try {
-      const piStatus = await frappe.db.get_value(
-        'Purchase Invoice',
-        frm.doc.linked_purchase_invoice,
-        'docstatus'
-      );
-      // If PI exists and is submitted (docstatus = 1), don't show button
-      if (piStatus?.message?.docstatus === 1) {
-        return;
-      }
-      // If PI is cancelled (docstatus = 2) or draft (docstatus = 0), allow new PI
-    } catch (error) {
-      // If PI doesn't exist anymore, allow creating new one
-    }
+async function findActivePurchaseInvoice(frm) {
+  // The authoritative link is Purchase Invoice.imogi_expense_request, not
+  // Expense Request.linked_purchase_invoice (which the server no longer
+  // keeps in sync - see imogi_finance.accounting._update_request_purchase_invoice_links).
+  try {
+    const list = await frappe.db.get_list('Purchase Invoice', {
+      filters: { imogi_expense_request: frm.doc.name, docstatus: ['!=', 2] },
+      fields: ['name', 'docstatus'],
+      limit: 1,
+    });
+    return list?.[0] || null;
+  } catch (error) {
+    return null;
   }
+}
 
+async function maybeRenderPurchaseInvoiceButton(frm) {
   const [ocrEnabled] = await Promise.all([
     frappe.db.get_single_value('Tax Invoice OCR Settings', 'enable_tax_invoice_ocr'),
   ]);
