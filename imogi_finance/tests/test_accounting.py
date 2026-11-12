@@ -269,7 +269,7 @@ def test_pph_item_wise_detail_includes_only_flagged_rows(monkeypatch):
     assert created_pi.item_wise_tax_detail == {"1": 80.0}
 
 
-def test_purchase_invoice_creation_does_not_update_request(monkeypatch):
+def test_purchase_invoice_creation_marks_request_pi_created(monkeypatch):
     request = _make_expense_request(name="ER-003")
 
     created_pi = _doc_with_defaults(frappe._dict(), linked_purchase_invoice=None, docstatus=0)
@@ -310,10 +310,10 @@ def test_purchase_invoice_creation_does_not_update_request(monkeypatch):
 
     assert pi_name == "PI-003"
     assert db_set_calls == [
-        {"linked_purchase_invoice": None, "pending_purchase_invoice": "PI-003"}
+        {"pending_purchase_invoice": None, "status": "PI Created", "workflow_state": "PI Created"}
     ]
-    assert request.status == "Approved"
-    assert request.pending_purchase_invoice == "PI-003"
+    assert request.status == "PI Created"
+    assert request.pending_purchase_invoice is None
     assert request.linked_purchase_invoice is None
 
 

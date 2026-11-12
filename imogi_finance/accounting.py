@@ -158,18 +158,25 @@ def _update_request_purchase_invoice_links(
     purchase_invoice: frappe.model.document.Document,
     mark_pending: bool = True,
 ) -> None:
-    """Legacy function - kept for backward compatibility.
+    """Reflect that a Purchase Invoice now exists for this request.
 
-    With native connections, PI link is established via imogi_expense_request field
-    on Purchase Invoice. Status is determined by querying submitted documents.
-
-    This function now only clears pending_purchase_invoice field.
+    The real link is PI.imogi_expense_request, not a field on the request -
+    but staff reading the Expense Request list/form have no way to tell a
+    request with a (possibly still-Draft) PI apart from one nobody has
+    touched yet, since "status" otherwise only flips to "PI Created" once
+    that PI is actually submitted (imogi_finance.events.purchase_invoice.
+    _handle_expense_request_submit). So mark it "PI Created" here too, as
+    soon as the PI is created - it already displays that way everywhere, and
+    get_expense_request_status() correctly reverts this back to "Approved"
+    if the (never-submitted) PI is later deleted (events.purchase_invoice.
+    on_trash) since that recompute only counts submitted PIs.
     """
-    # Clear pending field only - actual link is via PI.imogi_expense_request
+    updates = {"pending_purchase_invoice": None, "status": "PI Created", "workflow_state": "PI Created"}
     if hasattr(request, "db_set"):
-        request.db_set("pending_purchase_invoice", None)
+        request.db_set(updates)
     else:
-        setattr(request, "pending_purchase_invoice", None)
+        for field, value in updates.items():
+            setattr(request, field, value)
 
 
 @frappe.whitelist()
