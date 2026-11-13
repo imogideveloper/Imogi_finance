@@ -85,7 +85,20 @@ def _recompute_linked_purchase_invoice_status(payment_entry_name: str) -> list[s
 
     set_status() is used rather than writing "Paid" directly so that debit notes,
     returns and partial payments still resolve to the status ERPNext would pick.
+
+    Also re-runs expense_request.update_er_status_on_payment() for this same PE:
+    that hook otherwise only fires once, from Payment Entry's own on_submit, and
+    on a bank payment the PI is still "Unpaid" at that moment (see above) - so the
+    Expense Request never got its one chance to flip to "Paid" and was stuck on
+    "PI Created" forever, same root cause as the PI status bug this function was
+    already written to fix. Confirmed live on ER-2026-000253 - its PI was "Paid"
+    and the Payment Entry already bank-reconciled, but the ER itself never moved
+    off "PI Created".
     """
+    from imogi_finance.imogi_finance.doctype.expense_request.expense_request import (
+        update_er_status_on_payment,
+    )
+
     pe = frappe.get_doc("Payment Entry", payment_entry_name)
     updated = []
 
@@ -105,6 +118,8 @@ def _recompute_linked_purchase_invoice_status(payment_entry_name: str) -> list[s
                 f"[Bank Reconciliation] PI {pi.name}: {before} -> {pi.status} "
                 f"(via PE {payment_entry_name})"
             )
+
+    update_er_status_on_payment(pe, None)
 
     return updated
 
